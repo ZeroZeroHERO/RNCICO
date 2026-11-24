@@ -34,10 +34,11 @@ function buildTop10(playersMap) {
       return b.totalScore - a.totalScore;
     })
     .slice(0, 10)
-    .map(({ nickname, badgesCount, totalScore, updatedAt }) => ({
+    .map(({ nickname, badgesCount, totalScore, rollsCount, updatedAt }) => ({
       nickname,
       badgesCount,
       totalScore,
+      rollsCount: Number(rollsCount) || 0,
       updatedAt
     }));
 }
@@ -61,7 +62,7 @@ export default async function handler(req, res) {
   if (req.method === 'POST') {
     try {
       const body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
-      const { action, deviceId, nickname, badgesCount, totalScore } = body || {};
+      const { action, deviceId, nickname, badgesCount, totalScore, rollsCount } = body || {};
 
       if (!deviceId || typeof deviceId !== 'string') {
         return res.status(400).json({ error: 'Identificativo dispositivo non valido.' });
@@ -100,6 +101,7 @@ export default async function handler(req, res) {
           nickname: cleanNick,
           badgesCount: Math.max(0, Number(badgesCount) || 0),
           totalScore: Math.max(0, Number(totalScore) || 0),
+          rollsCount: Math.max(0, Number(rollsCount) || 0),
           updatedAt: new Date().toISOString()
         };
 
@@ -129,6 +131,7 @@ export default async function handler(req, res) {
             nickname: cleanNick,
             badgesCount: Math.max(0, Number(badgesCount) || 0),
             totalScore: Math.max(0, Number(totalScore) || 0),
+            rollsCount: Math.max(0, Number(rollsCount) || 0),
             updatedAt: new Date().toISOString()
           };
           await kvSet(PLAYERS_KEY, players);
@@ -141,6 +144,7 @@ export default async function handler(req, res) {
 
         existing.badgesCount = Math.max(existing.badgesCount, Math.max(0, Number(badgesCount) || 0));
         existing.totalScore = Math.max(existing.totalScore, Math.max(0, Number(totalScore) || 0));
+        existing.rollsCount = Math.max(Number(existing.rollsCount) || 0, Math.max(0, Number(rollsCount) || 0));
         existing.updatedAt = new Date().toISOString();
 
         players[deviceId] = existing;
