@@ -1,0 +1,1250 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>RNCICO - Edizione Personalizzata</title>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700;800&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-color: #0b0d12;
+      --card-bg: #141821;
+      --card-border: #232936;
+      --text-main: #f1f5f9;
+      --text-muted: #8b95a5;
+      --accent: #3b82f6;
+      --accent-hover: #2563eb;
+      --gold: #f59e0b;
+      --emerald: #10b981;
+      --danger: #ef4444;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      font-family: 'Inter', sans-serif;
+      display: flex;
+      justify-content: center;
+      padding: 2rem 1rem;
+      min-height: 100vh;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 820px;
+    }
+
+    /* Onboarding Modal */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(7, 9, 13, 0.92);
+      backdrop-filter: blur(8px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+      z-index: 9999;
+    }
+
+    .modal-overlay.hidden {
+      display: none;
+    }
+
+    .modal-card {
+      width: 100%;
+      max-width: 430px;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 2rem 1.75rem;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+      text-align: center;
+    }
+
+    .modal-card h2 {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 1.65rem;
+      font-weight: 800;
+      margin-bottom: 0.5rem;
+    }
+
+    .modal-card h2 span {
+      color: var(--accent);
+    }
+
+    .modal-desc {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      line-height: 1.45;
+      margin-bottom: 1.4rem;
+    }
+
+    .modal-warning {
+      background: rgba(59, 130, 246, 0.1);
+      border: 1px solid rgba(59, 130, 246, 0.25);
+      color: #93c5fd;
+      font-size: 0.78rem;
+      padding: 0.65rem 0.8rem;
+      border-radius: 8px;
+      margin-bottom: 1.2rem;
+      line-height: 1.4;
+    }
+
+    .nickname-input {
+      width: 100%;
+      background: #0b0d12;
+      border: 1px solid var(--card-border);
+      border-radius: 10px;
+      padding: 0.9rem 1rem;
+      color: #ffffff;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 1rem;
+      font-weight: 700;
+      text-align: center;
+      outline: none;
+      margin-bottom: 0.75rem;
+      transition: border-color 0.2s ease;
+    }
+
+    .nickname-input:focus {
+      border-color: var(--accent);
+    }
+
+    .modal-error {
+      color: var(--danger);
+      font-size: 0.82rem;
+      min-height: 1.2rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .modal-submit {
+      width: 100%;
+      background: var(--accent);
+      color: #ffffff;
+      border: none;
+      border-radius: 10px;
+      padding: 0.95rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.95rem;
+      font-weight: 800;
+      cursor: pointer;
+      transition: background 0.2s ease;
+    }
+
+    .modal-submit:hover {
+      background: var(--accent-hover);
+    }
+
+    .modal-submit:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    /* Header & User Pill */
+    header {
+      text-align: center;
+      margin-bottom: 1.6rem;
+    }
+
+    .user-bar {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 0.85rem;
+    }
+
+    .player-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      padding: 0.38rem 0.9rem;
+      border-radius: 999px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    .player-pill .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--emerald);
+      box-shadow: 0 0 8px var(--emerald);
+    }
+
+    .player-pill strong {
+      color: #ffffff;
+    }
+
+    header h1 {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 2.6rem;
+      font-weight: 800;
+      letter-spacing: -1px;
+    }
+
+    header h1 span {
+      color: var(--accent);
+    }
+
+    .subtitle {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+      margin-top: 0.3rem;
+    }
+
+    /* Stats Bar */
+    .stats-bar {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0.85rem;
+      margin-bottom: 1.5rem;
+    }
+
+    @media (max-width: 600px) {
+      .stats-bar {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    .stat-box {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 0.95rem 0.75rem;
+      text-align: center;
+    }
+
+    .stat-label {
+      display: block;
+      font-size: 0.7rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      letter-spacing: 0.08em;
+      margin-bottom: 0.35rem;
+    }
+
+    .stat-value {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 1.4rem;
+      font-weight: 800;
+    }
+
+    .stat-value.highlight {
+      color: var(--emerald);
+    }
+
+    .stat-value.avg {
+      color: var(--accent);
+    }
+
+    /* RNG Main Stage */
+    .rng-stage {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-bottom: 2.5rem;
+    }
+
+    .number-card {
+      width: 100%;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 2.2rem 1.5rem;
+      text-align: center;
+      margin-bottom: 1.2rem;
+      transition: border-color 0.25s ease, box-shadow 0.25s ease;
+    }
+
+    .number-card.jackpot {
+      border-color: var(--gold);
+      box-shadow: 0 0 28px rgba(245, 158, 11, 0.25);
+    }
+
+    .range-hint {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      letter-spacing: 0.1em;
+    }
+
+    .digits-wrapper {
+      display: flex;
+      justify-content: center;
+      gap: 0.75rem;
+      margin: 1rem 0 1.3rem;
+    }
+
+    .digit-box {
+      width: 84px;
+      height: 104px;
+      background: #0d1017;
+      border: 2px solid var(--card-border);
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 4.2rem;
+      font-weight: 800;
+      color: var(--text-muted);
+      transition: border-color 0.2s ease, color 0.2s ease, transform 0.15s ease, box-shadow 0.2s ease;
+    }
+
+    .digit-box.spinning {
+      color: #cbd5e1;
+      border-color: #334155;
+    }
+
+    .digit-box.locked {
+      color: #ffffff;
+      border-color: var(--accent);
+      box-shadow: 0 0 18px rgba(59, 130, 246, 0.25);
+      animation: lockPulse 0.28s ease-out;
+    }
+
+    @keyframes lockPulse {
+      0% { transform: scale(1.12); }
+      100% { transform: scale(1); }
+    }
+
+    .triggered-badges {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 0.5rem;
+      min-height: 34px;
+    }
+
+    .placeholder-text {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+    }
+
+    .pill-badge {
+      background: rgba(16, 185, 129, 0.15);
+      border: 1px solid var(--emerald);
+      color: #6ee7b7;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.82rem;
+      font-weight: 700;
+      padding: 0.35rem 0.75rem;
+      border-radius: 999px;
+      animation: popIn 0.25s ease-out;
+    }
+
+    .pill-badge.rare {
+      background: rgba(245, 158, 11, 0.18);
+      border-color: var(--gold);
+      color: #fcd34d;
+    }
+
+    @keyframes popIn {
+      0% { transform: scale(0.85); opacity: 0; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    .roll-btn {
+      width: 100%;
+      max-width: 320px;
+      background: var(--accent);
+      color: white;
+      border: none;
+      border-radius: 12px;
+      padding: 1rem 1.5rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 1.05rem;
+      font-weight: 800;
+      cursor: pointer;
+      letter-spacing: 0.05em;
+      transition: transform 0.1s ease, background-color 0.2s ease;
+    }
+
+    .roll-btn:hover {
+      background: var(--accent-hover);
+    }
+
+    .roll-btn:active {
+      transform: scale(0.97);
+    }
+
+    .roll-btn:disabled {
+      opacity: 0.55;
+      cursor: not-allowed;
+    }
+
+    /* Leaderboard Top 10 */
+    .leaderboard-section {
+      margin-bottom: 2.5rem;
+    }
+
+    .refresh-btn {
+      background: rgba(59, 130, 246, 0.12);
+      border: 1px solid rgba(59, 130, 246, 0.3);
+      color: var(--accent);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 0.32rem 0.7rem;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background 0.2s ease, color 0.2s ease;
+    }
+
+    .refresh-btn:hover {
+      background: rgba(59, 130, 246, 0.22);
+      color: #ffffff;
+    }
+
+    .refresh-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .leaderboard-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    .leaderboard-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+    }
+
+    .leaderboard-table th {
+      font-size: 0.7rem;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+      padding: 0.85rem 1rem;
+      border-bottom: 1px solid var(--card-border);
+      background: rgba(11, 13, 18, 0.45);
+    }
+
+    .leaderboard-table td {
+      padding: 0.8rem 1rem;
+      font-size: 0.9rem;
+      border-bottom: 1px solid rgba(35, 41, 54, 0.6);
+    }
+
+    .leaderboard-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    .leaderboard-table tr.current-user {
+      background: rgba(59, 130, 246, 0.12);
+    }
+
+    .leaderboard-table tr.current-user td:first-child {
+      box-shadow: inset 3px 0 0 var(--accent);
+    }
+
+    .rank-cell {
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 800;
+      width: 60px;
+      color: var(--text-muted);
+    }
+
+    .rank-1 { color: var(--gold); }
+    .rank-2 { color: #cbd5e1; }
+    .rank-3 { color: #d97706; }
+
+    .nick-cell {
+      font-weight: 700;
+    }
+
+    .you-tag {
+      display: inline-block;
+      margin-left: 0.45rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.65rem;
+      font-weight: 800;
+      background: var(--accent);
+      color: #ffffff;
+      padding: 0.12rem 0.45rem;
+      border-radius: 4px;
+      vertical-align: middle;
+    }
+
+    .badges-col {
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 800;
+      color: var(--emerald);
+      text-align: right;
+    }
+
+    .score-col {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      text-align: right;
+    }
+
+    .leaderboard-empty {
+      padding: 1.5rem;
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 0.88rem;
+    }
+
+    /* Badges Section */
+    .badges-section {
+      margin-bottom: 2.5rem;
+    }
+
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+      gap: 0.5rem;
+    }
+
+    .section-header h2, .history-section h2 {
+      font-size: 0.95rem;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+    }
+
+    .formula-tag {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.75rem;
+      color: var(--accent);
+      background: rgba(59, 130, 246, 0.12);
+      padding: 0.25rem 0.6rem;
+      border-radius: 6px;
+    }
+
+    .badges-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(235px, 1fr));
+      gap: 0.85rem;
+    }
+
+    .badge-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 10px;
+      padding: 0.9rem 1rem;
+      transition: all 0.25s ease;
+    }
+
+    .badge-card.locked-mystery {
+      opacity: 0.6;
+      border-style: dashed;
+    }
+
+    .badge-card.locked-mystery .badge-name {
+      font-family: 'JetBrains Mono', monospace;
+      color: var(--text-muted);
+      letter-spacing: 0.05em;
+    }
+
+    .badge-card.locked-mystery .badge-desc {
+      font-style: italic;
+      color: #525d70;
+    }
+
+    .badge-card.unlocked {
+      opacity: 1;
+      border-style: solid;
+      border-color: var(--emerald);
+      background: rgba(16, 185, 129, 0.07);
+    }
+
+    .badge-card.active-now {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 16px rgba(16, 185, 129, 0.25);
+    }
+
+    .badge-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 0.5rem;
+      margin-bottom: 0.35rem;
+    }
+
+    .badge-name {
+      font-weight: 700;
+      font-size: 0.92rem;
+      line-height: 1.25;
+    }
+
+    .badge-points {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.82rem;
+      font-weight: 800;
+      color: var(--gold);
+      white-space: nowrap;
+    }
+
+    .badge-desc {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      margin-bottom: 0.5rem;
+    }
+
+    .badge-prob {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.72rem;
+      color: #64748b;
+    }
+
+    .history-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-top: 0.8rem;
+    }
+
+    .history-item {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.85rem;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      padding: 0.4rem 0.7rem;
+      border-radius: 8px;
+    }
+
+    .history-item.has-points {
+      border-color: var(--emerald);
+      color: #6ee7b7;
+    }
+  </style>
+</head>
+<body>
+  <!-- Modal Primo Accesso -->
+  <div class="modal-overlay hidden" id="onboarding-modal">
+    <div class="modal-card">
+      <h2>RN<span>CICO</span></h2>
+      <p class="modal-desc">Scegli il tuo nickname per entrare nella classifica globale dei badge.</p>
+      <div class="modal-warning">
+        Questo dispositivo verrà associato in modo permanente al tuo nickname.
+      </div>
+      <form id="register-form">
+        <input
+          type="text"
+          id="nickname-input"
+          class="nickname-input"
+          placeholder="Es. Cico99"
+          minlength="2"
+          maxlength="20"
+          autocomplete="off"
+          required
+        />
+        <div class="modal-error" id="modal-error"></div>
+        <button type="submit" class="modal-submit" id="register-btn">CONFERMA E GIOCA</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="container">
+    <header>
+      <div class="user-bar">
+        <div class="player-pill">
+          <span class="dot"></span>
+          <span>GIOCATORE: <strong id="current-nickname">---</strong></span>
+        </div>
+      </div>
+      <h1>RN<span>CICO</span></h1>
+      <p class="subtitle">Genera un numero da 1 a 500 e scopri i badge nascosti</p>
+    </header>
+
+    <div class="stats-bar">
+      <div class="stat-box">
+        <span class="stat-label">PUNTI TOTALI</span>
+        <span class="stat-value" id="total-score">0</span>
+      </div>
+      <div class="stat-box">
+        <span class="stat-label">ULTIMO TIRO</span>
+        <span class="stat-value highlight" id="last-roll-score">+0</span>
+      </div>
+      <div class="stat-box">
+        <span class="stat-label">MEDIA PUNTI</span>
+        <span class="stat-value avg" id="avg-score">0</span>
+      </div>
+      <div class="stat-box">
+        <span class="stat-label">TIRI FATTI</span>
+        <span class="stat-value" id="roll-count">0</span>
+      </div>
+    </div>
+
+    <main class="rng-stage">
+      <div class="number-card" id="number-card">
+        <span class="range-hint">RANGE: 001 — 500</span>
+        
+        <div class="digits-wrapper">
+          <div class="digit-box" id="digit-0">-</div>
+          <div class="digit-box" id="digit-1">-</div>
+          <div class="digit-box" id="digit-2">-</div>
+        </div>
+
+        <div class="triggered-badges" id="triggered-badges">
+          <span class="placeholder-text">Premi GENERA per iniziare</span>
+        </div>
+      </div>
+
+      <button id="roll-btn" class="roll-btn">
+        GENERA NUMERO
+      </button>
+    </main>
+
+    <!-- Classifica Top 10 -->
+    <section class="leaderboard-section">
+      <div class="section-header">
+        <h2>TOP 10 POSSESSORI DI BADGE</h2>
+        <button type="button" class="refresh-btn" id="refresh-leaderboard-btn">AGGIORNA</button>
+      </div>
+      <div class="leaderboard-card" id="leaderboard-container">
+        <div class="leaderboard-empty">Caricamento classifica...</div>
+      </div>
+    </section>
+
+    <section class="badges-section">
+      <div class="section-header">
+        <h2>BADGE (<span id="unlocked-counter">0</span>/<span id="total-counter">0</span> SBLOCCATI)</h2>
+        <span class="formula-tag">Formula: 100 / Probabilità</span>
+      </div>
+      <div class="badges-grid" id="badges-grid"></div>
+    </section>
+
+    <section class="history-section">
+      <h2>ULTIMI TIRI</h2>
+      <div class="history-list" id="history-list"></div>
+    </section>
+  </div>
+
+  <script>
+    const MIN_NUM = 1;
+    const MAX_NUM = 500;
+    const TOTAL_NUMBERS = MAX_NUM - MIN_NUM + 1;
+    const DIGIT_LOCK_DELAY = 1500;
+    const STORAGE_KEY = 'rncico_device_account_v1';
+    const API_ENDPOINT = '/.netlify/functions/leaderboard';
+
+    function isPrime(n) {
+      if (n < 2) return false;
+      for (let i = 2; i <= Math.sqrt(n); i++) {
+        if (n % i === 0) return false;
+      }
+      return true;
+    }
+
+    function isFactorial(n) {
+      return [1, 2, 6, 24, 120].includes(n);
+    }
+
+    function isPalindrome(n) {
+      const s = String(n);
+      return s.length > 1 && s === s.split('').reverse().join('');
+    }
+
+    function isPerfectSquare(n) {
+      return Number.isInteger(Math.sqrt(n));
+    }
+
+    function isHarshad(n) {
+      const sumDigits = String(n).split('').reduce((acc, d) => acc + Number(d), 0);
+      return n % sumDigits === 0;
+    }
+
+    const RAW_BADGES = [
+      // Badge matematici base
+      { id: 'even', name: 'Numero Pari', description: 'Divisibile per 2', check: (n) => n % 2 === 0 },
+      { id: 'odd', name: 'Numero Dispari', description: 'Non divisibile per 2', check: (n) => n % 2 !== 0 },
+      { id: 'prime', name: 'Numero Primo', description: 'Divisibile solo per 1 e per se stesso', check: (n) => isPrime(n) },
+      { id: 'harshad', name: 'Numero di Harshad', description: 'Divisibile per la somma delle sue cifre', check: (n) => isHarshad(n) },
+      { id: 'square', name: 'Quadrato Perfetto', description: 'Es. 4, 9, 16, 25 ... 484', check: (n) => isPerfectSquare(n) },
+      { id: 'palindrome', name: 'Palindromo', description: 'Si legge uguale da sinistra e destra', check: (n) => isPalindrome(n) },
+      { id: 'repdigit', name: 'Cifre Uguali', description: 'Tutte le cifre identiche (es. 77, 333)', check: (n) => n >= 10 && new Set(String(n)).size === 1 },
+      { id: 'factorial', name: 'Numero Fattoriale', description: '1!, 2!, 3!, 4! o 5!', check: (n) => isFactorial(n) },
+
+      // Elementi chimici (Numeri atomici)
+      { id: 'elem_c', name: 'Carbonio (C)', description: 'Numero atomico 6', check: (n) => n === 6 },
+      { id: 'elem_cu', name: 'Rame (Cu)', description: 'Numero atomico 29', check: (n) => n === 29 },
+      { id: 'elem_se', name: 'Selenio (Se)', description: 'Numero atomico 34', check: (n) => n === 34 },
+      { id: 'elem_sr', name: 'Stronzio (Sr)', description: 'Numero atomico 38', check: (n) => n === 38 },
+      { id: 'elem_ag', name: 'Argento (Ag)', description: 'Numero atomico 47', check: (n) => n === 47 },
+      { id: 'elem_au', name: 'Oro (Au)', description: 'Numero atomico 79', check: (n) => n === 79 },
+      { id: 'elem_u', name: 'Uranio (U)', description: 'Numero atomico 92', check: (n) => n === 92 },
+      { id: 'elem_es', name: 'Einsteinio (Es)', description: 'Numero atomico 99', check: (n) => n === 99 },
+      { id: 'elem_rf', name: 'Rutherfordio (Rf)', description: 'Numero atomico 104', check: (n) => n === 104 },
+
+      // Badge personalizzati - gruppo 1
+      { id: 'mult70', name: 'Il settanta per x', description: 'Multiplo di 70', check: (n) => n % 70 === 0 },
+      { id: 'n70', name: 'IL SETTANTA IL SETTANTA', description: 'Esattamente 70', check: (n) => n === 70 },
+
+      { id: 'n90', name: 'la paura', description: 'Esattamente 90', check: (n) => n === 90 },
+      { id: 'n91', name: 'la paura +1', description: 'Esattamente 91', check: (n) => n === 91 },
+      { id: 'n92', name: 'la paura +2', description: 'Esattamente 92', check: (n) => n === 92 },
+      { id: 'n93', name: 'la paura +3', description: 'Esattamente 93', check: (n) => n === 93 },
+      { id: 'n94', name: 'la paura +4', description: 'Esattamente 94', check: (n) => n === 94 },
+      { id: 'n95', name: 'la paura +5', description: 'Esattamente 95', check: (n) => n === 95 },
+
+      { id: 'end89', name: 'cicciogamero', description: 'Finisce con 89', check: (n) => n % 100 === 89 },
+      { id: 'end69', name: 'nice', description: 'Finisce con 69', check: (n) => n % 100 === 69 },
+      { id: 'end67', name: 'sieg e poi heil', description: 'Finisce con 67', check: (n) => n % 100 === 67 },
+      { id: 'end23', name: 'bucio de culo', description: 'Finisce con 23', check: (n) => n % 100 === 23 },
+      { id: 'end26', name: 'compleanno di cris', description: 'Finisce con 26', check: (n) => n % 100 === 26 },
+      { id: 'end77', name: 'le tette', description: 'Finisce con 77', check: (n) => n % 100 === 77 },
+      { id: 'end22', name: 'compleanno di cico', description: 'Finisce con 22', check: (n) => n % 100 === 22 },
+      { id: 'end25', name: 'natale', description: 'Finisce con 25', check: (n) => n % 100 === 25 },
+      { id: 'end20', name: 'vuoi fare 20€?', description: 'Finisce con 20', check: (n) => n % 100 === 20 },
+      { id: 'end37', name: 'move 37', description: 'Finisce con 37', check: (n) => n % 100 === 37 },
+
+      { id: 'n1', name: 'er numero 1', description: 'Esattamente 1', check: (n) => n === 1 },
+      { id: 'n6', name: 'seeeeeei', description: 'Esattamente 6', check: (n) => n === 6 },
+      { id: 'n9', name: 'no-ve', description: 'Esattamente 9', check: (n) => n === 9 },
+      { id: 'n10', name: 'er pupone', description: 'Esattamente 10', check: (n) => n === 10 },
+      { id: 'n33', name: 'anni di cristo', description: 'Esattamente 33', check: (n) => n === 33 },
+      { id: 'n50', name: 'buddybank', description: 'Esattamente 50', check: (n) => n === 50 },
+      { id: 'n100', name: 'robinhood', description: 'Esattamente 100', check: (n) => n === 100 },
+      { id: 'n118', name: 'CENTODICIOTTOOO', description: 'Esattamente 118', check: (n) => n === 118 },
+      { id: 'n141', name: 'radice di 2', description: 'Esattamente 141 (1.41)', check: (n) => n === 141 },
+      { id: 'n271', name: 'numero di eulero', description: 'Esattamente 271 (2.71)', check: (n) => n === 271 },
+      { id: 'n314', name: 'esattamente pi', description: 'Esattamente 314 (3.14)', check: (n) => n === 314 },
+      { id: 'n343', name: 'il cubo di 7 chiaro no?', description: 'Esattamente 343', check: (n) => n === 343 },
+      { id: 'n350', name: 'lo jager bomb', description: 'Esattamente 350', check: (n) => n === 350 },
+      { id: 'n412', name: 'laurea del padre di crisafulli', description: 'Esattamente 412', check: (n) => n === 412 },
+      { id: 'n420', name: 'è la cannora', description: 'Esattamente 420', check: (n) => n === 420 },
+      { id: 'siri_timer', name: 'ei siri metti un timer di 5 minuti', description: 'Esattamente 5 o 300', check: (n) => n === 5 || n === 300 },
+
+      // Intervalli e multipli
+      { id: 'mult100', name: 'numero tondo', description: 'Multiplo di 100', check: (n) => n % 100 === 0 },
+      { id: 'near100', name: 'quasi numero tondo', description: 'Finisce con 99 o 01', check: (n) => n % 100 === 99 || n % 100 === 1 },
+      { id: 'under10', name: '1-10', description: 'Numeri sotto al 10 (1-9)', check: (n) => n < 10 },
+      { id: 'over490', name: 'spendaccione', description: 'Numeri sopra al 490 (491-500)', check: (n) => n > 490 },
+      { id: 'carlo_sides', name: 'i lati di carlo', description: 'Numero compreso tra 30 e 40', check: (n) => n >= 30 && n <= 40 },
+      { id: 'cico_mom', name: 'il peso della mamma di cico', description: 'Numero compreso tra 105 e 125', check: (n) => n >= 105 && n <= 125 },
+      { id: 'leo_aviator', name: 'soldi vinti da leo su aviator', description: 'Numero compreso tra 320 e 340', check: (n) => n >= 320 && n <= 340 },
+      { id: 'emma_debt', name: 'il debito di emma', description: 'Numero compreso tra 370 e 390', check: (n) => n >= 370 && n <= 390 },
+
+      // Numeri di telefono e inversi
+      { id: 'tel_cico', name: 'numero di telefono di cico', description: 'Esattamente 391', check: (n) => n === 391 },
+      { id: 'tel_cico_rev', name: 'numero di telefono di cico al contrario', description: 'Esattamente 193', check: (n) => n === 193 },
+      { id: 'exact_500', name: 'Jackpot 500', description: 'Esattamente il numero 500', check: (n) => n === 500 }
+    ];
+
+    const BADGES = RAW_BADGES.map(badge => {
+      let matchingCount = 0;
+      for (let i = MIN_NUM; i <= MAX_NUM; i++) {
+        if (badge.check(i)) matchingCount++;
+      }
+      const probability = matchingCount / TOTAL_NUMBERS;
+      const points = matchingCount > 0 ? Math.round(100 / probability) : 0;
+
+      return {
+        ...badge,
+        matchingCount,
+        probability,
+        points,
+        unlocked: false
+      };
+    }).sort((a, b) => a.points - b.points);
+
+    // Stato applicativo
+    let account = null; // { deviceId, nickname, totalScore, rollCount, unlockedIds, history }
+    let isRolling = false;
+
+    // Elementi DOM
+    const onboardingModal = document.getElementById('onboarding-modal');
+    const registerForm = document.getElementById('register-form');
+    const nicknameInput = document.getElementById('nickname-input');
+    const modalError = document.getElementById('modal-error');
+    const registerBtn = document.getElementById('register-btn');
+    const currentNicknameEl = document.getElementById('current-nickname');
+
+    const digitEls = [
+      document.getElementById('digit-0'),
+      document.getElementById('digit-1'),
+      document.getElementById('digit-2')
+    ];
+    const numberCard = document.getElementById('number-card');
+    const triggeredBadgesEl = document.getElementById('triggered-badges');
+    const totalScoreEl = document.getElementById('total-score');
+    const lastRollScoreEl = document.getElementById('last-roll-score');
+    const avgScoreEl = document.getElementById('avg-score');
+    const rollCountEl = document.getElementById('roll-count');
+    const unlockedCounterEl = document.getElementById('unlocked-counter');
+    const totalCounterEl = document.getElementById('total-counter');
+    const badgesGridEl = document.getElementById('badges-grid');
+    const historyListEl = document.getElementById('history-list');
+    const rollBtn = document.getElementById('roll-btn');
+    const leaderboardContainer = document.getElementById('leaderboard-container');
+    const refreshLeaderboardBtn = document.getElementById('refresh-leaderboard-btn');
+
+    function generateDeviceId() {
+      if (window.crypto && crypto.randomUUID) {
+        return crypto.randomUUID();
+      }
+      return 'dev-' + Date.now() + '-' + Math.random().toString(36).substring(2, 11);
+    }
+
+    function loadLocalAccount() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) return null;
+        const parsed = JSON.parse(raw);
+        if (parsed && parsed.deviceId && parsed.nickname) {
+          return {
+            deviceId: parsed.deviceId,
+            nickname: parsed.nickname,
+            totalScore: Number(parsed.totalScore) || 0,
+            rollCount: Number(parsed.rollCount) || 0,
+            unlockedIds: Array.isArray(parsed.unlockedIds) ? parsed.unlockedIds : [],
+            history: Array.isArray(parsed.history) ? parsed.history : []
+          };
+        }
+      } catch (e) {
+        console.error('Errore lettura localStorage:', e);
+      }
+      return null;
+    }
+
+    function saveLocalAccount() {
+      if (!account) return;
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(account));
+      } catch (e) {
+        console.error('Errore scrittura localStorage:', e);
+      }
+    }
+
+    function applyAccountStateToUI() {
+      if (!account) return;
+      currentNicknameEl.textContent = account.nickname;
+
+      const unlockedSet = new Set(account.unlockedIds);
+      BADGES.forEach(b => {
+        b.unlocked = unlockedSet.has(b.id);
+      });
+
+      totalScoreEl.textContent = account.totalScore.toLocaleString('it-IT');
+      rollCountEl.textContent = account.rollCount.toLocaleString('it-IT');
+      const avg = account.rollCount > 0 ? Math.round(account.totalScore / account.rollCount) : 0;
+      avgScoreEl.textContent = avg.toLocaleString('it-IT');
+
+      totalCounterEl.textContent = BADGES.length;
+      unlockedCounterEl.textContent = account.unlockedIds.length;
+
+      renderBadgesGrid();
+      renderHistoryFromState();
+    }
+
+    function renderBadgesGrid(activeIds = []) {
+      badgesGridEl.innerHTML = '';
+
+      BADGES.forEach(badge => {
+        const card = document.createElement('div');
+        const isActive = activeIds.includes(badge.id);
+        const stateClass = badge.unlocked ? 'unlocked' : 'locked-mystery';
+        card.className = `badge-card ${stateClass} ${isActive ? 'active-now' : ''}`;
+
+        const displayName = badge.unlocked ? `✓ ${badge.name}` : '??? BADGE NASCOSTO ???';
+        const displayDesc = badge.unlocked ? badge.description : 'Sbloccalo per scoprire la condizione';
+
+        card.innerHTML = `
+          <div class="badge-top">
+            <span class="badge-name">${displayName}</span>
+            <span class="badge-points">+${badge.points.toLocaleString('it-IT')} pt</span>
+          </div>
+          <div class="badge-desc">${displayDesc}</div>
+          <div class="badge-prob">Prob: ${badge.matchingCount}/${TOTAL_NUMBERS} (${(badge.probability * 100).toFixed(2)}%)</div>
+        `;
+        badgesGridEl.appendChild(card);
+      });
+    }
+
+    function renderHistoryFromState() {
+      historyListEl.innerHTML = '';
+      if (!account || !account.history.length) return;
+      account.history.forEach(entry => {
+        const item = document.createElement('div');
+        item.className = `history-item ${entry.points > 0 ? 'has-points' : ''}`;
+        item.textContent = entry.points > 0
+          ? `${entry.num} (+${entry.points.toLocaleString('it-IT')})`
+          : `${entry.num}`;
+        historyListEl.appendChild(item);
+      });
+    }
+
+    function escapeHtml(str) {
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    function renderLeaderboard(list) {
+      if (!Array.isArray(list) || list.length === 0) {
+        leaderboardContainer.innerHTML = '<div class="leaderboard-empty">Nessun giocatore ancora in classifica. Sii il primo!</div>';
+        return;
+      }
+
+      const currentNickLower = account ? account.nickname.toLowerCase() : '';
+      const rows = list.map((row, idx) => {
+        const rank = idx + 1;
+        const rankClass = rank <= 3 ? `rank-${rank}` : '';
+        const isMe = currentNickLower && row.nickname.toLowerCase() === currentNickLower;
+
+        return `
+          <tr class="${isMe ? 'current-user' : ''}">
+            <td class="rank-cell ${rankClass}">#${rank}</td>
+            <td class="nick-cell">
+              ${escapeHtml(row.nickname)}
+              ${isMe ? '<span class="you-tag">TU</span>' : ''}
+            </td>
+            <td class="badges-col">${row.badgesCount}/${BADGES.length}</td>
+            <td class="score-col">${Number(row.totalScore || 0).toLocaleString('it-IT')} pt</td>
+          </tr>
+        `;
+      }).join('');
+
+      leaderboardContainer.innerHTML = `
+        <table class="leaderboard-table">
+          <thead>
+            <tr>
+              <th>POS</th>
+              <th>GIOCATORE</th>
+              <th style="text-align:right">BADGE</th>
+              <th style="text-align:right">PUNTI</th>
+            </tr>
+          </thead>
+          <tbody>${rows}</tbody>
+        </table>
+      `;
+    }
+
+    async function fetchLeaderboard() {
+      refreshLeaderboardBtn.disabled = true;
+      try {
+        const res = await fetch(API_ENDPOINT);
+        const data = await res.json();
+        if (res.ok && data.leaderboard) {
+          renderLeaderboard(data.leaderboard);
+        }
+      } catch (err) {
+        console.error('Errore fetch classifica:', err);
+      } finally {
+        refreshLeaderboardBtn.disabled = false;
+      }
+    }
+
+    async function syncAccountToServer() {
+      if (!account) return;
+      try {
+        const res = await fetch(API_ENDPOINT, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: 'sync',
+            deviceId: account.deviceId,
+            nickname: account.nickname,
+            badgesCount: account.unlockedIds.length,
+            totalScore: account.totalScore
+          })
+        });
+        const data = await res.json();
+        if (res.ok && data.leaderboard) {
+          renderLeaderboard(data.leaderboard);
+        }
+      } catch (err) {
+        console.error('Errore sincronizzazione server:', err);
+      }
+    }
+
+    // Gestione registrazione primo accesso
+    registerForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      modalError.textContent = '';
+      const chosenNick = nicknameInput.value.trim();
+
+      if (chosenNick.length < 2 || chosenNick.length > 20) {
+        modalError.textContent = 'Inserisci un nickname tra 2 e 20 caratteri.';
+        return;
+      }
+
+      registerBtn.disabled = true;
+      registerBtn.textContent = 'VERIFICA IN CORSO...';
+
+      const newDeviceId = generateDeviceId();
+
+      try {
+        const res = await fetch(API_ENDPOINT, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: 'register',
+            deviceId: newDeviceId,
+            nickname: chosenNick,
+            badgesCount: 0,
+            totalScore: 0
+          })
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) {
+          modalError.textContent = data.error || 'Nickname non disponibile.';
+          registerBtn.disabled = false;
+          registerBtn.textContent = 'CONFERMA E GIOCA';
+          return;
+        }
+
+        account = {
+          deviceId: data.player.deviceId,
+          nickname: data.player.nickname,
+          totalScore: data.player.totalScore || 0,
+          rollCount: 0,
+          unlockedIds: [],
+          history: []
+        };
+
+        saveLocalAccount();
+        onboardingModal.classList.add('hidden');
+        applyAccountStateToUI();
+
+        if (data.leaderboard) {
+          renderLeaderboard(data.leaderboard);
+        } else {
+          fetchLeaderboard();
+        }
+      } catch (err) {
+        modalError.textContent = 'Errore di rete. Riprova tra poco.';
+        registerBtn.disabled = false;
+        registerBtn.textContent = 'CONFERMA E GIOCA';
+      }
+    });
+
+    // Logica estrazione RNG a 3 cifre
+    function getRandomInt(min, max) {
+      return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
+    function handleRoll() {
+      if (isRolling || !account) return;
+      isRolling = true;
+      rollBtn.disabled = true;
+      numberCard.classList.remove('jackpot');
+      triggeredBadgesEl.innerHTML = '<span class="placeholder-text">Estrazione in corso...</span>';
+
+      const targetNumber = getRandomInt(MIN_NUM, MAX_NUM);
+      const targetDigits = String(targetNumber).padStart(3, '0').split('');
+
+      const intervals = digitEls.map((el) => {
+        el.classList.remove('locked');
+        el.classList.add('spinning');
+        return setInterval(() => {
+          el.textContent = Math.floor(Math.random() * 10);
+        }, 45);
+      });
+
+      targetDigits.forEach((digitChar, index) => {
+        setTimeout(() => {
+          clearInterval(intervals[index]);
+          digitEls[index].textContent = digitChar;
+          digitEls[index].classList.remove('spinning');
+          digitEls[index].classList.add('locked');
+
+          if (index === targetDigits.length - 1) {
+            finalizeRoll(targetNumber);
+          }
+        }, DIGIT_LOCK_DELAY * (index + 1));
+      });
+    }
+
+    function finalizeRoll(result) {
+      const matched = BADGES.filter(b => b.check(result));
+      let rollPoints = 0;
+      let unlockedNewBadge = false;
+
+      triggeredBadgesEl.innerHTML = '';
+
+      if (matched.length === 0) {
+        triggeredBadgesEl.innerHTML = '<span class="placeholder-text">Nessun badge sbloccato</span>';
+      } else {
+        matched.forEach(badge => {
+          if (!badge.unlocked) {
+            badge.unlocked = true;
+            unlockedNewBadge = true;
+            if (!account.unlockedIds.includes(badge.id)) {
+              account.unlockedIds.push(badge.id);
+            }
+          }
+          rollPoints += badge.points;
+
+          const pill = document.createElement('span');
+          pill.className = `pill-badge ${badge.points >= 2000 ? 'rare' : ''}`;
+          pill.textContent = `${badge.name} (+${badge.points.toLocaleString('it-IT')})`;
+          triggeredBadgesEl.appendChild(pill);
+        });
+
+        if (matched.some(b => b.points >= 5000)) {
+          numberCard.classList.add('jackpot');
+        }
+      }
+
+      account.rollCount += 1;
+      account.totalScore += rollPoints;
+      account.history.unshift({ num: result, points: rollPoints });
+      if (account.history.length > 15) {
+        account.history = account.history.slice(0, 15);
+      }
+
+      saveLocalAccount();
+
+      totalScoreEl.textContent = account.totalScore.toLocaleString('it-IT');
+      lastRollScoreEl.textContent = `+${rollPoints.toLocaleString('it-IT')}`;
+      rollCountEl.textContent = account.rollCount.toLocaleString('it-IT');
+      avgScoreEl.textContent = Math.round(account.totalScore / account.rollCount).toLocaleString('it-IT');
+      unlockedCounterEl.textContent = account.unlockedIds.length;
+
+      renderBadgesGrid(matched.map(b => b.id));
+      renderHistoryFromState();
+
+      // Sincronizza con Netlify Blobs SOLO quando viene sbloccato un badge nuovo
+      if (unlockedNewBadge) {
+        syncAccountToServer();
+      }
+
+      isRolling = false;
+      rollBtn.disabled = false;
+    }
+
+    rollBtn.addEventListener('click', handleRoll);
+    refreshLeaderboardBtn.addEventListener('click', fetchLeaderboard);
+
+    // Inizializzazione all'apertura della pagina
+    (function init() {
+      totalCounterEl.textContent = BADGES.length;
+      const saved = loadLocalAccount();
+
+      if (!saved) {
+        onboardingModal.classList.remove('hidden');
+        renderBadgesGrid();
+        fetchLeaderboard();
+      } else {
+        account = saved;
+        applyAccountStateToUI();
+        syncAccountToServer();
+      }
+    })();
+  </script>
+</body>
+</html>
