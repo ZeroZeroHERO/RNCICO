@@ -201,17 +201,20 @@
       margin-top: 0.3rem;
     }
 
-    /* Stats Bar */
+    /* Stats Bar (5 box) */
     .stats-bar {
       display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 0.85rem;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 0.75rem;
       margin-bottom: 1.5rem;
     }
 
-    @media (max-width: 600px) {
+    @media (max-width: 720px) {
       .stats-bar {
         grid-template-columns: repeat(2, 1fr);
+      }
+      .stats-bar .stat-box:last-child {
+        grid-column: span 2;
       }
     }
 
@@ -219,13 +222,13 @@
       background: var(--card-bg);
       border: 1px solid var(--card-border);
       border-radius: 12px;
-      padding: 0.95rem 0.75rem;
+      padding: 0.9rem 0.65rem;
       text-align: center;
     }
 
     .stat-label {
       display: block;
-      font-size: 0.7rem;
+      font-size: 0.68rem;
       font-weight: 700;
       color: var(--text-muted);
       letter-spacing: 0.08em;
@@ -234,7 +237,7 @@
 
     .stat-value {
       font-family: 'JetBrains Mono', monospace;
-      font-size: 1.4rem;
+      font-size: 1.32rem;
       font-weight: 800;
     }
 
@@ -244,6 +247,10 @@
 
     .stat-value.avg {
       color: var(--accent);
+    }
+
+    .stat-value.best {
+      color: var(--gold);
     }
 
     /* RNG Main Stage */
@@ -414,7 +421,7 @@
       background: var(--card-bg);
       border: 1px solid var(--card-border);
       border-radius: 12px;
-      overflow: hidden;
+      overflow-x: auto;
     }
 
     .leaderboard-table {
@@ -484,6 +491,15 @@
       font-weight: 800;
       color: var(--emerald);
       text-align: right;
+      white-space: nowrap;
+    }
+
+    .rolls-col {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.82rem;
+      color: var(--accent);
+      text-align: right;
+      white-space: nowrap;
     }
 
     .score-col {
@@ -491,6 +507,7 @@
       font-size: 0.82rem;
       color: var(--text-muted);
       text-align: right;
+      white-space: nowrap;
     }
 
     .leaderboard-empty {
@@ -673,6 +690,10 @@
       <div class="stat-box">
         <span class="stat-label">ULTIMO TIRO</span>
         <span class="stat-value highlight" id="last-roll-score">+0</span>
+      </div>
+      <div class="stat-box">
+        <span class="stat-label">MIGLIOR TIRO</span>
+        <span class="stat-value best" id="best-roll-score">+0</span>
       </div>
       <div class="stat-box">
         <span class="stat-label">MEDIA PUNTI</span>
@@ -920,7 +941,7 @@
     }).sort((a, b) => a.points - b.points);
 
     // Stato applicativo
-    let account = null; // { deviceId, nickname, totalScore, rollCount, unlockedIds, history }
+    let account = null; // { deviceId, nickname, totalScore, bestRollScore, rollCount, unlockedIds, history }
     let isRolling = false;
 
     // Elementi DOM
@@ -940,6 +961,7 @@
     const triggeredBadgesEl = document.getElementById('triggered-badges');
     const totalScoreEl = document.getElementById('total-score');
     const lastRollScoreEl = document.getElementById('last-roll-score');
+    const bestRollScoreEl = document.getElementById('best-roll-score');
     const avgScoreEl = document.getElementById('avg-score');
     const rollCountEl = document.getElementById('roll-count');
     const unlockedCounterEl = document.getElementById('unlocked-counter');
@@ -963,13 +985,16 @@
         if (!raw) return null;
         const parsed = JSON.parse(raw);
         if (parsed && parsed.deviceId && parsed.nickname) {
+          const historyArr = Array.isArray(parsed.history) ? parsed.history : [];
+          const maxFromHistory = historyArr.reduce((max, item) => Math.max(max, Number(item.points) || 0), 0);
           return {
             deviceId: parsed.deviceId,
             nickname: parsed.nickname,
             totalScore: Number(parsed.totalScore) || 0,
+            bestRollScore: Math.max(Number(parsed.bestRollScore) || 0, maxFromHistory),
             rollCount: Number(parsed.rollCount) || 0,
             unlockedIds: Array.isArray(parsed.unlockedIds) ? parsed.unlockedIds : [],
-            history: Array.isArray(parsed.history) ? parsed.history : []
+            history: historyArr
           };
         }
       } catch (e) {
@@ -997,6 +1022,7 @@
       });
 
       totalScoreEl.textContent = account.totalScore.toLocaleString('it-IT');
+      bestRollScoreEl.textContent = `+${(account.bestRollScore || 0).toLocaleString('it-IT')}`;
       rollCountEl.textContent = account.rollCount.toLocaleString('it-IT');
       const avg = account.rollCount > 0 ? Math.round(account.totalScore / account.rollCount) : 0;
       avgScoreEl.textContent = avg.toLocaleString('it-IT');
@@ -1064,6 +1090,7 @@
         const rank = idx + 1;
         const rankClass = rank <= 3 ? `rank-${rank}` : '';
         const isMe = currentNickLower && row.nickname.toLowerCase() === currentNickLower;
+        const rolls = Number(row.rollsCount) || 0;
 
         return `
           <tr class="${isMe ? 'current-user' : ''}">
@@ -1073,6 +1100,7 @@
               ${isMe ? '<span class="you-tag">TU</span>' : ''}
             </td>
             <td class="badges-col">${row.badgesCount}/${BADGES.length}</td>
+            <td class="rolls-col">${rolls.toLocaleString('it-IT')}</td>
             <td class="score-col">${Number(row.totalScore || 0).toLocaleString('it-IT')} pt</td>
           </tr>
         `;
@@ -1085,6 +1113,7 @@
               <th>POS</th>
               <th>GIOCATORE</th>
               <th style="text-align:right">BADGE</th>
+              <th style="text-align:right">ROLL</th>
               <th style="text-align:right">PUNTI</th>
             </tr>
           </thead>
@@ -1119,7 +1148,8 @@
             deviceId: account.deviceId,
             nickname: account.nickname,
             badgesCount: account.unlockedIds.length,
-            totalScore: account.totalScore
+            totalScore: account.totalScore,
+            rollsCount: account.rollCount
           })
         });
         const data = await res.json();
@@ -1156,7 +1186,8 @@
             deviceId: newDeviceId,
             nickname: chosenNick,
             badgesCount: 0,
-            totalScore: 0
+            totalScore: 0,
+            rollsCount: 0
           })
         });
 
@@ -1173,6 +1204,7 @@
           deviceId: data.player.deviceId,
           nickname: data.player.nickname,
           totalScore: data.player.totalScore || 0,
+          bestRollScore: 0,
           rollCount: 0,
           unlockedIds: [],
           history: []
@@ -1234,7 +1266,6 @@
     function finalizeRoll(result) {
       const matched = BADGES.filter(b => b.check(result));
       let rollPoints = 0;
-      let unlockedNewBadge = false;
 
       triggeredBadgesEl.innerHTML = '';
 
@@ -1244,7 +1275,6 @@
         matched.forEach(badge => {
           if (!badge.unlocked) {
             badge.unlocked = true;
-            unlockedNewBadge = true;
             if (!account.unlockedIds.includes(badge.id)) {
               account.unlockedIds.push(badge.id);
             }
@@ -1264,6 +1294,9 @@
 
       account.rollCount += 1;
       account.totalScore += rollPoints;
+      if (rollPoints > (account.bestRollScore || 0)) {
+        account.bestRollScore = rollPoints;
+      }
       account.history.unshift({ num: result, points: rollPoints });
       if (account.history.length > 15) {
         account.history = account.history.slice(0, 15);
@@ -1273,6 +1306,7 @@
 
       totalScoreEl.textContent = account.totalScore.toLocaleString('it-IT');
       lastRollScoreEl.textContent = `+${rollPoints.toLocaleString('it-IT')}`;
+      bestRollScoreEl.textContent = `+${account.bestRollScore.toLocaleString('it-IT')}`;
       rollCountEl.textContent = account.rollCount.toLocaleString('it-IT');
       avgScoreEl.textContent = Math.round(account.totalScore / account.rollCount).toLocaleString('it-IT');
       unlockedCounterEl.textContent = account.unlockedIds.length;
@@ -1280,10 +1314,8 @@
       renderBadgesGrid(matched.map(b => b.id));
       renderHistoryFromState();
 
-      // Sincronizza con Netlify Blobs SOLO quando viene sbloccato un badge nuovo
-      if (unlockedNewBadge) {
-        syncAccountToServer();
-      }
+      // Sincronizza con il server per aggiornare badge, roll e punti in classifica
+      syncAccountToServer();
 
       isRolling = false;
       rollBtn.disabled = false;
