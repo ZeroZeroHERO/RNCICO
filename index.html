@@ -851,7 +851,6 @@
       { id: 'end22', name: 'finisce con compleanno di cico', description: 'Finisce con 22', check: (n) => n % 100 === 22 },
       { id: 'end25', name: 'natale', description: 'Finisce con 25', check: (n) => n % 100 === 25 },
       { id: 'end20', name: 'vuoi fare 20€?', description: 'Finisce con 20', check: (n) => n % 100 === 20 },
-      { id: 'end37', name: 'move 37', description: 'Finisce con 37', check: (n) => n % 100 === 37 },
       { id: 'end88', name: 'st3pny', description: 'Finisce con 88', check: (n) => n % 100 === 88 },
       { id: 'end44', name: 'lewis hamilton', description: 'Finisce con 44', check: (n) => n % 100 === 44 },
       { id: 'near100', name: 'quasi numero tondo', description: 'Finisce con 99 o 01', check: (n) => n % 100 === 99 || n % 100 === 1 },
@@ -885,9 +884,10 @@
       { id: 'repdigit', name: 'Cifre Uguali', description: 'Tutte le cifre identiche (es. 77, 333)', check: (n) => n >= 10 && new Set(String(n)).size === 1 },
       { id: 'mult50', name: 'qualche invito buddybank', description: 'Multiplo di 50', check: (n) => n > 0 && n % 50 === 0 },
       { id: 'mult70', name: 'multiplo di 70', description: 'Multiplo di 70', check: (n) => n > 0 && n % 70 === 0 },
+      { id: 'mult37', name: multiplo di 37', description: 'Multiplo di 37', check: (n) => n > 0 && n % 37 === 0 },
       { id: 'mult100', name: 'qualche invito robinhood', description: 'Multiplo di 100', check: (n) => n > 0 && n % 100 === 0 },
       { id: 'mult104', name: 'ilaria (104)', description: '104 e suoi multipli', check: (n) => n > 0 && n % 104 === 0 },
-      { id: 'pow2', name: 'stai potenziando il 2', description: 'Potenze di 2 (1, 2, 4, 8, 16, 32, 64, 128, 256)', check: (n) => isPowerOfTwo(n) },
+      { id: 'pow2', name: 'il 2 si è potenziato', description: 'Potenze di 2 (1, 2, 4, 8, 16, 32, 64, 128, 256)', check: (n) => isPowerOfTwo(n) },
       { id: 'factorial', name: 'numero (fatto)riale', description: '1!, 2!, 3!, 4! o 5!', check: (n) => isFactorial(n) },
       { id: 'harshad', name: 'Numero di Harshad', description: 'Divisibile per la somma delle sue cifre', check: (n) => isHarshad(n) },
       { id: 'binary', name: 'solo 10 tipi di persone al mondo', description: 'Composto solo da cifre 0 e 1', check: (n) => isBinaryDigits(n) },
@@ -898,10 +898,7 @@
       // Elementi chimici
       { id: 'elem_se', name: 'Selenio (Se)', description: 'Numero atomico 34', check: (n) => n === 34 },
       { id: 'elem_sr', name: 'Stronzio (Sr)', description: 'Numero atomico 38', check: (n) => n === 38 },
-      { id: 'elem_ag', name: 'Argento (Ag)', description: 'Numero atomico 47', check: (n) => n === 47 },
       { id: 'elem_w', name: 'Tungsteno (W)', description: 'Numero atomico 74', check: (n) => n === 74 },
-      { id: 'elem_au', name: 'Oro (Au)', description: 'Numero atomico 79', check: (n) => n === 79 },
-      { id: 'elem_u', name: 'Uranio (U)', description: 'Numero atomico 92', check: (n) => n === 92 },
       { id: 'elem_es', name: 'Einsteinio (Es)', description: 'Numero atomico 99', check: (n) => n === 99 },
       { id: 'elem_rf', name: 'Rutherfordio (Rf)', description: 'Numero atomico 104', check: (n) => n === 104 }
     ];
