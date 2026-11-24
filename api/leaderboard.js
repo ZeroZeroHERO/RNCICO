@@ -1,9 +1,29 @@
-import { Redis } from '@upstash/redis';
+const KV_URL = process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL;
+const KV_TOKEN = process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN;
+const PLAYERS_KEY = 'rncico:players';
 
-const redis = new Redis({
-  url: process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL,
-  token: process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN,
-});
+async function kvGet(key) {
+  const res = await fetch(`${KV_URL}/get/${encodeURIComponent(key)}`, {
+    headers: { Authorization: `Bearer ${KV_TOKEN}` },
+    cache: 'no-store'
+  });
+  if (!res.ok) throw new Error(`KV GET failed: ${res.status}`);
+  const data = await res.json();
+  if (!data.result) return {};
+  return typeof data.result === 'string' ? JSON.parse(data.result) : data.result;
+}
+
+async function kvSet(key, value) {
+  const res = await fetch(`${KV_URL}/set/${encodeURIComponent(key)}`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${KV_TOKEN}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(value)
+  });
+  if (!res.ok) throw new Error(`KV SET failed: ${res.status}`);
+}
 
 function buildTop10(playersMap) {
   return Object.values(playersMap || {})
@@ -25,12 +45,16 @@ function buildTop10(playersMap) {
 export default async function handler(req, res) {
   res.setHeader('Cache-Control', 'no-store');
 
+  if (!KV_URL || !KV_TOKEN) {
+    return res.status(500).json({ error: 'Variabili KV_REST_API_URL / KV_REST_API_TOKEN mancanti.' });
+  }
+
   if (req.method === 'GET') {
     try {
-      const players = (await redis.get(PLAYERS_KEY)) || {};
+      const players = await kvGet(PLAYERS_KEY);
       return res.status(200).json({ leaderboard: buildTop10(players) });
     } catch (err) {
-      return res.status(500).json({ error: 'Errore nel caricamento della classifica.' });
+      return res.status(500).json({ error: err.message });
     }
   }
 
@@ -43,7 +67,7 @@ export default async function handler(req, res) {
         return res.status(400).json({ error: 'Identificativo dispositivo non valido.' });
       }
 
-      const players = (await redis.get(PLAYERS_KEY)) || {};
+      const players = await kvGet(PLAYERS_KEY);
 
       if (action === 'register') {
         const cleanNick = (nickname || '').trim();
@@ -80,7 +104,7 @@ export default async function handler(req, res) {
         };
 
         players[deviceId] = newPlayer;
-        await redis.set(PLAYERS_KEY, players);
+        await kvSet(PLAYERS_KEY, players);
 
         return res.status(200).json({
           player: newPlayer,
@@ -107,7 +131,7 @@ export default async function handler(req, res) {
             totalScore: Math.max(0, Number(totalScore) || 0),
             updatedAt: new Date().toISOString()
           };
-          await redis.set(PLAYERS_KEY, players);
+          await kvSet(PLAYERS_KEY, players);
           return res.status(200).json({ leaderboard: buildTop10(players) });
         }
 
@@ -120,14 +144,14 @@ export default async function handler(req, res) {
         existing.updatedAt = new Date().toISOString();
 
         players[deviceId] = existing;
-        await redis.set(PLAYERS_KEY, players);
+        await kvSet(PLAYERS_KEY, players);
 
         return res.status(200).json({ leaderboard: buildTop10(players) });
       }
 
       return res.status(400).json({ error: 'Azione non supportata.' });
     } catch (err) {
-      return res.status(500).json({ error: 'Errore interno del server.' });
+      return res.status(500).json({ error: err.message });
     }
   }
 
