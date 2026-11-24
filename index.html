@@ -662,7 +662,7 @@
         </div>
       </div>
       <h1>RN<span>CICO</span></h1>
-      <p class="subtitle">Genera un numero da 1 a 500 e scopri i badge nascosti</p>
+      <p class="subtitle">Genera un numero da 0 a 500 e sucamelaradio</p>
     </header>
 
     <div class="stats-bar">
@@ -686,7 +686,7 @@
 
     <main class="rng-stage">
       <div class="number-card" id="number-card">
-        <span class="range-hint">RANGE: 001 — 500</span>
+        <span class="range-hint">RANGE: 000 — 500</span>
         
         <div class="digits-wrapper">
           <div class="digit-box" id="digit-0">-</div>
@@ -730,7 +730,7 @@
   </div>
 
   <script>
-    const MIN_NUM = 1;
+    const MIN_NUM = 0;
     const MAX_NUM = 500;
     const TOTAL_NUMBERS = MAX_NUM - MIN_NUM + 1;
     const DIGIT_LOCK_DELAY = 1500;
@@ -755,89 +755,155 @@
     }
 
     function isPerfectSquare(n) {
-      return Number.isInteger(Math.sqrt(n));
+      return n > 0 && Number.isInteger(Math.sqrt(n));
     }
 
     function isHarshad(n) {
+      if (n <= 0) return false;
       const sumDigits = String(n).split('').reduce((acc, d) => acc + Number(d), 0);
       return n % sumDigits === 0;
     }
 
+    function isPowerOfTwo(n) {
+      return n > 0 && (n & (n - 1)) === 0;
+    }
+
+    function isBinaryDigits(n) {
+      return /^[01]+$/.test(String(n));
+    }
+
+    function isPerfectNumber(n) {
+      return [6, 28, 496].includes(n);
+    }
+
+    function isFibonacci(n) {
+      return [0, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144, 233, 377].includes(n);
+    }
+
+    function isDivisorOf496(n) {
+      return n > 0 && 496 % n === 0;
+    }
+
     const RAW_BADGES = [
-      // Badge matematici base
-      { id: 'even', name: 'Numero Pari', description: 'Divisibile per 2', check: (n) => n % 2 === 0 },
-      { id: 'odd', name: 'Numero Dispari', description: 'Non divisibile per 2', check: (n) => n % 2 !== 0 },
-      { id: 'prime', name: 'Numero Primo', description: 'Divisibile solo per 1 e per se stesso', check: (n) => isPrime(n) },
-      { id: 'harshad', name: 'Numero di Harshad', description: 'Divisibile per la somma delle sue cifre', check: (n) => isHarshad(n) },
-      { id: 'square', name: 'Quadrato Perfetto', description: 'Es. 4, 9, 16, 25 ... 484', check: (n) => isPerfectSquare(n) },
-      { id: 'palindrome', name: 'Palindromo', description: 'Si legge uguale da sinistra e destra', check: (n) => isPalindrome(n) },
-      { id: 'repdigit', name: 'Cifre Uguali', description: 'Tutte le cifre identiche (es. 77, 333)', check: (n) => n >= 10 && new Set(String(n)).size === 1 },
-      { id: 'factorial', name: 'Numero Fattoriale', description: '1!, 2!, 3!, 4! o 5!', check: (n) => isFactorial(n) },
-
-      // Elementi chimici (Numeri atomici)
-      { id: 'elem_c', name: 'Carbonio (C)', description: 'Numero atomico 6', check: (n) => n === 6 },
-      { id: 'elem_cu', name: 'Rame (Cu)', description: 'Numero atomico 29', check: (n) => n === 29 },
-      { id: 'elem_se', name: 'Selenio (Se)', description: 'Numero atomico 34', check: (n) => n === 34 },
-      { id: 'elem_sr', name: 'Stronzio (Sr)', description: 'Numero atomico 38', check: (n) => n === 38 },
-      { id: 'elem_ag', name: 'Argento (Ag)', description: 'Numero atomico 47', check: (n) => n === 47 },
-      { id: 'elem_au', name: 'Oro (Au)', description: 'Numero atomico 79', check: (n) => n === 79 },
-      { id: 'elem_u', name: 'Uranio (U)', description: 'Numero atomico 92', check: (n) => n === 92 },
-      { id: 'elem_es', name: 'Einsteinio (Es)', description: 'Numero atomico 99', check: (n) => n === 99 },
-      { id: 'elem_rf', name: 'Rutherfordio (Rf)', description: 'Numero atomico 104', check: (n) => n === 104 },
-
-      // Badge personalizzati - gruppo 1
-      { id: 'mult70', name: 'Il settanta per x', description: 'Multiplo di 70', check: (n) => n % 70 === 0 },
+      // 1. Numeri Esatti
+      { id: 'n0', name: 'volte in cui stefano ha fatto sesso', description: 'Esattamente 0', check: (n) => n === 0 },
+      { id: 'n1', name: 'sai perchè sei il numero 2?', description: 'Esattamente 1', check: (n) => n === 1 },
+      { id: 'n2', name: 'il dualismo dell uomo', description: 'Esattamente 2', check: (n) => n === 2 },
+      { id: 'n4', name: 'i mondiali vinti da mohamed light', description: 'Esattamente 4', check: (n) => n === 4 },
+      { id: 'n6', name: 'seeeeeei', description: 'Esattamente 6', check: (n) => n === 6 },
+      { id: 'n9', name: 'no-ve', description: 'Esattamente 9', check: (n) => n === 9 },
+      { id: 'n10', name: 'er pupone', description: 'Esattamente 10', check: (n) => n === 10 },
+      { id: 'n11', name: 'tradimenti totali del CEO di NVIDIA', description: 'Esattamente 11', check: (n) => n === 11 },
+      { id: 'n12', name: 'israele (daje)', description: 'Esattamente 12', check: (n) => n === 12 },
+      { id: 'n24', name: 'aronnac al', description: 'Esattamente 24', check: (n) => n === 24 },
+      { id: 'n33', name: 'anni di cristo', description: 'Esattamente 33', check: (n) => n === 33 },
+      { id: 'n52', name: 'civico di ila', description: 'Esattamente 52', check: (n) => n === 52 },
       { id: 'n70', name: 'IL SETTANTA IL SETTANTA', description: 'Esattamente 70', check: (n) => n === 70 },
-
+      { id: 'n82', name: 'civico di cris', description: 'Esattamente 82', check: (n) => n === 82 },
       { id: 'n90', name: 'la paura', description: 'Esattamente 90', check: (n) => n === 90 },
       { id: 'n91', name: 'la paura +1', description: 'Esattamente 91', check: (n) => n === 91 },
       { id: 'n92', name: 'la paura +2', description: 'Esattamente 92', check: (n) => n === 92 },
       { id: 'n93', name: 'la paura +3', description: 'Esattamente 93', check: (n) => n === 93 },
       { id: 'n94', name: 'la paura +4', description: 'Esattamente 94', check: (n) => n === 94 },
       { id: 'n95', name: 'la paura +5', description: 'Esattamente 95', check: (n) => n === 95 },
+      { id: 'n109', name: 'brawler di brawl stars', description: 'Esattamente 109', check: (n) => n === 109 },
+      { id: 'n118', name: 'CENTODICIOTTOOO', description: 'Esattamente 118', check: (n) => n === 118 },
+      { id: 'n119', name: 'ha hittato la seconda torre al contrario', description: 'Esattamente 119', check: (n) => n === 119 },
+      { id: 'n123', name: 'le carte di clash royale', description: 'Esattamente 123', check: (n) => n === 123 },
+      { id: 'n125', name: 'il cubo di 5, chiaro no?', description: 'Esattamente 125', check: (n) => n === 125 },
+      { id: 'n127', name: 'civico di leo', description: 'Esattamente 127', check: (n) => n === 127 },
+      { id: 'n141', name: 'radice di 2', description: 'Esattamente 141 (1.41)', check: (n) => n === 141 },
+      { id: 'n193_cap', name: 'CAP prati', description: 'Esattamente 193', check: (n) => n === 193 },
+      { id: 'n195', name: 'stati nel mondo', description: 'Esattamente 195', check: (n) => n === 195 },
+      { id: 'n206', name: 'le ossa che puoi rompere', description: 'Esattamente 206', check: (n) => n === 206 },
+      { id: 'n216', name: 'il cubo di 6, chiaro no?', description: 'Esattamente 216', check: (n) => n === 216 },
+      { id: 'n271', name: 'numero di eulero', description: 'Esattamente 271 (2.71)', check: (n) => n === 271 },
+      { id: 'n287', name: 'la mail di crisafulli', description: 'Esattamente 287', check: (n) => n === 287 },
+      { id: 'n297', name: 'Numero di Kaprekar', description: '297^2 = 88209, 88 + 209 = 297', check: (n) => n === 297 },
+      { id: 'n312', name: 'valore di un bitcoin il 17 novembre 2015', description: 'Esattamente 312', check: (n) => n === 312 },
+      { id: 'n314', name: 'esattamente pi', description: 'Esattamente 314 (3.14)', check: (n) => n === 314 },
+      { id: 'n343', name: 'il cubo di 7, chiaro no?', description: 'Esattamente 343', check: (n) => n === 343 },
+      { id: 'n350', name: 'lo jager bomb', description: 'Esattamente 350', check: (n) => n === 350 },
+      { id: 'n365', name: 'un anno (martedì)', description: 'Esattamente 365', check: (n) => n === 365 },
+      { id: 'n404', name: "L'ERRORE L'ERRORE", description: 'Esattamente 404', check: (n) => n === 404 },
+      { id: 'n412', name: 'Laurea ad honorem de mi pac', description: 'Esattamente 412', check: (n) => n === 412 },
+      { id: 'n420', name: 'è la cannora', description: 'Esattamente 420', check: (n) => n === 420 },
+      { id: 'n441', name: 'radice di 194481', description: 'Esattamente 441', check: (n) => n === 441 },
+      { id: 'n500', name: 'aura', description: 'Esattamente 500', check: (n) => n === 500 },
+      { id: 'siri_timer', name: 'ei siri metti un timer di 5 minuti', description: 'Esattamente 5 o 300', check: (n) => n === 5 || n === 300 },
 
-      { id: 'end89', name: 'cicciogamero', description: 'Finisce con 89', check: (n) => n % 100 === 89 },
-      { id: 'end69', name: 'nice', description: 'Finisce con 69', check: (n) => n % 100 === 69 },
-      { id: 'end67', name: 'sieg e poi heil', description: 'Finisce con 67', check: (n) => n % 100 === 67 },
-      { id: 'end23', name: 'bucio de culo', description: 'Finisce con 23', check: (n) => n % 100 === 23 },
+      // 2. Numeri di Telefono e Inversi
+      { id: 'tel_cico', name: 'numero di telefono di cico', description: 'Esattamente 391', check: (n) => n === 391 },
+      { id: 'tel_cico_rev', name: 'numero di telefono di cico al contrario', description: 'Esattamente 193', check: (n) => n === 193 },
+      { id: 'tel_carlo', name: 'numero di telefono di carlo', description: 'Esattamente 380', check: (n) => n === 380 },
+      { id: 'tel_carlo_rev', name: 'numero di telefono di carlo al contrario', description: 'Esattamente 83 (083)', check: (n) => n === 83 },
+      { id: 'tel_cris_emma', name: 'numero di telefono di cris ed emma', description: 'Esattamente 327', check: (n) => n === 327 },
+      { id: 'tel_ila', name: 'numero di telefono di ila', description: 'Esattamente 324', check: (n) => n === 324 },
+      { id: 'tel_ila_rev', name: 'numero di telefono di ila al contrario', description: 'Esattamente 423', check: (n) => n === 423 },
+
+      // 3. Cifre Contenute o Finali
+      { id: 'cont89', name: 'cicciogamero', description: 'Contiene 89', check: (n) => String(n).includes('89') },
+      { id: 'cont69', name: 'nice', description: 'Contiene 69', check: (n) => String(n).includes('69') },
+      { id: 'cont67', name: 'sieg e poi heil', description: 'Contiene 67', check: (n) => String(n).includes('67') },
+      { id: 'cont23', name: 'bucio de culo', description: 'Contiene 23', check: (n) => String(n).includes('23') },
+      { id: 'cont77', name: 'le tette', description: 'Contiene 77', check: (n) => String(n).includes('77') },
       { id: 'end26', name: 'compleanno di cris', description: 'Finisce con 26', check: (n) => n % 100 === 26 },
-      { id: 'end77', name: 'le tette', description: 'Finisce con 77', check: (n) => n % 100 === 77 },
-      { id: 'end22', name: 'compleanno di cico', description: 'Finisce con 22', check: (n) => n % 100 === 22 },
+      { id: 'end22', name: 'finisce con compleanno di cico', description: 'Finisce con 22', check: (n) => n % 100 === 22 },
       { id: 'end25', name: 'natale', description: 'Finisce con 25', check: (n) => n % 100 === 25 },
       { id: 'end20', name: 'vuoi fare 20€?', description: 'Finisce con 20', check: (n) => n % 100 === 20 },
       { id: 'end37', name: 'move 37', description: 'Finisce con 37', check: (n) => n % 100 === 37 },
-
-      { id: 'n1', name: 'er numero 1', description: 'Esattamente 1', check: (n) => n === 1 },
-      { id: 'n6', name: 'seeeeeei', description: 'Esattamente 6', check: (n) => n === 6 },
-      { id: 'n9', name: 'no-ve', description: 'Esattamente 9', check: (n) => n === 9 },
-      { id: 'n10', name: 'er pupone', description: 'Esattamente 10', check: (n) => n === 10 },
-      { id: 'n33', name: 'anni di cristo', description: 'Esattamente 33', check: (n) => n === 33 },
-      { id: 'n50', name: 'buddybank', description: 'Esattamente 50', check: (n) => n === 50 },
-      { id: 'n100', name: 'robinhood', description: 'Esattamente 100', check: (n) => n === 100 },
-      { id: 'n118', name: 'CENTODICIOTTOOO', description: 'Esattamente 118', check: (n) => n === 118 },
-      { id: 'n141', name: 'radice di 2', description: 'Esattamente 141 (1.41)', check: (n) => n === 141 },
-      { id: 'n271', name: 'numero di eulero', description: 'Esattamente 271 (2.71)', check: (n) => n === 271 },
-      { id: 'n314', name: 'esattamente pi', description: 'Esattamente 314 (3.14)', check: (n) => n === 314 },
-      { id: 'n343', name: 'il cubo di 7 chiaro no?', description: 'Esattamente 343', check: (n) => n === 343 },
-      { id: 'n350', name: 'lo jager bomb', description: 'Esattamente 350', check: (n) => n === 350 },
-      { id: 'n412', name: 'laurea del padre di crisafulli', description: 'Esattamente 412', check: (n) => n === 412 },
-      { id: 'n420', name: 'è la cannora', description: 'Esattamente 420', check: (n) => n === 420 },
-      { id: 'siri_timer', name: 'ei siri metti un timer di 5 minuti', description: 'Esattamente 5 o 300', check: (n) => n === 5 || n === 300 },
-
-      // Intervalli e multipli
-      { id: 'mult100', name: 'numero tondo', description: 'Multiplo di 100', check: (n) => n % 100 === 0 },
+      { id: 'end88', name: 'st3pny', description: 'Finisce con 88', check: (n) => n % 100 === 88 },
+      { id: 'end44', name: 'lewis hamilton', description: 'Finisce con 44', check: (n) => n % 100 === 44 },
       { id: 'near100', name: 'quasi numero tondo', description: 'Finisce con 99 o 01', check: (n) => n % 100 === 99 || n % 100 === 1 },
-      { id: 'under10', name: '1-10', description: 'Numeri sotto al 10 (1-9)', check: (n) => n < 10 },
-      { id: 'over490', name: 'spendaccione', description: 'Numeri sopra al 490 (491-500)', check: (n) => n > 490 },
+      { id: 'end2', name: 'mucca e bue', description: 'Finisce con 2', check: (n) => n % 10 === 2 },
+      { id: 'end4', name: 'cane e gatto', description: 'Finisce con 4', check: (n) => n % 10 === 4 },
+      { id: 'end6', name: 'sei gay', description: 'Finisce con 6', check: (n) => n % 10 === 6 },
+      { id: 'end8', name: 'tigrotto', description: 'Finisce con 8', check: (n) => n % 10 === 8 },
+
+      // 4. Intervalli di Numeri
+      { id: 'under10', name: 'UNO DIECII, UNO, UNO DIECIII', description: 'Numeri tra 1 e 9', check: (n) => n >= 1 && n <= 9 },
+      { id: 'over490', name: 'comunque meno del debito di cico', description: 'Numeri sopra al 490 (491-500)', check: (n) => n > 490 },
       { id: 'carlo_sides', name: 'i lati di carlo', description: 'Numero compreso tra 30 e 40', check: (n) => n >= 30 && n <= 40 },
-      { id: 'cico_mom', name: 'il peso della mamma di cico', description: 'Numero compreso tra 105 e 125', check: (n) => n >= 105 && n <= 125 },
+      { id: 'cico_mom', name: 'il peso della mamma di cico', description: 'Numero compreso tra 105 e 124', check: (n) => n >= 105 && n <= 124 },
       { id: 'leo_aviator', name: 'soldi vinti da leo su aviator', description: 'Numero compreso tra 320 e 340', check: (n) => n >= 320 && n <= 340 },
       { id: 'emma_debt', name: 'il debito di emma', description: 'Numero compreso tra 370 e 390', check: (n) => n >= 370 && n <= 390 },
+      { id: 'cannora_early', name: 'cannora a breve', description: 'Da 415 a 419', check: (n) => n >= 415 && n <= 419 },
+      { id: 'cannora_late', name: 'cannora in ritardo', description: 'Da 421 a 424', check: (n) => n >= 421 && n <= 424 },
+      { id: 'cris_banks', name: 'le banche truffate da crisafulli', description: 'Da 201 a 210', check: (n) => n >= 201 && n <= 210 },
+      { id: 'vale_cannore', name: 'le cannore fatte da valentina nel 2026', description: 'Da 430 a 439', check: (n) => n >= 430 && n <= 439 },
+      { id: 'emma_paranormal', name: 'eventi paranormali successi ad emma', description: 'Da 280 a 289', check: (n) => n >= 280 && n <= 289 },
+      { id: 'ila_contra', name: 'volte in cui ilaria si è contraddetta oggi', description: 'Da 130 a 139', check: (n) => n >= 130 && n <= 139 },
+      { id: 'cris_farts', name: 'scoregge fatte da crisafulli oggi', description: 'Da 160 a 169', check: (n) => n >= 160 && n <= 169 },
+      { id: 'kidjajo_today', name: 'volte in cui kidjajo ha detto "gay" o "godo" oggi', description: 'Tra 450 e 459', check: (n) => n >= 450 && n <= 459 },
 
-      // Numeri di telefono e inversi
-      { id: 'tel_cico', name: 'numero di telefono di cico', description: 'Esattamente 391', check: (n) => n === 391 },
-      { id: 'tel_cico_rev', name: 'numero di telefono di cico al contrario', description: 'Esattamente 193', check: (n) => n === 193 },
-      { id: 'exact_500', name: 'Jackpot 500', description: 'Esattamente il numero 500', check: (n) => n === 500 }
+      // 5. Matematica, Multipli e Chimica
+      { id: 'odd', name: 'Numero Dispari', description: 'Non divisibile per 2', check: (n) => n % 2 !== 0 },
+      { id: 'even', name: 'Numero Pari', description: 'Divisibile per 2', check: (n) => n % 2 === 0 },
+      { id: 'prime', name: 'Numero Primo', description: 'Divisibile solo per 1 e per se stesso', check: (n) => isPrime(n) },
+      { id: 'square', name: 'Quadrato Perfetto', description: 'Es. 4, 9, 16, 25 ... 484', check: (n) => isPerfectSquare(n) },
+      { id: 'palindrome', name: 'Palindromo', description: 'Si legge uguale da sinistra e destra', check: (n) => isPalindrome(n) },
+      { id: 'repdigit', name: 'Cifre Uguali', description: 'Tutte le cifre identiche (es. 77, 333)', check: (n) => n >= 10 && new Set(String(n)).size === 1 },
+      { id: 'mult50', name: 'qualche invito buddybank', description: 'Multiplo di 50', check: (n) => n > 0 && n % 50 === 0 },
+      { id: 'mult70', name: 'multiplo di 70', description: 'Multiplo di 70', check: (n) => n > 0 && n % 70 === 0 },
+      { id: 'mult100', name: 'qualche invito robinhood', description: 'Multiplo di 100', check: (n) => n > 0 && n % 100 === 0 },
+      { id: 'mult104', name: 'ilaria (104)', description: '104 e suoi multipli', check: (n) => n > 0 && n % 104 === 0 },
+      { id: 'pow2', name: 'stai potenziando il 2', description: 'Potenze di 2 (1, 2, 4, 8, 16, 32, 64, 128, 256)', check: (n) => isPowerOfTwo(n) },
+      { id: 'factorial', name: 'numero (fatto)riale', description: '1!, 2!, 3!, 4! o 5!', check: (n) => isFactorial(n) },
+      { id: 'harshad', name: 'Numero di Harshad', description: 'Divisibile per la somma delle sue cifre', check: (n) => isHarshad(n) },
+      { id: 'binary', name: 'solo 10 tipi di persone al mondo', description: 'Composto solo da cifre 0 e 1', check: (n) => isBinaryDigits(n) },
+      { id: 'perfect', name: 'Numeri Perfetti', description: '6, 28, 496', check: (n) => isPerfectNumber(n) },
+      { id: 'fibonacci', name: 'Numeri di Fibonacci', description: 'Appartiene alla sequenza di Fibonacci', check: (n) => isFibonacci(n) },
+      { id: 'div496', name: 'divisori di 496', description: 'Tutti i divisori di 496', check: (n) => isDivisorOf496(n) },
+
+      // Elementi chimici
+      { id: 'elem_se', name: 'Selenio (Se)', description: 'Numero atomico 34', check: (n) => n === 34 },
+      { id: 'elem_sr', name: 'Stronzio (Sr)', description: 'Numero atomico 38', check: (n) => n === 38 },
+      { id: 'elem_ag', name: 'Argento (Ag)', description: 'Numero atomico 47', check: (n) => n === 47 },
+      { id: 'elem_w', name: 'Tungsteno (W)', description: 'Numero atomico 74', check: (n) => n === 74 },
+      { id: 'elem_au', name: 'Oro (Au)', description: 'Numero atomico 79', check: (n) => n === 79 },
+      { id: 'elem_u', name: 'Uranio (U)', description: 'Numero atomico 92', check: (n) => n === 92 },
+      { id: 'elem_es', name: 'Einsteinio (Es)', description: 'Numero atomico 99', check: (n) => n === 99 },
+      { id: 'elem_rf', name: 'Rutherfordio (Rf)', description: 'Numero atomico 104', check: (n) => n === 104 }
     ];
 
     const BADGES = RAW_BADGES.map(badge => {
