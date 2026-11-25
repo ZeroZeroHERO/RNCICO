@@ -114,6 +114,41 @@ export default async function handler(req, res) {
         });
       }
 
+      if (action === 'rename') {
+        const cleanNick = (nickname || '').trim();
+
+        if (cleanNick.length < 2 || cleanNick.length > 20) {
+          return res.status(400).json({ error: 'Il nickname deve avere tra 2 e 20 caratteri.' });
+        }
+
+        if (!/^[a-zA-Z0-9_.-]+$/.test(cleanNick)) {
+          return res.status(400).json({ error: 'Usa solo lettere, numeri, punti, trattini o underscore.' });
+        }
+
+        const existing = players[deviceId];
+        if (!existing) {
+          return res.status(404).json({ error: 'Profilo non trovato sul server.' });
+        }
+
+        const nickTaken = Object.entries(players).some(
+          ([id, p]) => id !== deviceId && p.nickname.toLowerCase() === cleanNick.toLowerCase()
+        );
+
+        if (nickTaken) {
+          return res.status(409).json({ error: 'Questo nickname è già stato preso da un altro giocatore.' });
+        }
+
+        existing.nickname = cleanNick;
+        existing.updatedAt = new Date().toISOString();
+        players[deviceId] = existing;
+        await kvSet(PLAYERS_KEY, players);
+
+        return res.status(200).json({
+          player: existing,
+          leaderboard: buildTop10(players)
+        });
+      }
+
       if (action === 'sync') {
         const existing = players[deviceId];
 
