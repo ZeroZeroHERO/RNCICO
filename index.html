@@ -98,6 +98,88 @@
       line-height: 1.4;
     }
 
+    .settings-group {
+      text-align: left;
+      margin-bottom: 1.15rem;
+    }
+
+    .settings-label {
+      display: block;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      letter-spacing: 0.06em;
+      margin-bottom: 0.45rem;
+    }
+
+    .sound-toggle-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: #0b0d12;
+      border: 1px solid var(--card-border);
+      border-radius: 10px;
+      padding: 0.8rem 1rem;
+      margin-bottom: 1.15rem;
+      text-align: left;
+    }
+
+    .sound-toggle-info strong {
+      display: block;
+      font-size: 0.9rem;
+      color: #ffffff;
+    }
+
+    .sound-toggle-info span {
+      font-size: 0.76rem;
+      color: var(--text-muted);
+    }
+
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 48px;
+      height: 26px;
+      flex-shrink: 0;
+    }
+
+    .switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      inset: 0;
+      background-color: #232936;
+      transition: 0.25s;
+      border-radius: 999px;
+    }
+
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 20px;
+      width: 20px;
+      left: 3px;
+      bottom: 3px;
+      background-color: #cbd5e1;
+      transition: 0.25s;
+      border-radius: 50%;
+    }
+
+    .switch input:checked + .slider {
+      background-color: var(--emerald);
+    }
+
+    .switch input:checked + .slider:before {
+      transform: translateX(22px);
+      background-color: #ffffff;
+    }
+
     .nickname-input {
       width: 100%;
       background: #0b0d12;
@@ -110,7 +192,7 @@
       font-weight: 700;
       text-align: center;
       outline: none;
-      margin-bottom: 0.75rem;
+      margin-bottom: 0.5rem;
       transition: border-color 0.2s ease;
     }
 
@@ -338,7 +420,7 @@
       display: flex;
       justify-content: center;
       gap: 0.75rem;
-      margin: 1rem 0 1.3rem;
+      margin: 1rem 0 1.4rem;
     }
 
     .digit-box {
@@ -378,8 +460,9 @@
       display: flex;
       flex-wrap: wrap;
       justify-content: center;
-      gap: 0.5rem;
-      min-height: 34px;
+      gap: 0.65rem;
+      min-height: 36px;
+      padding-top: 0.25rem;
     }
 
     .placeholder-text {
@@ -389,13 +472,54 @@
 
     /* Pillole badge sbloccate al tiro (5 fasce di colore) */
     .pill-badge {
+      position: relative;
       font-family: 'JetBrains Mono', monospace;
       font-size: 0.82rem;
       font-weight: 700;
-      padding: 0.35rem 0.75rem;
+      padding: 0.38rem 0.8rem;
       border-radius: 999px;
       border: 1px solid transparent;
       animation: popIn 0.28s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+    }
+
+    /* Animazione speciale + etichetta NEW per badge appena sbloccato per la prima volta */
+    .pill-badge.is-new {
+      animation: newUnlockBurst 0.55s cubic-bezier(0.18, 0.89, 0.32, 1.28), newGlowPulse 1.8s ease-in-out infinite;
+    }
+
+    .new-tag {
+      position: absolute;
+      top: -9px;
+      right: -6px;
+      background: linear-gradient(135deg, #facc15, #f97316);
+      color: #0b0d12;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.58rem;
+      font-weight: 800;
+      padding: 0.1rem 0.38rem;
+      border-radius: 5px;
+      letter-spacing: 0.06em;
+      box-shadow: 0 2px 8px rgba(249, 115, 22, 0.55);
+      border: 1px solid #fef08a;
+      pointer-events: none;
+      animation: tagBounce 0.45s ease-out;
+    }
+
+    @keyframes newUnlockBurst {
+      0% { transform: scale(0.4) rotate(-4deg); opacity: 0; filter: brightness(2); }
+      60% { transform: scale(1.16) rotate(2deg); opacity: 1; filter: brightness(1.45); }
+      100% { transform: scale(1) rotate(0deg); opacity: 1; filter: brightness(1); }
+    }
+
+    @keyframes newGlowPulse {
+      0%, 100% { box-shadow: 0 0 10px rgba(250, 204, 21, 0.35); }
+      50% { box-shadow: 0 0 22px rgba(250, 204, 21, 0.8); }
+    }
+
+    @keyframes tagBounce {
+      0% { transform: scale(0) translateY(6px); }
+      70% { transform: scale(1.2) translateY(-2px); }
+      100% { transform: scale(1) translateY(0); }
     }
 
     /* < 1000: Verde */
@@ -632,6 +756,7 @@
     }
 
     .badge-card {
+      position: relative;
       background: var(--card-bg);
       border: 1px solid var(--card-border);
       border-radius: 10px;
@@ -696,6 +821,26 @@
       box-shadow: 0 4px 16px rgba(255, 255, 255, 0.14);
     }
 
+    .badge-card.is-new-card {
+      box-shadow: 0 0 18px rgba(250, 204, 21, 0.32);
+    }
+
+    .card-new-tag {
+      position: absolute;
+      top: -8px;
+      right: 10px;
+      background: linear-gradient(135deg, #facc15, #f97316);
+      color: #0b0d12;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.6rem;
+      font-weight: 800;
+      padding: 0.12rem 0.42rem;
+      border-radius: 5px;
+      letter-spacing: 0.06em;
+      box-shadow: 0 2px 8px rgba(249, 115, 22, 0.5);
+      border: 1px solid #fef08a;
+    }
+
     .badge-top {
       display: flex;
       justify-content: space-between;
@@ -730,23 +875,52 @@
       color: #64748b;
     }
 
+    /* Tiri con più aura */
     .history-list {
       display: flex;
       flex-wrap: wrap;
-      gap: 0.5rem;
+      gap: 0.55rem;
       margin-top: 0.8rem;
     }
 
     .history-item {
       font-family: 'JetBrains Mono', monospace;
-      font-size: 0.85rem;
+      font-size: 0.84rem;
       background: var(--card-bg);
       border: 1px solid var(--card-border);
-      padding: 0.4rem 0.7rem;
+      padding: 0.45rem 0.75rem;
       border-radius: 8px;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
     }
 
-    .history-item.has-points {
+    .history-item .aura-rank {
+      font-size: 0.72rem;
+      font-weight: 800;
+      color: var(--text-muted);
+    }
+
+    .history-item.top-1 {
+      border-color: #eab308;
+      background: rgba(234, 179, 8, 0.12);
+      color: #fef08a;
+    }
+    .history-item.top-1 .aura-rank { color: #facc15; }
+
+    .history-item.top-2 {
+      border-color: #94a3b8;
+      background: rgba(148, 163, 184, 0.1);
+      color: #e2e8f0;
+    }
+
+    .history-item.top-3 {
+      border-color: #d97706;
+      background: rgba(217, 119, 6, 0.1);
+      color: #fed7aa;
+    }
+
+    .history-item.has-points:not(.top-1):not(.top-2):not(.top-3) {
       border-color: var(--emerald);
       color: #6ee7b7;
     }
@@ -782,18 +956,33 @@
   <div class="modal-overlay hidden" id="settings-modal">
     <div class="modal-card">
       <h2>IMPOSTAZIONI</h2>
-      <p class="modal-desc"> Dai su, metti un nome simpatico vediamo che ti inventi. I tuoi badge, punti e tiri si azzereranno (o forse no, chissà).</p>
+      <p class="modal-desc">Personalizza le opzioni del gioco o cambia il tuo username pubblico.</p>
+      
+      <div class="sound-toggle-row">
+        <div class="sound-toggle-info">
+          <strong>Effetti Sonori</strong>
+          <span>Suoni di estrazione, sblocco e rarità</span>
+        </div>
+        <label class="switch">
+          <input type="checkbox" id="sound-toggle" checked />
+          <span class="slider"></span>
+        </label>
+      </div>
+
       <form id="settings-form">
-        <input
-          type="text"
-          id="new-nickname-input"
-          class="nickname-input"
-          placeholder="Nuovo username"
-          minlength="2"
-          maxlength="20"
-          autocomplete="off"
-          required
-        />
+        <div class="settings-group">
+          <label class="settings-label" for="new-nickname-input">USERNAME PUBBLICO</label>
+          <input
+            type="text"
+            id="new-nickname-input"
+            class="nickname-input"
+            placeholder="Nuovo username"
+            minlength="2"
+            maxlength="20"
+            autocomplete="off"
+            required
+          />
+        </div>
         <div class="modal-error" id="settings-error"></div>
         <div class="modal-actions">
           <button type="button" class="modal-cancel" id="close-settings-btn">ANNULLA</button>
@@ -881,7 +1070,7 @@
     </section>
 
     <section class="history-section">
-      <h2>ULTIMI TIRI</h2>
+      <h2>TIRI CON PIÙ AURA</h2>
       <div class="history-list" id="history-list"></div>
     </section>
   </div>
@@ -891,9 +1080,109 @@
     const MAX_NUM = 500;
     const TOTAL_NUMBERS = MAX_NUM - MIN_NUM + 1;
     const DIGIT_LOCK_DELAY = 1500;
-    const BADGE_REVEAL_DELAY = 500; // 0,5 secondi tra un badge e l'altro
+    const BADGE_REVEAL_DELAY = 500;
     const STORAGE_KEY = 'rncico_device_account_v1';
+    const SOUND_PREF_KEY = 'rncico_sound_enabled_v1';
     const API_ENDPOINT = '/api/leaderboard';
+
+    // ==========================================
+    // MOTORE EFFETTI SONORI (Web Audio API)
+    // ==========================================
+    let soundEnabled = localStorage.getItem(SOUND_PREF_KEY) !== 'false';
+    let audioCtx = null;
+
+    function getAudioCtx() {
+      if (!audioCtx) {
+        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+        if (AudioContextClass) {
+          audioCtx = new AudioContextClass();
+        }
+      }
+      if (audioCtx && audioCtx.state === 'suspended') {
+        audioCtx.resume().catch(() => {});
+      }
+      return audioCtx;
+    }
+
+    function playTone(freq, duration, type = 'sine', volume = 0.08, delay = 0, endFreq = null) {
+      if (!soundEnabled) return;
+      const ctx = getAudioCtx();
+      if (!ctx) return;
+
+      const now = ctx.currentTime + delay;
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+
+      osc.type = type;
+      osc.frequency.setValueAtTime(freq, now);
+      if (endFreq) {
+        osc.frequency.exponentialRampToValueAtTime(endFreq, now + duration);
+      }
+
+      gain.gain.setValueAtTime(0.0001, now);
+      gain.gain.linearRampToValueAtTime(volume, now + 0.015);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
+
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+
+      osc.start(now);
+      osc.stop(now + duration + 0.02);
+    }
+
+    const SFX = {
+      click() {
+        playTone(620, 0.06, 'triangle', 0.07, 0, 420);
+      },
+      rollStart() {
+        playTone(260, 0.14, 'sawtooth', 0.06, 0, 520);
+      },
+      tick() {
+        playTone(880 + Math.random() * 240, 0.025, 'square', 0.018);
+      },
+      digitLock(index) {
+        const baseNotes = [392.0, 493.88, 587.33]; // Sol4, Si4, Re5
+        const f = baseNotes[index] || 587.33;
+        playTone(f, 0.16, 'triangle', 0.11);
+        playTone(f * 2, 0.1, 'sine', 0.04, 0.02);
+      },
+      noBadge() {
+        playTone(240, 0.18, 'sine', 0.06, 0, 185);
+      },
+      badgeReveal(points, isNew) {
+        if (points < 1000) {
+          // Verde: pop leggero
+          playTone(523.25, 0.14, 'sine', 0.09);
+        } else if (points < 5000) {
+          // Blu: bicordo brillante
+          playTone(587.33, 0.14, 'triangle', 0.09);
+          playTone(739.99, 0.18, 'triangle', 0.09, 0.06);
+        } else if (points < 10000) {
+          // Viola: arpeggio rapido
+          playTone(659.25, 0.14, 'triangle', 0.1);
+          playTone(830.61, 0.16, 'triangle', 0.1, 0.05);
+          playTone(987.77, 0.22, 'sine', 0.1, 0.1);
+        } else if (points < 50000) {
+          // Rosso: accordo epico
+          playTone(440, 0.28, 'sawtooth', 0.06);
+          playTone(659.25, 0.28, 'triangle', 0.1, 0.04);
+          playTone(880, 0.32, 'triangle', 0.11, 0.08);
+        } else {
+          // Giallo >= 50.000: fanfara jackpot
+          const notes = [523.25, 659.25, 783.99, 1046.5];
+          notes.forEach((n, i) => {
+            playTone(n, 0.35, 'triangle', 0.11, i * 0.06);
+            playTone(n * 1.5, 0.3, 'sine', 0.05, i * 0.06);
+          });
+        }
+
+        // Scintillio extra se è un badge sbloccato per la prima volta (NEW)
+        if (isNew) {
+          playTone(1174.66, 0.18, 'sine', 0.09, 0.12);
+          playTone(1567.98, 0.28, 'sine', 0.1, 0.19);
+        }
+      }
+    };
 
     function getBadgeTierClass(points) {
       if (points < 1000) return 'tier-green';
@@ -969,12 +1258,10 @@
       { id: 'n10', name: 'er pupone', description: 'Esattamente 10', check: (n) => n === 10 },
       { id: 'n11', name: 'tradimenti totali del CEO di NVIDIA', description: 'Esattamente 11', check: (n) => n === 11 },
       { id: 'n12', name: 'israele (daje)', description: 'Esattamente 12', check: (n) => n === 12 },
-      { id: 'n18', name: 'Membri del K2', description: 'Esattamente 18', check: (n) => n === 18 },
       { id: 'n24', name: 'aronnac al', description: 'Esattamente 24', check: (n) => n === 24 },
       { id: 'n31', name: 'NEEWOLLAH', description: 'Esattamente 31', check: (n) => n === 31 },
       { id: 'n33', name: 'Cena da chopstick', description: 'Esattamente 33', check: (n) => n === 33 },
       { id: 'n48', name: 'gli anni di Ilkka Paananen', description: 'Esattamente 48', check: (n) => n === 48 },
-      { id: 'n51', name: 'Lello', description: 'Esattamente 51 (prefisso del perù)', check: (n) => n === 51 },
       { id: 'n52', name: 'civico di ila', description: 'Esattamente 52', check: (n) => n === 52 },
       { id: 'n70', name: 'IL SETTANTA IL SETTANTA', description: 'Esattamente 70', check: (n) => n === 70 },
       { id: 'n82', name: 'civico di cris', description: 'Esattamente 82', check: (n) => n === 82 },
@@ -997,7 +1284,6 @@
       { id: 'n206', name: 'le ossa che puoi rompere a cico', description: 'Esattamente 206', check: (n) => n === 206 },
       { id: 'n216', name: 'il cubo di 6, chiaro no?', description: 'Esattamente 216', check: (n) => n === 216 },
       { id: 'n271', name: 'numero di eulero', description: 'Esattamente 271 (2.71)', check: (n) => n === 271 },
-      { id: 'n286', name: 'Kidjajo', description: 'il giorno del pride (28/06)', check: (n) => n === 286 },
       { id: 'n287', name: 'la mail di Crisafulli', description: 'Esattamente 287', check: (n) => n === 287 },
       { id: 'n297', name: 'Numero di Kaprekar', description: '297^2 = 88209, 88 + 209 = 297', check: (n) => n === 297 },
       { id: 'n312', name: 'valore di un bitcoin il 17 novembre 2015', description: 'Esattamente 312', check: (n) => n === 312 },
@@ -1007,12 +1293,13 @@
       { id: 'n365', name: 'un anno (martedì)', description: 'Esattamente 365', check: (n) => n === 365 },
       { id: 'n373', name: 'Il 187° numero dispari', description: "Il 187° numero dispari, non c'è altro", check: (n) => n === 373 },
       { id: 'n404', name: "L'ERRORE L'ERRORE", description: 'Esattamente 404', check: (n) => n === 404 },
-      { id: 'n412', name: 'Laurea ad honorem de mi pac', description: 'Esattamente 412 (04/12/1948)', check: (n) => n === 412 },
+      { id: 'n412', name: 'Laurea ad honorem de mi pac', description: 'Esattamente 412', check: (n) => n === 412 },
       { id: 'n420', name: 'è la cannora', description: 'Esattamente 420', check: (n) => n === 420 },
       { id: 'n441', name: 'la radice di 194481', description: 'Esattamente 441', check: (n) => n === 441 },
       { id: 'n500', name: 'AURA', description: 'Esattamente 500', check: (n) => n === 500 },
-      { id: 'siri_timer', name: 'ei siri metti un timer di 5 minuti', description: 'Esattamente 5 (minuti) o 300 (secondi)', check: (n) => n === 5 || n === 300 },
-      { id: 'coc_troops', name: 'truppe negli attacchi di clash of clans', description: 'Esattamente 352 o 407 (castello del clan)', check: (n) => n === 352 || n === 407 },
+      { id: 'siri_timer', name: 'ei siri metti un timer di 5 minuti', description: 'Esattamente 5 o 300', check: (n) => n === 5 || n === 300 },
+      { id: 'coc_troops', name: 'truppe negli attacchi di clash of clans', description: 'Esattamente 352 o 407', check: (n) => n === 352 || n === 407 },
+      { id: 'meta_expected', name: 'tiri che devi fare in media per ottenere questo badge', description: 'Esattamente 250 o 251 (501 / 2)', check: (n) => n === 250 || n === 251 },
 
       // 2. Numeri di Telefono e Inversi
       { id: 'tel_cico', name: 'numero di telefono di cico', description: 'Esattamente 391', check: (n) => n === 391 },
@@ -1030,7 +1317,7 @@
       { id: 'cont23', name: 'bucio de culo', description: 'Contiene 23', check: (n) => String(n).includes('23') },
       { id: 'cont77', name: 'le tette', description: 'Contiene 77', check: (n) => String(n).includes('77') },
       { id: 'end26', name: 'compleanno di cris', description: 'Finisce con 26', check: (n) => n % 100 === 26 },
-      { id: 'end22', name: 'compleanno di cico', description: 'Finisce con 22', check: (n) => n % 100 === 22 },
+      { id: 'end22', name: 'finisce con compleanno di cico', description: 'Finisce con 22', check: (n) => n % 100 === 22 },
       { id: 'end88', name: 'st3pny', description: 'Finisce con 88', check: (n) => n % 100 === 88 },
       { id: 'near100', name: 'quasi numero tondo', description: 'Finisce con 99 o 01', check: (n) => n % 100 === 99 || n % 100 === 1 },
       { id: 'end2', name: 'mucca e bue', description: 'Finisce con 2', check: (n) => n % 10 === 2 },
@@ -1120,6 +1407,7 @@
     const newNicknameInput = document.getElementById('new-nickname-input');
     const settingsError = document.getElementById('settings-error');
     const saveNicknameBtn = document.getElementById('save-nickname-btn');
+    const soundToggleInput = document.getElementById('sound-toggle');
 
     const digitEls = [
       document.getElementById('digit-0'),
@@ -1148,22 +1436,33 @@
       return 'dev-' + Date.now() + '-' + Math.random().toString(36).substring(2, 11);
     }
 
+    function normalizeTopAuraRolls(rawList) {
+      if (!Array.isArray(rawList)) return [];
+      return rawList
+        .map(item => ({
+          num: Number(item.num) || 0,
+          points: Number(item.points) || 0
+        }))
+        .sort((a, b) => b.points - a.points)
+        .slice(0, 15);
+    }
+
     function loadLocalAccount() {
       try {
         const raw = localStorage.getItem(STORAGE_KEY);
         if (!raw) return null;
         const parsed = JSON.parse(raw);
         if (parsed && parsed.deviceId && parsed.nickname) {
-          const historyArr = Array.isArray(parsed.history) ? parsed.history : [];
-          const maxFromHistory = historyArr.reduce((max, item) => Math.max(max, Number(item.points) || 0), 0);
+          const topRolls = normalizeTopAuraRolls(parsed.topRolls || parsed.history || []);
+          const maxFromRolls = topRolls.reduce((max, item) => Math.max(max, item.points), 0);
           return {
             deviceId: parsed.deviceId,
             nickname: parsed.nickname,
             totalScore: Number(parsed.totalScore) || 0,
-            bestRollScore: Math.max(Number(parsed.bestRollScore) || 0, maxFromHistory),
+            bestRollScore: Math.max(Number(parsed.bestRollScore) || 0, maxFromRolls),
             rollCount: Number(parsed.rollCount) || 0,
             unlockedIds: Array.isArray(parsed.unlockedIds) ? parsed.unlockedIds : [],
-            history: historyArr
+            topRolls
           };
         }
       } catch (e) {
@@ -1200,23 +1499,27 @@
       unlockedCounterEl.textContent = account.unlockedIds.length;
 
       renderBadgesGrid();
-      renderHistoryFromState();
+      renderTopAuraRolls();
     }
 
-    function renderBadgesGrid(activeIds = []) {
+    function renderBadgesGrid(activeIds = [], newlyUnlockedIds = []) {
       badgesGridEl.innerHTML = '';
+      const newSet = new Set(newlyUnlockedIds);
 
       BADGES.forEach(badge => {
         const card = document.createElement('div');
         const isActive = activeIds.includes(badge.id);
+        const isJustUnlocked = newSet.has(badge.id);
         const tierClass = getBadgeTierClass(badge.points);
         const stateClass = badge.unlocked ? `unlocked ${tierClass}` : 'locked-mystery';
-        card.className = `badge-card ${stateClass} ${isActive ? 'active-now' : ''}`;
+        card.className = `badge-card ${stateClass} ${isActive ? 'active-now' : ''} ${isJustUnlocked ? 'is-new-card' : ''}`;
 
         const displayName = badge.unlocked ? `✓ ${badge.name}` : '??? BADGE NASCOSTO ???';
         const displayDesc = badge.unlocked ? badge.description : 'Sbloccalo per scoprire la condizione';
+        const newRibbon = isJustUnlocked ? '<span class="card-new-tag">NEW</span>' : '';
 
         card.innerHTML = `
+          ${newRibbon}
           <div class="badge-top">
             <span class="badge-name">${displayName}</span>
             <span class="badge-points">+${badge.points.toLocaleString('it-IT')} pt</span>
@@ -1228,15 +1531,24 @@
       });
     }
 
-    function renderHistoryFromState() {
+    function renderTopAuraRolls() {
       historyListEl.innerHTML = '';
-      if (!account || !account.history.length) return;
-      account.history.forEach(entry => {
+      if (!account || !account.topRolls.length) {
+        historyListEl.innerHTML = '<span class="placeholder-text">Nessun tiro registrato</span>';
+        return;
+      }
+
+      account.topRolls.forEach((entry, idx) => {
         const item = document.createElement('div');
-        item.className = `history-item ${entry.points > 0 ? 'has-points' : ''}`;
-        item.textContent = entry.points > 0
-          ? `${entry.num} (+${entry.points.toLocaleString('it-IT')})`
-          : `${entry.num}`;
+        const rank = idx + 1;
+        const topClass = rank <= 3 && entry.points > 0 ? `top-${rank}` : '';
+        const hasPtsClass = entry.points > 0 ? 'has-points' : '';
+        item.className = `history-item ${topClass} ${hasPtsClass}`;
+
+        const paddedNum = String(entry.num).padStart(3, '0');
+        item.innerHTML = entry.points > 0
+          ? `<span class="aura-rank">#${rank}</span> <strong>${paddedNum}</strong> (+${entry.points.toLocaleString('it-IT')} pt)`
+          : `<span class="aura-rank">#${rank}</span> <strong>${paddedNum}</strong> (0 pt)`;
         historyListEl.appendChild(item);
       });
     }
@@ -1332,10 +1644,21 @@
       }
     }
 
-    // Gestione Menù Impostazioni (Cambio Username)
+    // Gestione Menù Impostazioni (Audio + Cambio Username)
+    soundToggleInput.checked = soundEnabled;
+    soundToggleInput.addEventListener('change', () => {
+      soundEnabled = soundToggleInput.checked;
+      localStorage.setItem(SOUND_PREF_KEY, String(soundEnabled));
+      if (soundEnabled) {
+        SFX.click();
+      }
+    });
+
     openSettingsBtn.addEventListener('click', () => {
       if (!account) return;
+      SFX.click();
       settingsError.textContent = '';
+      soundToggleInput.checked = soundEnabled;
       newNicknameInput.value = account.nickname;
       settingsModal.classList.remove('hidden');
       newNicknameInput.focus();
@@ -1343,6 +1666,7 @@
     });
 
     closeSettingsBtn.addEventListener('click', () => {
+      SFX.click();
       settingsModal.classList.add('hidden');
     });
 
@@ -1365,6 +1689,7 @@
       }
 
       if (newNick === account.nickname) {
+        SFX.click();
         settingsModal.classList.add('hidden');
         return;
       }
@@ -1392,6 +1717,7 @@
           return;
         }
 
+        SFX.click();
         account.nickname = data.player.nickname;
         saveLocalAccount();
         currentNicknameEl.textContent = account.nickname;
@@ -1450,6 +1776,7 @@
           return;
         }
 
+        SFX.click();
         account = {
           deviceId: data.player.deviceId,
           nickname: data.player.nickname,
@@ -1457,7 +1784,7 @@
           bestRollScore: 0,
           rollCount: 0,
           unlockedIds: [],
-          history: []
+          topRolls: []
         };
 
         saveLocalAccount();
@@ -1488,14 +1815,21 @@
       numberCard.classList.remove('jackpot');
       triggeredBadgesEl.innerHTML = '<span class="placeholder-text">Estrazione in corso...</span>';
 
+      SFX.rollStart();
+
       const targetNumber = getRandomInt(MIN_NUM, MAX_NUM);
       const targetDigits = String(targetNumber).padStart(3, '0').split('');
+      let tickCounter = 0;
 
       const intervals = digitEls.map((el) => {
         el.classList.remove('locked');
         el.classList.add('spinning');
         return setInterval(() => {
           el.textContent = Math.floor(Math.random() * 10);
+          tickCounter++;
+          if (tickCounter % 3 === 0) {
+            SFX.tick();
+          }
         }, 45);
       });
 
@@ -1505,6 +1839,7 @@
           digitEls[index].textContent = digitChar;
           digitEls[index].classList.remove('spinning');
           digitEls[index].classList.add('locked');
+          SFX.digitLock(index);
 
           if (index === targetDigits.length - 1) {
             finalizeRoll(targetNumber);
@@ -1521,23 +1856,29 @@
 
       const totalRollPoints = matched.reduce((sum, b) => sum + b.points, 0);
 
-      // Salva subito i dati definitivi così anche ricaricando la pagina non si perde nulla
+      // Individua quali badge sono sbloccati PER LA PRIMA VOLTA in questo tiro
+      const previouslyUnlocked = new Set(account.unlockedIds);
+      const newlyUnlockedIds = [];
+
       matched.forEach(badge => {
-        badge.unlocked = true;
-        if (!account.unlockedIds.includes(badge.id)) {
+        if (!previouslyUnlocked.has(badge.id)) {
+          newlyUnlockedIds.push(badge.id);
           account.unlockedIds.push(badge.id);
         }
+        badge.unlocked = true;
       });
+
+      const newSet = new Set(newlyUnlockedIds);
 
       account.rollCount += 1;
       account.totalScore += totalRollPoints;
       if (totalRollPoints > (account.bestRollScore || 0)) {
         account.bestRollScore = totalRollPoints;
       }
-      account.history.unshift({ num: result, points: totalRollPoints });
-      if (account.history.length > 15) {
-        account.history = account.history.slice(0, 15);
-      }
+
+      // Aggiorna la classifica personale dei 15 "Tiri con più aura"
+      account.topRolls.push({ num: result, points: totalRollPoints });
+      account.topRolls = normalizeTopAuraRolls(account.topRolls);
 
       saveLocalAccount();
       syncAccountToServer();
@@ -1545,6 +1886,7 @@
       triggeredBadgesEl.innerHTML = '';
 
       if (matched.length === 0) {
+        SFX.noBadge();
         triggeredBadgesEl.innerHTML = '<span class="placeholder-text">Nessun badge sbloccato</span>';
         totalScoreEl.textContent = account.totalScore.toLocaleString('it-IT');
         lastRollScoreEl.textContent = '+0';
@@ -1552,8 +1894,8 @@
         rollCountEl.textContent = account.rollCount.toLocaleString('it-IT');
         avgScoreEl.textContent = Math.round(account.totalScore / account.rollCount).toLocaleString('it-IT');
         unlockedCounterEl.textContent = account.unlockedIds.length;
-        renderBadgesGrid([]);
-        renderHistoryFromState();
+        renderBadgesGrid([], []);
+        renderTopAuraRolls();
         isRolling = false;
         rollBtn.disabled = false;
         return;
@@ -1564,13 +1906,16 @@
 
       matched.forEach((badge, idx) => {
         setTimeout(() => {
+          const isNew = newSet.has(badge.id);
+          SFX.badgeReveal(badge.points, isNew);
+
           revealedPoints += badge.points;
           lastRollScoreEl.textContent = `+${revealedPoints.toLocaleString('it-IT')}`;
 
           const tierClass = getBadgeTierClass(badge.points);
           const pill = document.createElement('span');
-          pill.className = `pill-badge ${tierClass}`;
-          pill.textContent = `${badge.name} (+${badge.points.toLocaleString('it-IT')})`;
+          pill.className = `pill-badge ${tierClass} ${isNew ? 'is-new' : ''}`;
+          pill.innerHTML = `${isNew ? '<span class="new-tag">NEW</span>' : ''}${escapeHtml(badge.name)} (+${badge.points.toLocaleString('it-IT')})`;
           triggeredBadgesEl.appendChild(pill);
 
           if (badge.points >= 50000) {
@@ -1585,8 +1930,8 @@
             avgScoreEl.textContent = Math.round(account.totalScore / account.rollCount).toLocaleString('it-IT');
             unlockedCounterEl.textContent = account.unlockedIds.length;
 
-            renderBadgesGrid(matched.map(b => b.id));
-            renderHistoryFromState();
+            renderBadgesGrid(matched.map(b => b.id), newlyUnlockedIds);
+            renderTopAuraRolls();
 
             isRolling = false;
             rollBtn.disabled = false;
@@ -1596,7 +1941,10 @@
     }
 
     rollBtn.addEventListener('click', handleRoll);
-    refreshLeaderboardBtn.addEventListener('click', fetchLeaderboard);
+    refreshLeaderboardBtn.addEventListener('click', () => {
+      SFX.click();
+      fetchLeaderboard();
+    });
 
     // Inizializzazione all'apertura della pagina
     (function init() {
