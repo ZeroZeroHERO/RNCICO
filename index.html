@@ -26,6 +26,14 @@
       padding: 0;
     }
 
+    html {
+      transition: filter 0.35s ease;
+    }
+
+    html.daltonico-mode {
+      filter: grayscale(100%);
+    }
+
     body {
       background-color: var(--bg-color);
       color: var(--text-main);
@@ -317,10 +325,18 @@
     }
 
     header h1 {
+      display: inline-block;
       font-family: 'JetBrains Mono', monospace;
       font-size: 2.6rem;
       font-weight: 800;
       letter-spacing: -1px;
+      cursor: pointer;
+      user-select: none;
+      transition: transform 0.08s ease;
+    }
+
+    header h1:active {
+      transform: scale(0.95);
     }
 
     header h1 span {
@@ -356,6 +372,16 @@
       border-radius: 12px;
       padding: 0.9rem 0.65rem;
       text-align: center;
+    }
+
+    #thirsty-kids-box {
+      cursor: pointer;
+      user-select: none;
+      transition: transform 0.1s ease, border-color 0.2s ease;
+    }
+
+    #thirsty-kids-box:active {
+      transform: scale(0.96);
     }
 
     .stat-label {
@@ -470,7 +496,7 @@
       font-size: 0.9rem;
     }
 
-    /* Pillole badge sbloccate al tiro (5 fasce di colore) */
+    /* Pillole badge sbloccate al tiro (5 fasce di colore + secret) */
     .pill-badge {
       position: relative;
       font-family: 'JetBrains Mono', monospace;
@@ -556,6 +582,14 @@
       border-color: #eab308;
       color: #fef08a;
       box-shadow: 0 0 12px rgba(234, 179, 8, 0.25);
+    }
+
+    /* Segreto */
+    .pill-badge.tier-secret {
+      background: rgba(244, 114, 182, 0.18);
+      border-color: #f472b6;
+      color: #fbcfe8;
+      box-shadow: 0 0 12px rgba(244, 114, 182, 0.25);
     }
 
     @keyframes popIn {
@@ -689,6 +723,34 @@
       vertical-align: middle;
     }
 
+    /* Riquadri MOMO (#1) e GAY (#2) nello stesso stile del tag NEW */
+    .rank-special-tag {
+      display: inline-block;
+      margin-left: 0.45rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.6rem;
+      font-weight: 800;
+      padding: 0.12rem 0.42rem;
+      border-radius: 5px;
+      letter-spacing: 0.06em;
+      vertical-align: middle;
+      text-transform: uppercase;
+    }
+
+    .rank-special-tag.tag-momo {
+      background: linear-gradient(135deg, #facc15, #f97316);
+      color: #0b0d12;
+      box-shadow: 0 2px 8px rgba(249, 115, 22, 0.55);
+      border: 1px solid #fef08a;
+    }
+
+    .rank-special-tag.tag-gay {
+      background: linear-gradient(135deg, #ec4899, #8b5cf6, #3b82f6);
+      color: #ffffff;
+      box-shadow: 0 2px 8px rgba(236, 72, 153, 0.5);
+      border: 1px solid #f9a8d4;
+    }
+
     .badges-col {
       font-family: 'JetBrains Mono', monospace;
       font-weight: 800;
@@ -745,6 +807,15 @@
       font-size: 0.75rem;
       color: var(--accent);
       background: rgba(59, 130, 246, 0.12);
+      padding: 0.25rem 0.6rem;
+      border-radius: 6px;
+    }
+
+    .secret-tag {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.75rem;
+      color: #f472b6;
+      background: rgba(244, 114, 182, 0.12);
       padding: 0.25rem 0.6rem;
       border-radius: 6px;
     }
@@ -816,6 +887,12 @@
     }
     .badge-card.unlocked.tier-yellow .badge-points { color: #facc15; }
 
+    .badge-card.unlocked.tier-secret {
+      border-color: #f472b6;
+      background: rgba(244, 114, 182, 0.09);
+    }
+    .badge-card.unlocked.tier-secret .badge-points { color: #f472b6; }
+
     .badge-card.active-now {
       transform: translateY(-2px);
       box-shadow: 0 4px 16px rgba(255, 255, 255, 0.14);
@@ -876,6 +953,10 @@
     }
 
     /* Tiri con più aura */
+    .history-section {
+      margin-bottom: 2.5rem;
+    }
+
     .history-list {
       display: flex;
       flex-wrap: wrap;
@@ -923,6 +1004,17 @@
     .history-item.has-points:not(.top-1):not(.top-2):not(.top-3) {
       border-color: var(--emerald);
       color: #6ee7b7;
+    }
+
+    /* Sezione Badge Segreti (visibile solo dal primo sbloccato) */
+    .secret-section {
+      margin-top: 2.5rem;
+      padding-top: 2rem;
+      border-top: 1px dashed rgba(244, 114, 182, 0.35);
+    }
+
+    .secret-section.hidden {
+      display: none;
     }
   </style>
 </head>
@@ -1003,7 +1095,7 @@
           ⚙ IMPOSTAZIONI
         </button>
       </div>
-      <h1>RN<span>CICO</span></h1>
+      <h1 id="main-title">RN<span>CICO</span></h1>
       <p class="subtitle">Genera un numero da 0 a 500 e sucamelaradio</p>
     </header>
 
@@ -1024,7 +1116,7 @@
         <span class="stat-label">MEDIA PUNTI</span>
         <span class="stat-value avg" id="avg-score">0</span>
       </div>
-      <div class="stat-box">
+      <div class="stat-box" id="thirsty-kids-box">
         <span class="stat-label">BAMBINI SENZA ACQUA</span>
         <span class="stat-value" id="roll-count">0</span>
       </div>
@@ -1073,6 +1165,15 @@
       <h2>TIRI CON PIÙ AURA</h2>
       <div class="history-list" id="history-list"></div>
     </section>
+
+    <!-- Sezione Badge Segreti (appare solo dopo il primo sbloccato) -->
+    <section class="secret-section hidden" id="secret-section">
+      <div class="section-header">
+        <h2>BADGE SEGRETI (<span id="secret-unlocked-counter">0</span>/<span id="secret-total-counter">3</span> SBLOCCATI)</h2>
+        <span class="secret-tag">Extra • Non contano nel totale</span>
+      </div>
+      <div class="badges-grid" id="secret-badges-grid"></div>
+    </section>
   </div>
 
   <script>
@@ -1084,6 +1185,32 @@
     const STORAGE_KEY = 'rncico_device_account_v1';
     const SOUND_PREF_KEY = 'rncico_sound_enabled_v1';
     const API_ENDPOINT = '/api/leaderboard';
+
+    const DALTONICO_NAMES = ['carlo', 'carletto', 'alibaba', 'alibandan', 'aliberti', 'zaus'];
+
+    const SECRET_BADGES = [
+      {
+        id: 'secret_cookie',
+        name: 'cookie clicker',
+        description: 'che facciamo clicchiamo?',
+        hint: 'Suggerimento: Il titolo del gioco sembra quasi un pulsante...',
+        points: 67
+      },
+      {
+        id: 'secret_daltonico',
+        name: 'daltonico',
+        description: 'un mondo senza colori',
+        hint: 'Suggerimento: Prendi in prestito l’identità di Carlo o dei suoi alter ego.',
+        points: 67
+      },
+      {
+        id: 'secret_mostro',
+        name: 'mostro',
+        description: 'hai fatto piangere un bambino assetato',
+        hint: 'Suggerimento: Dai un colpetto a chi soffre la sete nella barra delle statistiche.',
+        points: 67
+      }
+    ];
 
     // ==========================================
     // MOTORE EFFETTI SONORI (Web Audio API)
@@ -1148,6 +1275,61 @@
       },
       noBadge() {
         playTone(240, 0.18, 'sine', 0.06, 0, 185);
+      },
+      babyCry() {
+        if (!soundEnabled) return;
+        const ctx = getAudioCtx();
+        if (!ctx) return;
+
+        // Tre vagiti discendenti con vibrato vocale ("uäää - uäää - uäää")
+        const wails = [
+          { start: 0.0, dur: 0.36, f0: 540, f1: 720, f2: 430 },
+          { start: 0.44, dur: 0.42, f0: 520, f1: 750, f2: 400 },
+          { start: 0.94, dur: 0.52, f0: 490, f1: 700, f2: 340 }
+        ];
+
+        wails.forEach(w => {
+          const t0 = ctx.currentTime + w.start;
+          const osc = ctx.createOscillator();
+          const vibrato = ctx.createOscillator();
+          const vibratoGain = ctx.createGain();
+          const filter = ctx.createBiquadFilter();
+          const gain = ctx.createGain();
+
+          osc.type = 'sawtooth';
+          osc.frequency.setValueAtTime(w.f0, t0);
+          osc.frequency.linearRampToValueAtTime(w.f1, t0 + w.dur * 0.35);
+          osc.frequency.exponentialRampToValueAtTime(w.f2, t0 + w.dur);
+
+          vibrato.type = 'sine';
+          vibrato.frequency.setValueAtTime(7.5, t0);
+          vibratoGain.gain.setValueAtTime(18, t0);
+          vibrato.connect(vibratoGain);
+          vibratoGain.connect(osc.frequency);
+
+          filter.type = 'bandpass';
+          filter.frequency.setValueAtTime(1150, t0);
+          filter.Q.setValueAtTime(2.2, t0);
+
+          gain.gain.setValueAtTime(0.0001, t0);
+          gain.gain.linearRampToValueAtTime(0.14, t0 + 0.04);
+          gain.gain.setValueAtTime(0.12, t0 + w.dur * 0.7);
+          gain.gain.exponentialRampToValueAtTime(0.0001, t0 + w.dur);
+
+          osc.connect(filter);
+          filter.connect(gain);
+          gain.connect(ctx.destination);
+
+          osc.start(t0);
+          vibrato.start(t0);
+          osc.stop(t0 + w.dur + 0.02);
+          vibrato.stop(t0 + w.dur + 0.02);
+        });
+      },
+      secretUnlock() {
+        playTone(587.33, 0.14, 'triangle', 0.1, 0);
+        playTone(880, 0.16, 'triangle', 0.1, 0.08);
+        playTone(1174.66, 0.24, 'sine', 0.11, 0.16);
       },
       badgeReveal(points, isNew) {
         if (points < 1000) {
@@ -1393,6 +1575,8 @@
     // Stato applicativo
     let account = null;
     let isRolling = false;
+    let titleClickStreak = 0;
+    let titleClickTimer = null;
 
     // Elementi DOM
     const onboardingModal = document.getElementById('onboarding-modal');
@@ -1401,6 +1585,8 @@
     const modalError = document.getElementById('modal-error');
     const registerBtn = document.getElementById('register-btn');
     const currentNicknameEl = document.getElementById('current-nickname');
+    const mainTitleEl = document.getElementById('main-title');
+    const thirstyKidsBox = document.getElementById('thirsty-kids-box');
 
     // Elementi DOM Impostazioni
     const settingsModal = document.getElementById('settings-modal');
@@ -1431,6 +1617,12 @@
     const rollBtn = document.getElementById('roll-btn');
     const leaderboardContainer = document.getElementById('leaderboard-container');
     const refreshLeaderboardBtn = document.getElementById('refresh-leaderboard-btn');
+
+    // Elementi DOM Badge Segreti
+    const secretSectionEl = document.getElementById('secret-section');
+    const secretUnlockedCounterEl = document.getElementById('secret-unlocked-counter');
+    const secretTotalCounterEl = document.getElementById('secret-total-counter');
+    const secretBadgesGridEl = document.getElementById('secret-badges-grid');
 
     function generateDeviceId() {
       if (window.crypto && crypto.randomUUID) {
@@ -1465,6 +1657,7 @@
             bestRollScore: Math.max(Number(parsed.bestRollScore) || 0, maxFromRolls),
             rollCount: Number(parsed.rollCount) || 0,
             unlockedIds: Array.isArray(parsed.unlockedIds) ? parsed.unlockedIds : [],
+            secretUnlockedIds: Array.isArray(parsed.secretUnlockedIds) ? parsed.secretUnlockedIds : [],
             topRolls
           };
         }
@@ -1481,6 +1674,96 @@
       } catch (e) {
         console.error('Errore scrittura localStorage:', e);
       }
+    }
+
+    // Controlla modalità bianco e nero per i nomi di Carlo/Alibaba/Zaus
+    function updateDaltonicoEffect(nickname, triggerUnlock = true) {
+      const clean = (nickname || '').trim().toLowerCase();
+      const isDaltonico = DALTONICO_NAMES.includes(clean);
+      if (isDaltonico) {
+        document.documentElement.classList.add('daltonico-mode');
+        if (triggerUnlock && account) {
+          unlockSecretBadge('secret_daltonico');
+        }
+      } else {
+        document.documentElement.classList.remove('daltonico-mode');
+      }
+    }
+
+    function unlockSecretBadge(secretId) {
+      if (!account) return false;
+      if (!Array.isArray(account.secretUnlockedIds)) {
+        account.secretUnlockedIds = [];
+      }
+      if (account.secretUnlockedIds.includes(secretId)) {
+        return false;
+      }
+
+      const secret = SECRET_BADGES.find(s => s.id === secretId);
+      if (!secret) return false;
+
+      account.secretUnlockedIds.push(secretId);
+      account.totalScore += secret.points;
+      saveLocalAccount();
+      syncAccountToServer();
+
+      SFX.secretUnlock();
+
+      // Mostra pillola speciale nell'area badge sbloccati
+      if (!isRolling) {
+        const hasPlaceholder = triggeredBadgesEl.querySelector('.placeholder-text');
+        if (hasPlaceholder) {
+          triggeredBadgesEl.innerHTML = '';
+        }
+        const pill = document.createElement('span');
+        pill.className = 'pill-badge tier-secret is-new';
+        pill.innerHTML = `<span class="new-tag">NEW</span>★ ${escapeHtml(secret.name)} (+${secret.points} pt)`;
+        triggeredBadgesEl.appendChild(pill);
+      }
+
+      totalScoreEl.textContent = account.totalScore.toLocaleString('it-IT');
+      const avg = account.rollCount > 0 ? Math.round(account.totalScore / account.rollCount) : 0;
+      avgScoreEl.textContent = avg.toLocaleString('it-IT');
+
+      renderSecretBadges([secretId]);
+      return true;
+    }
+
+    function renderSecretBadges(newlyUnlockedIds = []) {
+      if (!account || !Array.isArray(account.secretUnlockedIds) || account.secretUnlockedIds.length === 0) {
+        secretSectionEl.classList.add('hidden');
+        return;
+      }
+
+      secretSectionEl.classList.remove('hidden');
+      const unlockedSet = new Set(account.secretUnlockedIds);
+      const newSet = new Set(newlyUnlockedIds);
+
+      secretUnlockedCounterEl.textContent = unlockedSet.size;
+      secretTotalCounterEl.textContent = SECRET_BADGES.length;
+      secretBadgesGridEl.innerHTML = '';
+
+      SECRET_BADGES.forEach(secret => {
+        const isUnlocked = unlockedSet.has(secret.id);
+        const isJustUnlocked = newSet.has(secret.id);
+        const card = document.createElement('div');
+        card.className = `badge-card ${isUnlocked ? 'unlocked tier-secret' : 'locked-mystery'} ${isJustUnlocked ? 'is-new-card' : ''}`;
+
+        const newRibbon = isJustUnlocked ? '<span class="card-new-tag">NEW</span>' : '';
+        const displayName = isUnlocked ? `★ ${escapeHtml(secret.name)}` : '??? BADGE SEGRETO ???';
+        const displayDesc = isUnlocked ? escapeHtml(secret.description) : escapeHtml(secret.hint);
+
+        card.innerHTML = `
+          ${newRibbon}
+          <div class="badge-top">
+            <span class="badge-name">${displayName}</span>
+            <span class="badge-points">+${secret.points} pt</span>
+          </div>
+          <div class="badge-desc">${displayDesc}</div>
+          <div class="badge-prob">Segreto • Extra</div>
+        `;
+        secretBadgesGridEl.appendChild(card);
+      });
     }
 
     function applyAccountStateToUI() {
@@ -1501,8 +1784,10 @@
       totalCounterEl.textContent = BADGES.length;
       unlockedCounterEl.textContent = account.unlockedIds.length;
 
+      updateDaltonicoEffect(account.nickname, true);
       renderBadgesGrid();
       renderTopAuraRolls();
+      renderSecretBadges();
     }
 
     function renderBadgesGrid(activeIds = [], newlyUnlockedIds = []) {
@@ -1578,11 +1863,19 @@
         const rolls = Number(row.rollsCount) || 0;
         const rollsDisplay = (rolls === 0 && row.badgesCount > 0) ? '—' : rolls.toLocaleString('it-IT');
 
+        let rankSpecialBadge = '';
+        if (rank === 1) {
+          rankSpecialBadge = '<span class="rank-special-tag tag-momo">MOMO</span>';
+        } else if (rank === 2) {
+          rankSpecialBadge = '<span class="rank-special-tag tag-gay">GAY</span>';
+        }
+
         return `
           <tr class="${isMe ? 'current-user' : ''}">
             <td class="rank-cell ${rankClass}">#${rank}</td>
             <td class="nick-cell">
               ${escapeHtml(row.nickname)}
+              ${rankSpecialBadge}
               ${isMe ? '<span class="you-tag">TU</span>' : ''}
             </td>
             <td class="badges-col">${row.badgesCount}/${BADGES.length}</td>
@@ -1647,6 +1940,31 @@
       }
     }
 
+    // Easter Egg 1: 10 click di fila sul titolo RNCICO -> cookie clicker
+    mainTitleEl.addEventListener('click', () => {
+      if (!account) return;
+      SFX.click();
+      titleClickStreak += 1;
+
+      clearTimeout(titleClickTimer);
+      titleClickTimer = setTimeout(() => {
+        titleClickStreak = 0;
+      }, 1500);
+
+      if (titleClickStreak >= 10) {
+        titleClickStreak = 0;
+        clearTimeout(titleClickTimer);
+        unlockSecretBadge('secret_cookie');
+      }
+    });
+
+    // Easter Egg 3: click su BAMBINI SENZA ACQUA -> pianto bambino + badge mostro
+    thirstyKidsBox.addEventListener('click', () => {
+      if (!account) return;
+      SFX.babyCry();
+      unlockSecretBadge('secret_mostro');
+    });
+
     // Gestione Menù Impostazioni (Audio + Cambio Username)
     soundToggleInput.checked = soundEnabled;
     soundToggleInput.addEventListener('change', () => {
@@ -1693,6 +2011,7 @@
 
       if (newNick === account.nickname) {
         SFX.click();
+        updateDaltonicoEffect(newNick, true);
         settingsModal.classList.add('hidden');
         return;
       }
@@ -1724,6 +2043,7 @@
         account.nickname = data.player.nickname;
         saveLocalAccount();
         currentNicknameEl.textContent = account.nickname;
+        updateDaltonicoEffect(account.nickname, true);
 
         if (data.leaderboard) {
           renderLeaderboard(data.leaderboard);
@@ -1787,6 +2107,7 @@
           bestRollScore: 0,
           rollCount: 0,
           unlockedIds: [],
+          secretUnlockedIds: [],
           topRolls: []
         };
 
