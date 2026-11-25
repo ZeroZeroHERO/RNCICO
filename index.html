@@ -626,9 +626,100 @@
       cursor: not-allowed;
     }
 
-    /* Leaderboard Top 10 */
+    /* Leaderboard Top 10 & Messaggio del #1 */
     .leaderboard-section {
       margin-bottom: 2.5rem;
+    }
+
+    .king-banner {
+      background: linear-gradient(135deg, rgba(250, 204, 21, 0.12), rgba(249, 115, 22, 0.08));
+      border: 1px solid rgba(250, 204, 21, 0.45);
+      border-radius: 12px;
+      padding: 0.9rem 1.1rem;
+      margin-bottom: 0.95rem;
+      box-shadow: 0 4px 18px rgba(245, 158, 11, 0.12);
+    }
+
+    .king-banner.hidden {
+      display: none;
+    }
+
+    .king-banner-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.5rem;
+      margin-bottom: 0.35rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.72rem;
+      font-weight: 800;
+      color: #facc15;
+      letter-spacing: 0.06em;
+    }
+
+    .king-banner-text {
+      font-size: 0.94rem;
+      font-weight: 600;
+      color: #fef9c3;
+      line-height: 1.4;
+      word-break: break-word;
+    }
+
+    .king-banner-text.empty-msg {
+      color: var(--text-muted);
+      font-style: italic;
+      font-weight: 400;
+    }
+
+    .king-editor {
+      display: flex;
+      gap: 0.5rem;
+      margin-top: 0.75rem;
+      padding-top: 0.75rem;
+      border-top: 1px dashed rgba(250, 204, 21, 0.3);
+    }
+
+    .king-editor.hidden {
+      display: none;
+    }
+
+    .king-input {
+      flex: 1;
+      background: #0b0d12;
+      border: 1px solid rgba(250, 204, 21, 0.4);
+      border-radius: 8px;
+      padding: 0.55rem 0.75rem;
+      color: #ffffff;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.85rem;
+      outline: none;
+    }
+
+    .king-input:focus {
+      border-color: #facc15;
+    }
+
+    .king-save-btn {
+      background: linear-gradient(135deg, #facc15, #f97316);
+      color: #0b0d12;
+      border: none;
+      border-radius: 8px;
+      padding: 0.55rem 0.95rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.76rem;
+      font-weight: 800;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: opacity 0.2s ease;
+    }
+
+    .king-save-btn:hover {
+      opacity: 0.9;
+    }
+
+    .king-save-btn:disabled {
+      opacity: 0.55;
+      cursor: not-allowed;
     }
 
     .refresh-btn {
@@ -1142,12 +1233,33 @@
       </button>
     </main>
 
-    <!-- Classifica Top 10 -->
+    <!-- Classifica Top 10 + Messaggio del #1 -->
     <section class="leaderboard-section">
       <div class="section-header">
         <h2>TOP 10 POSSESSORI DI BADGE</h2>
         <button type="button" class="refresh-btn" id="refresh-leaderboard-btn">AGGIORNA</button>
       </div>
+
+      <!-- Riquadro Messaggio del Primo in Classifica -->
+      <div class="king-banner hidden" id="king-banner">
+        <div class="king-banner-header">
+          <span>👑 MESSAGGIO DEL MOMO (#1)</span>
+          <span id="king-banner-author"></span>
+        </div>
+        <div class="king-banner-text" id="king-banner-text"></div>
+        <form class="king-editor hidden" id="king-editor-form">
+          <input
+            type="text"
+            id="king-message-input"
+            class="king-input"
+            maxlength="140"
+            placeholder="Sei il #1! Scrivi un messaggio per tutti (max 140 caratteri)..."
+            autocomplete="off"
+          />
+          <button type="submit" class="king-save-btn" id="king-save-btn">PUBBLICA</button>
+        </form>
+      </div>
+
       <div class="leaderboard-card" id="leaderboard-container">
         <div class="leaderboard-empty">Caricamento classifica...</div>
       </div>
@@ -1169,8 +1281,8 @@
     <!-- Sezione Badge Segreti (appare solo dopo il primo sbloccato) -->
     <section class="secret-section hidden" id="secret-section">
       <div class="section-header">
-        <h2>BADGE SEGRETI (<span id="secret-unlocked-counter">0</span>/<span id="secret-total-counter">3</span> SBLOCCATI)</h2>
-        <span class="secret-tag">Extra • Non contano nel totale</span>
+        <h2>BADGE SEGRETI (<span id="secret-unlocked-counter">0</span>/<span id="secret-total-counter">5</span> SBLOCCATI)</h2>
+        <span class="secret-tag">Extra • Si sommano al totale</span>
       </div>
       <div class="badges-grid" id="secret-badges-grid"></div>
     </section>
@@ -1208,6 +1320,20 @@
         name: 'mostro',
         description: 'hai fatto piangere un bambino assetato',
         hint: 'Suggerimento: Dai un colpetto a chi soffre la sete nella barra delle statistiche.',
+        points: 67
+      },
+      {
+        id: 'secret_frettolone',
+        name: 'frettolone',
+        description: 'almeno 5 roll in meno di 30 secondi',
+        hint: 'Suggerimento: Clicca GENERA NUMERO senza sosta...',
+        points: 67
+      },
+      {
+        id: 'secret_nontivantare',
+        name: 'non ti vantare',
+        description: 'sei rimasto 30 secondi ad ammirare una roll da più di 50.000 punti',
+        hint: 'Suggerimento: Quando fai il botto grosso, prenditi il tuo tempo per ammirarlo.',
         points: 67
       }
     ];
@@ -1281,7 +1407,6 @@
         const ctx = getAudioCtx();
         if (!ctx) return;
 
-        // Tre vagiti discendenti con vibrato vocale ("uäää - uäää - uäää")
         const wails = [
           { start: 0.0, dur: 0.36, f0: 540, f1: 720, f2: 430 },
           { start: 0.44, dur: 0.42, f0: 520, f1: 750, f2: 400 },
@@ -1333,24 +1458,19 @@
       },
       badgeReveal(points, isNew) {
         if (points < 1000) {
-          // Verde: pop leggero
           playTone(523.25, 0.14, 'sine', 0.09);
         } else if (points < 5000) {
-          // Blu: bicordo brillante
           playTone(587.33, 0.14, 'triangle', 0.09);
           playTone(739.99, 0.18, 'triangle', 0.09, 0.06);
         } else if (points < 10000) {
-          // Viola: arpeggio rapido
           playTone(659.25, 0.14, 'triangle', 0.1);
           playTone(830.61, 0.16, 'triangle', 0.1, 0.05);
           playTone(987.77, 0.22, 'sine', 0.1, 0.1);
         } else if (points < 50000) {
-          // Rosso: accordo epico
           playTone(440, 0.28, 'sawtooth', 0.06);
           playTone(659.25, 0.28, 'triangle', 0.1, 0.04);
           playTone(880, 0.32, 'triangle', 0.11, 0.08);
         } else {
-          // Giallo >= 50.000: fanfara jackpot
           const notes = [523.25, 659.25, 783.99, 1046.5];
           notes.forEach((n, i) => {
             playTone(n, 0.35, 'triangle', 0.11, i * 0.06);
@@ -1358,7 +1478,6 @@
           });
         }
 
-        // Scintillio extra se è un badge sbloccato per la prima volta (NEW)
         if (isNew) {
           playTone(1174.66, 0.18, 'sine', 0.09, 0.12);
           playTone(1567.98, 0.28, 'sine', 0.1, 0.19);
@@ -1577,6 +1696,8 @@
     let isRolling = false;
     let titleClickStreak = 0;
     let titleClickTimer = null;
+    let recentRollTimestamps = [];
+    let flex50kTimer = null;
 
     // Elementi DOM
     const onboardingModal = document.getElementById('onboarding-modal');
@@ -1617,6 +1738,14 @@
     const rollBtn = document.getElementById('roll-btn');
     const leaderboardContainer = document.getElementById('leaderboard-container');
     const refreshLeaderboardBtn = document.getElementById('refresh-leaderboard-btn');
+
+    // Elementi DOM Messaggio del #1
+    const kingBannerEl = document.getElementById('king-banner');
+    const kingBannerAuthorEl = document.getElementById('king-banner-author');
+    const kingBannerTextEl = document.getElementById('king-banner-text');
+    const kingEditorForm = document.getElementById('king-editor-form');
+    const kingMessageInput = document.getElementById('king-message-input');
+    const kingSaveBtn = document.getElementById('king-save-btn');
 
     // Elementi DOM Badge Segreti
     const secretSectionEl = document.getElementById('secret-section');
@@ -1676,7 +1805,13 @@
       }
     }
 
-    // Controlla modalità bianco e nero per i nomi di Carlo/Alibaba/Zaus
+    function getTotalBadgesUnlockedCount() {
+      if (!account) return 0;
+      const normalCount = Array.isArray(account.unlockedIds) ? account.unlockedIds.length : 0;
+      const secretCount = Array.isArray(account.secretUnlockedIds) ? account.secretUnlockedIds.length : 0;
+      return normalCount + secretCount;
+    }
+
     function updateDaltonicoEffect(nickname, triggerUnlock = true) {
       const clean = (nickname || '').trim().toLowerCase();
       const isDaltonico = DALTONICO_NAMES.includes(clean);
@@ -1709,7 +1844,6 @@
 
       SFX.secretUnlock();
 
-      // Mostra pillola speciale nell'area badge sbloccati
       if (!isRolling) {
         const hasPlaceholder = triggeredBadgesEl.querySelector('.placeholder-text');
         if (hasPlaceholder) {
@@ -1724,6 +1858,7 @@
       totalScoreEl.textContent = account.totalScore.toLocaleString('it-IT');
       const avg = account.rollCount > 0 ? Math.round(account.totalScore / account.rollCount) : 0;
       avgScoreEl.textContent = avg.toLocaleString('it-IT');
+      unlockedCounterEl.textContent = getTotalBadgesUnlockedCount();
 
       renderSecretBadges([secretId]);
       return true;
@@ -1760,7 +1895,7 @@
             <span class="badge-points">+${secret.points} pt</span>
           </div>
           <div class="badge-desc">${displayDesc}</div>
-          <div class="badge-prob">Segreto • Extra</div>
+          <div class="badge-prob">Segreto • Si somma al totale</div>
         `;
         secretBadgesGridEl.appendChild(card);
       });
@@ -1782,7 +1917,7 @@
       avgScoreEl.textContent = avg.toLocaleString('it-IT');
 
       totalCounterEl.textContent = BADGES.length;
-      unlockedCounterEl.textContent = account.unlockedIds.length;
+      unlockedCounterEl.textContent = getTotalBadgesUnlockedCount();
 
       updateDaltonicoEffect(account.nickname, true);
       renderBadgesGrid();
@@ -1849,7 +1984,50 @@
         .replace(/"/g, '&quot;');
     }
 
-    function renderLeaderboard(list) {
+    function renderKingBanner(list, kingMessage) {
+      const topPlayer = Array.isArray(list) && list.length > 0 ? list[0] : null;
+      const isUserKing = Boolean(
+        account &&
+        topPlayer &&
+        (
+          (topPlayer.deviceId && topPlayer.deviceId === account.deviceId) ||
+          (topPlayer.nickname && topPlayer.nickname.toLowerCase() === account.nickname.toLowerCase())
+        )
+      );
+
+      const hasMessage = Boolean(kingMessage && kingMessage.text);
+
+      if (!hasMessage && !isUserKing) {
+        kingBannerEl.classList.add('hidden');
+        return;
+      }
+
+      kingBannerEl.classList.remove('hidden');
+
+      if (hasMessage) {
+        const authorName = kingMessage.author || (topPlayer ? topPlayer.nickname : '');
+        kingBannerAuthorEl.textContent = authorName ? `— ${authorName}` : '';
+        kingBannerTextEl.textContent = kingMessage.text;
+        kingBannerTextEl.classList.remove('empty-msg');
+      } else {
+        kingBannerAuthorEl.textContent = topPlayer ? `— ${topPlayer.nickname}` : '';
+        kingBannerTextEl.textContent = 'Nessun messaggio pubblicato ancora dal #1.';
+        kingBannerTextEl.classList.add('empty-msg');
+      }
+
+      if (isUserKing) {
+        kingEditorForm.classList.remove('hidden');
+        if (document.activeElement !== kingMessageInput && hasMessage) {
+          kingMessageInput.value = kingMessage.text;
+        }
+      } else {
+        kingEditorForm.classList.add('hidden');
+      }
+    }
+
+    function renderLeaderboard(list, kingMessage = null) {
+      renderKingBanner(list, kingMessage);
+
       if (!Array.isArray(list) || list.length === 0) {
         leaderboardContainer.innerHTML = '<div class="leaderboard-empty">Nessun giocatore ancora in classifica. Sii il primo!</div>';
         return;
@@ -1907,7 +2085,7 @@
         const res = await fetch(API_ENDPOINT);
         const data = await res.json();
         if (res.ok && data.leaderboard) {
-          renderLeaderboard(data.leaderboard);
+          renderLeaderboard(data.leaderboard, data.kingMessage || null);
         }
       } catch (err) {
         console.error('Errore fetch classifica:', err);
@@ -1926,19 +2104,50 @@
             action: 'sync',
             deviceId: account.deviceId,
             nickname: account.nickname,
-            badgesCount: account.unlockedIds.length,
+            badgesCount: getTotalBadgesUnlockedCount(),
             totalScore: account.totalScore,
             rollsCount: account.rollCount
           })
         });
         const data = await res.json();
         if (res.ok && data.leaderboard) {
-          renderLeaderboard(data.leaderboard);
+          renderLeaderboard(data.leaderboard, data.kingMessage || null);
         }
       } catch (err) {
         console.error('Errore sincronizzazione server:', err);
       }
     }
+
+    // Salvataggio messaggio del primo in classifica
+    kingEditorForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (!account) return;
+
+      kingSaveBtn.disabled = true;
+      kingSaveBtn.textContent = 'INVIO...';
+
+      try {
+        const res = await fetch(API_ENDPOINT, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: 'set_king_message',
+            deviceId: account.deviceId,
+            message: kingMessageInput.value.trim()
+          })
+        });
+        const data = await res.json();
+        if (res.ok) {
+          SFX.click();
+          renderLeaderboard(data.leaderboard, data.kingMessage || null);
+        }
+      } catch (err) {
+        console.error('Errore invio messaggio del #1:', err);
+      } finally {
+        kingSaveBtn.disabled = false;
+        kingSaveBtn.textContent = 'PUBBLICA';
+      }
+    });
 
     // Easter Egg 1: 10 click di fila sul titolo RNCICO -> cookie clicker
     mainTitleEl.addEventListener('click', () => {
@@ -2046,7 +2255,7 @@
         updateDaltonicoEffect(account.nickname, true);
 
         if (data.leaderboard) {
-          renderLeaderboard(data.leaderboard);
+          renderLeaderboard(data.leaderboard, data.kingMessage || null);
         } else {
           fetchLeaderboard();
         }
@@ -2116,7 +2325,7 @@
         applyAccountStateToUI();
 
         if (data.leaderboard) {
-          renderLeaderboard(data.leaderboard);
+          renderLeaderboard(data.leaderboard, data.kingMessage || null);
         } else {
           fetchLeaderboard();
         }
@@ -2135,6 +2344,7 @@
     function handleRoll() {
       if (isRolling || !account) return;
       isRolling = true;
+      clearTimeout(flex50kTimer);
       rollBtn.disabled = true;
       numberCard.classList.remove('jackpot');
       triggeredBadgesEl.innerHTML = '<span class="placeholder-text">Estrazione in corso...</span>';
@@ -2173,14 +2383,12 @@
     }
 
     function finalizeRoll(result) {
-      // Ordine crescente di punti (dal più comune al più raro)
       const matched = BADGES
         .filter(b => b.check(result))
         .sort((a, b) => a.points - b.points);
 
       const totalRollPoints = matched.reduce((sum, b) => sum + b.points, 0);
 
-      // Individua quali badge sono sbloccati PER LA PRIMA VOLTA in questo tiro
       const previouslyUnlocked = new Set(account.unlockedIds);
       const newlyUnlockedIds = [];
 
@@ -2195,12 +2403,28 @@
       const newSet = new Set(newlyUnlockedIds);
 
       account.rollCount += 1;
+
+      // Controllo badge segreto "frettolone" (almeno 5 roll in meno di 30s)
+      const now = Date.now();
+      recentRollTimestamps.push(now);
+      recentRollTimestamps = recentRollTimestamps.filter(ts => now - ts <= 30000);
+      if (recentRollTimestamps.length >= 5) {
+        unlockSecretBadge('secret_frettolone');
+      }
+
+      // Controllo badge segreto "non ti vantare" (30s fermo su una roll > 50.000 pt)
+      clearTimeout(flex50kTimer);
+      if (totalRollPoints > 50000) {
+        flex50kTimer = setTimeout(() => {
+          unlockSecretBadge('secret_nontivantare');
+        }, 30000);
+      }
+
       account.totalScore += totalRollPoints;
       if (totalRollPoints > (account.bestRollScore || 0)) {
         account.bestRollScore = totalRollPoints;
       }
 
-      // Aggiorna la classifica personale dei 15 "Tiri con più aura"
       account.topRolls.push({ num: result, points: totalRollPoints });
       account.topRolls = normalizeTopAuraRolls(account.topRolls);
 
@@ -2217,7 +2441,7 @@
         bestRollScoreEl.textContent = `+${account.bestRollScore.toLocaleString('it-IT')}`;
         rollCountEl.textContent = account.rollCount.toLocaleString('it-IT');
         avgScoreEl.textContent = Math.round(account.totalScore / account.rollCount).toLocaleString('it-IT');
-        unlockedCounterEl.textContent = account.unlockedIds.length;
+        unlockedCounterEl.textContent = getTotalBadgesUnlockedCount();
         renderBadgesGrid([], []);
         renderTopAuraRolls();
         isRolling = false;
@@ -2225,7 +2449,6 @@
         return;
       }
 
-      // Comparsa sequenziale ogni 0,5 secondi in ordine crescente
       let revealedPoints = 0;
 
       matched.forEach((badge, idx) => {
@@ -2246,13 +2469,12 @@
             numberCard.classList.add('jackpot');
           }
 
-          // All'ultimo badge rivelato aggiorna tutte le statistiche, la griglia e riabilita il tasto
           if (idx === matched.length - 1) {
             totalScoreEl.textContent = account.totalScore.toLocaleString('it-IT');
             bestRollScoreEl.textContent = `+${account.bestRollScore.toLocaleString('it-IT')}`;
             rollCountEl.textContent = account.rollCount.toLocaleString('it-IT');
             avgScoreEl.textContent = Math.round(account.totalScore / account.rollCount).toLocaleString('it-IT');
-            unlockedCounterEl.textContent = account.unlockedIds.length;
+            unlockedCounterEl.textContent = getTotalBadgesUnlockedCount();
 
             renderBadgesGrid(matched.map(b => b.id), newlyUnlockedIds);
             renderTopAuraRolls();
@@ -2270,7 +2492,6 @@
       fetchLeaderboard();
     });
 
-    // Inizializzazione all'apertura della pagina
     (function init() {
       totalCounterEl.textContent = BADGES.length;
       const saved = loadLocalAccount();
