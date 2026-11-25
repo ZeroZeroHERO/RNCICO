@@ -804,12 +804,20 @@
     function isDivisorOf496(n) {
       return n > 0 && 496 % n === 0;
     }
+    
+    function isUpsideDownSame(n) {
+      const map = { '0': '0', '1': '1', '6': '9', '8': '8', '9': '6' };
+      const s = String(n);
+      const flipped = s.split('').reverse().map(c => map[c] || '').join('');
+      return s === flipped;
+    }
 
     const RAW_BADGES = [
       // 1. Numeri Esatti
       { id: 'n0', name: 'volte in cui stefano ha fatto sesso', description: 'Esattamente 0', check: (n) => n === 0 },
       { id: 'n1', name: 'sai perchè sei il numero 2?', description: 'Esattamente 1', check: (n) => n === 1 },
-      { id: 'n2', name: 'il dualismo dell uomo', description: 'Esattamente 2', check: (n) => n === 2 },
+      { id: 'n2', name: 'il primo numero primo', description: 'Esattamente 2', check: (n) => n === 2 },
+      { id: 'n3', name: 'Le palle der basil', description: 'Esattamente 3', check: (n) => n === 3 },
       { id: 'n4', name: 'i mondiali vinti da mohamed light', description: 'Esattamente 4', check: (n) => n === 4 },
       { id: 'n6', name: 'seeeeeei', description: 'Esattamente 6', check: (n) => n === 6 },
       { id: 'n9', name: 'no-ve', description: 'Esattamente 9', check: (n) => n === 9 },
@@ -817,7 +825,9 @@
       { id: 'n11', name: 'tradimenti totali del CEO di NVIDIA', description: 'Esattamente 11', check: (n) => n === 11 },
       { id: 'n12', name: 'israele (daje)', description: 'Esattamente 12', check: (n) => n === 12 },
       { id: 'n24', name: 'aronnac al', description: 'Esattamente 24', check: (n) => n === 24 },
-      { id: 'n33', name: 'anni di cristo', description: 'Esattamente 33', check: (n) => n === 33 },
+      { id: 'n31', name: 'NEEWOLLAH', description: 'Esattamente 31', check: (n) => n === 31 },
+      { id: 'n33', name: 'Cena da chopstick', description: 'Esattamente 33', check: (n) => n === 33 },
+      { id: 'n48', name: 'gli anni di Ilkka Paananen', description: 'Esattamente 48', check: (n) => n === 48 },
       { id: 'n52', name: 'civico di ila', description: 'Esattamente 52', check: (n) => n === 52 },
       { id: 'n70', name: 'IL SETTANTA IL SETTANTA', description: 'Esattamente 70', check: (n) => n === 70 },
       { id: 'n82', name: 'civico di cris', description: 'Esattamente 82', check: (n) => n === 82 },
@@ -830,9 +840,11 @@
       { id: 'n118', name: 'CENTODICIOTTOOO', description: 'Esattamente 118', check: (n) => n === 118 },
       { id: 'n119', name: 'ha hittato la seconda torre al contrario', description: 'Esattamente 119', check: (n) => n === 119 },
       { id: 'n123', name: 'le carte di clash royale', description: 'Esattamente 123', check: (n) => n === 123 },
-      { id: 'n125', name: 'il cubo di 5, chiaro no?', description: 'Esattamente 125', check: (n) => n === 125 },
+      { id: 'n126', name: 'Follower di Orgojo_Romano', description: 'Esattamente 126', check: (n) => n === 126 },
       { id: 'n127', name: 'civico di leo', description: 'Esattamente 127', check: (n) => n === 127 },
       { id: 'n141', name: 'radice di 2', description: 'Esattamente 141 (1.41)', check: (n) => n === 141 },
+      { id: 'n165', name: 'gruppi che cris e cico hanno in comune', description: 'Esattamente 165', check: (n) => n === 165 },
+      { id: 'n190', name: 'la paura + 100', description: 'Esattamente 90 + 100', check: (n) => n === 190 },
       { id: 'n193_cap', name: 'CAP prati', description: 'Esattamente 193 (00193)', check: (n) => n === 193 },
       { id: 'n195', name: 'stati nel mondo', description: 'Esattamente 195 (non comprende palestina)', check: (n) => n === 195 },
       { id: 'n206', name: 'le ossa che puoi rompere a cico', description: 'Esattamente 206', check: (n) => n === 206 },
@@ -845,11 +857,12 @@
       { id: 'n343', name: 'il cubo di 7, chiaro no?', description: 'Esattamente 343', check: (n) => n === 343 },
       { id: 'n350', name: 'lo jager bomb', description: 'Esattamente 350', check: (n) => n === 350 },
       { id: 'n365', name: 'un anno (martedì)', description: 'Esattamente 365', check: (n) => n === 365 },
+      { id: 'n373', name: 'Il 187° numero dispari', description: 'Il 187° numero dispari, non c'è altro', check: (n) => n === 365 },
       { id: 'n404', name: "L'ERRORE L'ERRORE", description: 'Esattamente 404', check: (n) => n === 404 },
       { id: 'n412', name: 'Laurea ad honorem de mi pac', description: 'Esattamente 412', check: (n) => n === 412 },
       { id: 'n420', name: 'è la cannora', description: 'Esattamente 420', check: (n) => n === 420 },
-      { id: 'n441', name: 'radice di 194481', description: 'Esattamente 441', check: (n) => n === 441 },
-      { id: 'n500', name: 'aura', description: 'Esattamente 500', check: (n) => n === 500 },
+      { id: 'n441', name: 'la radice di 194481', description: 'Esattamente 441', check: (n) => n === 441 },
+      { id: 'n500', name: 'AURA', description: 'Esattamente 500', check: (n) => n === 500 },
       { id: 'siri_timer', name: 'ei siri metti un timer di 5 minuti', description: 'Esattamente 5 o 300', check: (n) => n === 5 || n === 300 },
 
       // 2. Numeri di Telefono e Inversi
@@ -869,10 +882,7 @@
       { id: 'cont77', name: 'le tette', description: 'Contiene 77', check: (n) => String(n).includes('77') },
       { id: 'end26', name: 'compleanno di cris', description: 'Finisce con 26', check: (n) => n % 100 === 26 },
       { id: 'end22', name: 'finisce con compleanno di cico', description: 'Finisce con 22', check: (n) => n % 100 === 22 },
-      { id: 'end25', name: 'natale', description: 'Finisce con 25', check: (n) => n % 100 === 25 },
-      { id: 'end20', name: 'vuoi fare 20€?', description: 'Finisce con 20', check: (n) => n % 100 === 20 },
       { id: 'end88', name: 'st3pny', description: 'Finisce con 88', check: (n) => n % 100 === 88 },
-      { id: 'end44', name: 'lewis hamilton', description: 'Finisce con 44', check: (n) => n % 100 === 44 },
       { id: 'near100', name: 'quasi numero tondo', description: 'Finisce con 99 o 01', check: (n) => n % 100 === 99 || n % 100 === 1 },
       { id: 'end2', name: 'mucca e bue', description: 'Finisce con 2', check: (n) => n % 10 === 2 },
       { id: 'end4', name: 'cane e gatto', description: 'Finisce con 4', check: (n) => n % 10 === 4 },
@@ -881,19 +891,16 @@
 
       // 4. Intervalli di Numeri
       { id: 'under10', name: 'UNO DIECII, UNO, UNO DIECIII', description: 'Numeri tra 1 e 9', check: (n) => n >= 1 && n <= 9 },
-      { id: 'over490', name: 'comunque meno del debito di cico', description: 'Numeri sopra al 490 (491-500)', check: (n) => n > 490 },
-      { id: 'carlo_sides', name: 'i lati di carlo', description: 'Numero compreso tra 30 e 40', check: (n) => n >= 30 && n <= 40 },
+      { id: 'alphabet', name: 'Numeri che rappresentano lettere dell'alfabeto', description: 'Numeri tra 1 e 26', check: (n) => n >= 1 && n <= 26 },
+      { id: 'over490', name: 'Il debito di Cico (je piacerebbe)', description: 'Numeri sopra al 490 (491-500)', check: (n) => n > 490 },
+      { id: 'carlo_sides', name: 'i lati di carlo', description: 'Numero compreso tra 40 e 50', check: (n) => n >= 40 && n <= 50 },
       { id: 'cico_mom', name: 'il peso della mamma di cico', description: 'Numero compreso tra 105 e 124', check: (n) => n >= 105 && n <= 124 },
-      { id: 'leo_aviator', name: 'soldi vinti da leo su aviator', description: 'Numero compreso tra 320 e 340', check: (n) => n >= 320 && n <= 340 },
-      { id: 'emma_debt', name: 'il debito di emma', description: 'Numero compreso tra 370 e 390', check: (n) => n >= 370 && n <= 390 },
+      { id: 'leo_aviator', name: 'soldi vinti da leo su aviator', description: 'Numero compreso tra 325 e 335', check: (n) => n >= 325 && n <= 335 },
+      { id: 'emma_debt', name: 'il debito di emma', description: 'Numero compreso tra 375 e 385', check: (n) => n >= 375 && n <= 385 },
       { id: 'cannora_early', name: 'cannora a breve', description: 'Da 415 a 419', check: (n) => n >= 415 && n <= 419 },
       { id: 'cannora_late', name: 'cannora in ritardo', description: 'Da 421 a 424', check: (n) => n >= 421 && n <= 424 },
-      { id: 'cris_banks', name: 'le banche truffate da crisafulli', description: 'Da 201 a 210', check: (n) => n >= 201 && n <= 210 },
       { id: 'vale_cannore', name: 'le cannore fatte da valevita nel big 26', description: 'Da 430 a 439', check: (n) => n >= 430 && n <= 439 },
-      { id: 'emma_paranormal', name: 'eventi paranormali successi ad emma', description: 'Da 280 a 289', check: (n) => n >= 280 && n <= 289 },
-      { id: 'ila_contra', name: 'volte in cui ilaria si è contraddetta oggi', description: 'Da 130 a 139', check: (n) => n >= 130 && n <= 139 },
-      { id: 'cris_farts', name: 'scoregge fatte da crisafulli oggi', description: 'Da 160 a 169', check: (n) => n >= 160 && n <= 169 },
-      { id: 'kidjajo_today', name: 'volte in cui kidjajo ha detto "gay" o "godo" oggi', description: 'Tra 450 e 459', check: (n) => n >= 450 && n <= 459 },
+      { id: 'luce_carlo', name: 'frequenza della luce che carlo non vede', description: 'Numero compreso tra 380 e 450', check: (n) => n >= 380 && n <= 450 },
 
       // 5. Matematica, Multipli e Chimica
       { id: 'odd', name: 'Numero Dispari', description: 'Non divisibile per 2', check: (n) => n % 2 !== 0 },
@@ -902,6 +909,7 @@
       { id: 'square', name: 'Quadrato Perfetto', description: 'Es. 4, 9, 16, 25 ... 484', check: (n) => isPerfectSquare(n) },
       { id: 'palindrome', name: 'Palindromo', description: 'Si legge uguale da sinistra e destra', check: (n) => isPalindrome(n) },
       { id: 'repdigit', name: 'Cifre Uguali', description: 'Tutte le cifre identiche (es. 77, 333)', check: (n) => n >= 10 && new Set(String(n)).size === 1 },
+      { id: 'upside_down', name: 'numeri che capovolti si leggono uguali', description: 'Ambigrammi ruotati di 180° (es.  8, 11, 69, 88, 96, 101, 169, 181, ...)', check: (n) => isUpsideDownSame(n) },
       { id: 'mult50', name: 'qualche invito buddybank', description: 'Multiplo di 50', check: (n) => n > 0 && n % 50 === 0 },
       { id: 'mult70', name: 'multiplo di 70', description: 'Multiplo di 70', check: (n) => n > 0 && n % 70 === 0 },
       { id: 'mult37', name: 'multiplo di 37', description: 'Multiplo di 37', check: (n) => n > 0 && n % 37 === 0 },
@@ -913,7 +921,9 @@
       { id: 'binary', name: 'solo 10 tipi di persone al mondo', description: 'Composto solo da cifre 0 e 1', check: (n) => isBinaryDigits(n) },
       { id: 'perfect', name: 'Numeri Perfetti', description: '6, 28, 496', check: (n) => isPerfectNumber(n) },
       { id: 'fibonacci', name: 'Numeri di Fibonacci', description: 'Appartiene alla sequenza di Fibonacci', check: (n) => isFibonacci(n) },
+      { id: 'div97', name: 'divisori di 97', description: 'Tutti i divisori di 97 (1 e 97)', check: (n) => n === 1 || n === 97 },
       { id: 'div496', name: 'divisori di 496', description: 'Tutti i divisori di 496', check: (n) => isDivisorOf496(n) },
+      { id: 'self_pow', name: 'numeri elevati a se stessi', description: '1^1, 2^2, 3^3, 4^4 (1, 4, 27, 256)', check: (n) => [1, 4, 27, 256].includes(n) },
 
       // Elementi chimici
       { id: 'elem_se', name: 'Selenio (Se)', description: 'Numero atomico 34', check: (n) => n === 34 },
@@ -921,6 +931,7 @@
       { id: 'elem_w', name: 'Tungsteno (W)', description: 'Numero atomico 74', check: (n) => n === 74 },
       { id: 'elem_es', name: 'Einsteinio (Es)', description: 'Numero atomico 99', check: (n) => n === 99 },
       { id: 'elem_rf', name: 'Rutherfordio (Rf)', description: 'Numero atomico 104', check: (n) => n === 104 }
+      { id: 'mc_ores', name: 'id che su minecraft rappresentano un minerale', description: 'ID minerali grezzi (263 Carbone, 264 Diamante, 265 Ferro, 266 Oro, 331 Redstone, 351 Lapislazzuli, 388 Smeraldo, 406 Quarzo)', check: (n) => [263, 264, 265, 266, 331, 351, 388, 406].includes(n) },
     ];
 
     const BADGES = RAW_BADGES.map(badge => {
