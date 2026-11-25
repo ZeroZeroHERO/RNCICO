@@ -16,6 +16,7 @@
       --accent-hover: #2563eb;
       --gold: #f59e0b;
       --emerald: #10b981;
+      --purple: #a855f7;
       --danger: #ef4444;
     }
 
@@ -40,7 +41,7 @@
       max-width: 820px;
     }
 
-    /* Onboarding Modal */
+    /* Modals (Onboarding & Settings) */
     .modal-overlay {
       position: fixed;
       inset: 0;
@@ -124,6 +125,11 @@
       margin-bottom: 0.75rem;
     }
 
+    .modal-actions {
+      display: flex;
+      gap: 0.65rem;
+    }
+
     .modal-submit {
       width: 100%;
       background: var(--accent);
@@ -147,7 +153,26 @@
       cursor: not-allowed;
     }
 
-    /* Header & User Pill */
+    .modal-cancel {
+      width: 100%;
+      background: rgba(139, 149, 165, 0.12);
+      color: var(--text-muted);
+      border: 1px solid var(--card-border);
+      border-radius: 10px;
+      padding: 0.95rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.9rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.2s ease, color 0.2s ease;
+    }
+
+    .modal-cancel:hover {
+      background: rgba(139, 149, 165, 0.2);
+      color: #ffffff;
+    }
+
+    /* Header & User Pill + Settings Button */
     header {
       text-align: center;
       margin-bottom: 1.6rem;
@@ -156,7 +181,10 @@
     .user-bar {
       display: flex;
       justify-content: center;
+      align-items: center;
+      gap: 0.5rem;
       margin-bottom: 0.85rem;
+      flex-wrap: wrap;
     }
 
     .player-pill {
@@ -182,6 +210,28 @@
 
     .player-pill strong {
       color: #ffffff;
+    }
+
+    .settings-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      color: var(--text-muted);
+      padding: 0.38rem 0.8rem;
+      border-radius: 999px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.78rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: border-color 0.2s ease, color 0.2s ease, background 0.2s ease;
+    }
+
+    .settings-btn:hover {
+      border-color: var(--accent);
+      color: #ffffff;
+      background: rgba(59, 130, 246, 0.12);
     }
 
     header h1 {
@@ -273,8 +323,8 @@
     }
 
     .number-card.jackpot {
-      border-color: var(--gold);
-      box-shadow: 0 0 28px rgba(245, 158, 11, 0.25);
+      border-color: #eab308;
+      box-shadow: 0 0 28px rgba(234, 179, 8, 0.3);
     }
 
     .range-hint {
@@ -337,26 +387,55 @@
       font-size: 0.9rem;
     }
 
+    /* Pillole badge sbloccate al tiro (5 fasce di colore) */
     .pill-badge {
-      background: rgba(16, 185, 129, 0.15);
-      border: 1px solid var(--emerald);
-      color: #6ee7b7;
       font-family: 'JetBrains Mono', monospace;
       font-size: 0.82rem;
       font-weight: 700;
       padding: 0.35rem 0.75rem;
       border-radius: 999px;
-      animation: popIn 0.25s ease-out;
+      border: 1px solid transparent;
+      animation: popIn 0.28s cubic-bezier(0.18, 0.89, 0.32, 1.28);
     }
 
-    .pill-badge.rare {
-      background: rgba(245, 158, 11, 0.18);
-      border-color: var(--gold);
-      color: #fcd34d;
+    /* < 1000: Verde */
+    .pill-badge.tier-green {
+      background: rgba(16, 185, 129, 0.16);
+      border-color: #10b981;
+      color: #6ee7b7;
+    }
+
+    /* 1000 - 4999: Blu */
+    .pill-badge.tier-blue {
+      background: rgba(59, 130, 246, 0.18);
+      border-color: #3b82f6;
+      color: #93c5fd;
+    }
+
+    /* 5000 - 9999: Viola */
+    .pill-badge.tier-purple {
+      background: rgba(168, 85, 247, 0.18);
+      border-color: #a855f7;
+      color: #d8b4fe;
+    }
+
+    /* 10000 - 49999: Rosso */
+    .pill-badge.tier-red {
+      background: rgba(239, 68, 68, 0.2);
+      border-color: #ef4444;
+      color: #fca5a5;
+    }
+
+    /* >= 50000: Giallo */
+    .pill-badge.tier-yellow {
+      background: rgba(234, 179, 8, 0.22);
+      border-color: #eab308;
+      color: #fef08a;
+      box-shadow: 0 0 12px rgba(234, 179, 8, 0.25);
     }
 
     @keyframes popIn {
-      0% { transform: scale(0.85); opacity: 0; }
+      0% { transform: scale(0.75); opacity: 0; }
       100% { transform: scale(1); opacity: 1; }
     }
 
@@ -576,16 +655,45 @@
       color: #525d70;
     }
 
+    /* Card badge sbloccate: 5 colori per fascia */
     .badge-card.unlocked {
       opacity: 1;
       border-style: solid;
-      border-color: var(--emerald);
-      background: rgba(16, 185, 129, 0.07);
     }
+
+    .badge-card.unlocked.tier-green {
+      border-color: #10b981;
+      background: rgba(16, 185, 129, 0.08);
+    }
+    .badge-card.unlocked.tier-green .badge-points { color: #34d399; }
+
+    .badge-card.unlocked.tier-blue {
+      border-color: #3b82f6;
+      background: rgba(59, 130, 246, 0.09);
+    }
+    .badge-card.unlocked.tier-blue .badge-points { color: #60a5fa; }
+
+    .badge-card.unlocked.tier-purple {
+      border-color: #a855f7;
+      background: rgba(168, 85, 247, 0.09);
+    }
+    .badge-card.unlocked.tier-purple .badge-points { color: #c084fc; }
+
+    .badge-card.unlocked.tier-red {
+      border-color: #ef4444;
+      background: rgba(239, 68, 68, 0.1);
+    }
+    .badge-card.unlocked.tier-red .badge-points { color: #f87171; }
+
+    .badge-card.unlocked.tier-yellow {
+      border-color: #eab308;
+      background: rgba(234, 179, 8, 0.11);
+    }
+    .badge-card.unlocked.tier-yellow .badge-points { color: #facc15; }
 
     .badge-card.active-now {
       transform: translateY(-2px);
-      box-shadow: 0 4px 16px rgba(16, 185, 129, 0.25);
+      box-shadow: 0 4px 16px rgba(255, 255, 255, 0.14);
     }
 
     .badge-top {
@@ -606,7 +714,7 @@
       font-family: 'JetBrains Mono', monospace;
       font-size: 0.82rem;
       font-weight: 800;
-      color: var(--gold);
+      color: var(--text-muted);
       white-space: nowrap;
     }
 
@@ -651,7 +759,7 @@
       <h2>RN<span>CICO</span></h2>
       <p class="modal-desc">Scegli il tuo nickname per entrare nella classifica globale dei badge.</p>
       <div class="modal-warning">
-        Questo dispositivo verrà associato in modo permanente al tuo nickname.
+        Questo dispositivo verrà associato al tuo profilo. Potrai cambiare username dalle Impostazioni.
       </div>
       <form id="register-form">
         <input
@@ -670,6 +778,31 @@
     </div>
   </div>
 
+  <!-- Modal Impostazioni -->
+  <div class="modal-overlay hidden" id="settings-modal">
+    <div class="modal-card">
+      <h2>IMPOSTAZIONI</h2>
+      <p class="modal-desc">Modifica il tuo username pubblico. I tuoi badge, punti e tiri resteranno invariati.</p>
+      <form id="settings-form">
+        <input
+          type="text"
+          id="new-nickname-input"
+          class="nickname-input"
+          placeholder="Nuovo username"
+          minlength="2"
+          maxlength="20"
+          autocomplete="off"
+          required
+        />
+        <div class="modal-error" id="settings-error"></div>
+        <div class="modal-actions">
+          <button type="button" class="modal-cancel" id="close-settings-btn">ANNULLA</button>
+          <button type="submit" class="modal-submit" id="save-nickname-btn">SALVA</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <div class="container">
     <header>
       <div class="user-bar">
@@ -677,6 +810,9 @@
           <span class="dot"></span>
           <span>GIOCATORE: <strong id="current-nickname">---</strong></span>
         </div>
+        <button type="button" class="settings-btn" id="open-settings-btn" title="Impostazioni">
+          ⚙ IMPOSTAZIONI
+        </button>
       </div>
       <h1>RN<span>CICO</span></h1>
       <p class="subtitle">Genera un numero da 0 a 500 e sucamelaradio</p>
@@ -755,8 +891,17 @@
     const MAX_NUM = 500;
     const TOTAL_NUMBERS = MAX_NUM - MIN_NUM + 1;
     const DIGIT_LOCK_DELAY = 1500;
+    const BADGE_REVEAL_DELAY = 500; // 0,5 secondi tra un badge e l'altro
     const STORAGE_KEY = 'rncico_device_account_v1';
     const API_ENDPOINT = '/api/leaderboard';
+
+    function getBadgeTierClass(points) {
+      if (points < 1000) return 'tier-green';
+      if (points < 5000) return 'tier-blue';
+      if (points < 10000) return 'tier-purple';
+      if (points < 50000) return 'tier-red';
+      return 'tier-yellow';
+    }
 
     function isPrime(n) {
       if (n < 2) return false;
@@ -804,7 +949,7 @@
     function isDivisorOf496(n) {
       return n > 0 && 496 % n === 0;
     }
-    
+
     function isUpsideDownSame(n) {
       const map = { '0': '0', '1': '1', '6': '9', '8': '8', '9': '6' };
       const s = String(n);
@@ -910,7 +1055,7 @@
       { id: 'square', name: 'Quadrato Perfetto', description: 'Es. 4, 9, 16, 25 ... 484', check: (n) => isPerfectSquare(n) },
       { id: 'palindrome', name: 'Palindromo', description: 'Si legge uguale da sinistra e destra', check: (n) => isPalindrome(n) },
       { id: 'repdigit', name: 'Cifre Uguali', description: 'Tutte le cifre identiche (es. 77, 333)', check: (n) => n >= 10 && new Set(String(n)).size === 1 },
-      { id: 'upside_down', name: 'numeri che capovolti si leggono uguali', description: 'Ambigrammi ruotati di 180° (es.  8, 11, 69, 88, 96, 101, 169, 181, ...)', check: (n) => isUpsideDownSame(n) },
+      { id: 'upside_down', name: 'numeri che capovolti si leggono uguali', description: 'Ambigrammi ruotati di 180° (es. 8, 11, 69, 88, 96, 101, 169, 181, ...)', check: (n) => isUpsideDownSame(n) },
       { id: 'mult50', name: 'qualche invito buddybank', description: 'Multiplo di 50', check: (n) => n > 0 && n % 50 === 0 },
       { id: 'mult70', name: 'multiplo di 70', description: 'Multiplo di 70', check: (n) => n > 0 && n % 70 === 0 },
       { id: 'mult37', name: 'multiplo di 37', description: 'Multiplo di 37', check: (n) => n > 0 && n % 37 === 0 },
@@ -926,7 +1071,7 @@
       { id: 'div496', name: 'divisori di 496', description: 'Tutti i divisori di 496', check: (n) => isDivisorOf496(n) },
       { id: 'self_pow', name: 'numeri elevati a se stessi', description: '1^1, 2^2, 3^3, 4^4 (1, 4, 27, 256)', check: (n) => [1, 4, 27, 256].includes(n) },
 
-      // Elementi chimici
+      // Elementi chimici & Minecraft
       { id: 'elem_se', name: 'Selenio (Se)', description: 'Numero atomico 34', check: (n) => n === 34 },
       { id: 'elem_sr', name: 'Stronzio (Sr)', description: 'Numero atomico 38', check: (n) => n === 38 },
       { id: 'elem_w', name: 'Tungsteno (W)', description: 'Numero atomico 74', check: (n) => n === 74 },
@@ -953,7 +1098,7 @@
     }).sort((a, b) => a.points - b.points);
 
     // Stato applicativo
-    let account = null; // { deviceId, nickname, totalScore, bestRollScore, rollCount, unlockedIds, history }
+    let account = null;
     let isRolling = false;
 
     // Elementi DOM
@@ -963,6 +1108,15 @@
     const modalError = document.getElementById('modal-error');
     const registerBtn = document.getElementById('register-btn');
     const currentNicknameEl = document.getElementById('current-nickname');
+
+    // Elementi DOM Impostazioni
+    const settingsModal = document.getElementById('settings-modal');
+    const openSettingsBtn = document.getElementById('open-settings-btn');
+    const closeSettingsBtn = document.getElementById('close-settings-btn');
+    const settingsForm = document.getElementById('settings-form');
+    const newNicknameInput = document.getElementById('new-nickname-input');
+    const settingsError = document.getElementById('settings-error');
+    const saveNicknameBtn = document.getElementById('save-nickname-btn');
 
     const digitEls = [
       document.getElementById('digit-0'),
@@ -1052,7 +1206,8 @@
       BADGES.forEach(badge => {
         const card = document.createElement('div');
         const isActive = activeIds.includes(badge.id);
-        const stateClass = badge.unlocked ? 'unlocked' : 'locked-mystery';
+        const tierClass = getBadgeTierClass(badge.points);
+        const stateClass = badge.unlocked ? `unlocked ${tierClass}` : 'locked-mystery';
         card.className = `badge-card ${stateClass} ${isActive ? 'active-now' : ''}`;
 
         const displayName = badge.unlocked ? `✓ ${badge.name}` : '??? BADGE NASCOSTO ???';
@@ -1103,6 +1258,7 @@
         const rankClass = rank <= 3 ? `rank-${rank}` : '';
         const isMe = currentNickLower && row.nickname.toLowerCase() === currentNickLower;
         const rolls = Number(row.rollsCount) || 0;
+        const rollsDisplay = (rolls === 0 && row.badgesCount > 0) ? '—' : rolls.toLocaleString('it-IT');
 
         return `
           <tr class="${isMe ? 'current-user' : ''}">
@@ -1112,7 +1268,7 @@
               ${isMe ? '<span class="you-tag">TU</span>' : ''}
             </td>
             <td class="badges-col">${row.badgesCount}/${BADGES.length}</td>
-            <td class="rolls-col">${rolls.toLocaleString('it-IT')}</td>
+            <td class="rolls-col">${rollsDisplay}</td>
             <td class="score-col">${Number(row.totalScore || 0).toLocaleString('it-IT')} pt</td>
           </tr>
         `;
@@ -1172,6 +1328,85 @@
         console.error('Errore sincronizzazione server:', err);
       }
     }
+
+    // Gestione Menù Impostazioni (Cambio Username)
+    openSettingsBtn.addEventListener('click', () => {
+      if (!account) return;
+      settingsError.textContent = '';
+      newNicknameInput.value = account.nickname;
+      settingsModal.classList.remove('hidden');
+      newNicknameInput.focus();
+      newNicknameInput.select();
+    });
+
+    closeSettingsBtn.addEventListener('click', () => {
+      settingsModal.classList.add('hidden');
+    });
+
+    settingsModal.addEventListener('click', (e) => {
+      if (e.target === settingsModal) {
+        settingsModal.classList.add('hidden');
+      }
+    });
+
+    settingsForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (!account) return;
+
+      settingsError.textContent = '';
+      const newNick = newNicknameInput.value.trim();
+
+      if (newNick.length < 2 || newNick.length > 20) {
+        settingsError.textContent = 'Inserisci un username tra 2 e 20 caratteri.';
+        return;
+      }
+
+      if (newNick === account.nickname) {
+        settingsModal.classList.add('hidden');
+        return;
+      }
+
+      saveNicknameBtn.disabled = true;
+      saveNicknameBtn.textContent = 'SALVATAGGIO...';
+
+      try {
+        const res = await fetch(API_ENDPOINT, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: 'rename',
+            deviceId: account.deviceId,
+            nickname: newNick
+          })
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) {
+          settingsError.textContent = data.error || 'Username non disponibile.';
+          saveNicknameBtn.disabled = false;
+          saveNicknameBtn.textContent = 'SALVA';
+          return;
+        }
+
+        account.nickname = data.player.nickname;
+        saveLocalAccount();
+        currentNicknameEl.textContent = account.nickname;
+
+        if (data.leaderboard) {
+          renderLeaderboard(data.leaderboard);
+        } else {
+          fetchLeaderboard();
+        }
+
+        settingsModal.classList.add('hidden');
+      } catch (err) {
+        settingsError.textContent = 'Errore di rete. Riprova tra poco.';
+      } finally {
+        saveNicknameBtn.disabled = false;
+        saveNicknameBtn.textContent = 'SALVA';
+      }
+    });
 
     // Gestione registrazione primo accesso
     registerForm.addEventListener('submit', async (e) => {
@@ -1276,61 +1511,85 @@
     }
 
     function finalizeRoll(result) {
-      const matched = BADGES.filter(b => b.check(result));
-      let rollPoints = 0;
+      // Ordine crescente di punti (dal più comune al più raro)
+      const matched = BADGES
+        .filter(b => b.check(result))
+        .sort((a, b) => a.points - b.points);
 
-      triggeredBadgesEl.innerHTML = '';
+      const totalRollPoints = matched.reduce((sum, b) => sum + b.points, 0);
 
-      if (matched.length === 0) {
-        triggeredBadgesEl.innerHTML = '<span class="placeholder-text">Nessun badge sbloccato</span>';
-      } else {
-        matched.forEach(badge => {
-          if (!badge.unlocked) {
-            badge.unlocked = true;
-            if (!account.unlockedIds.includes(badge.id)) {
-              account.unlockedIds.push(badge.id);
-            }
-          }
-          rollPoints += badge.points;
-
-          const pill = document.createElement('span');
-          pill.className = `pill-badge ${badge.points >= 2000 ? 'rare' : ''}`;
-          pill.textContent = `${badge.name} (+${badge.points.toLocaleString('it-IT')})`;
-          triggeredBadgesEl.appendChild(pill);
-        });
-
-        if (matched.some(b => b.points >= 5000)) {
-          numberCard.classList.add('jackpot');
+      // Salva subito i dati definitivi così anche ricaricando la pagina non si perde nulla
+      matched.forEach(badge => {
+        badge.unlocked = true;
+        if (!account.unlockedIds.includes(badge.id)) {
+          account.unlockedIds.push(badge.id);
         }
-      }
+      });
 
       account.rollCount += 1;
-      account.totalScore += rollPoints;
-      if (rollPoints > (account.bestRollScore || 0)) {
-        account.bestRollScore = rollPoints;
+      account.totalScore += totalRollPoints;
+      if (totalRollPoints > (account.bestRollScore || 0)) {
+        account.bestRollScore = totalRollPoints;
       }
-      account.history.unshift({ num: result, points: rollPoints });
+      account.history.unshift({ num: result, points: totalRollPoints });
       if (account.history.length > 15) {
         account.history = account.history.slice(0, 15);
       }
 
       saveLocalAccount();
-
-      totalScoreEl.textContent = account.totalScore.toLocaleString('it-IT');
-      lastRollScoreEl.textContent = `+${rollPoints.toLocaleString('it-IT')}`;
-      bestRollScoreEl.textContent = `+${account.bestRollScore.toLocaleString('it-IT')}`;
-      rollCountEl.textContent = account.rollCount.toLocaleString('it-IT');
-      avgScoreEl.textContent = Math.round(account.totalScore / account.rollCount).toLocaleString('it-IT');
-      unlockedCounterEl.textContent = account.unlockedIds.length;
-
-      renderBadgesGrid(matched.map(b => b.id));
-      renderHistoryFromState();
-
-      // Sincronizza con il server per aggiornare badge, roll e punti in classifica
       syncAccountToServer();
 
-      isRolling = false;
-      rollBtn.disabled = false;
+      triggeredBadgesEl.innerHTML = '';
+
+      if (matched.length === 0) {
+        triggeredBadgesEl.innerHTML = '<span class="placeholder-text">Nessun badge sbloccato</span>';
+        totalScoreEl.textContent = account.totalScore.toLocaleString('it-IT');
+        lastRollScoreEl.textContent = '+0';
+        bestRollScoreEl.textContent = `+${account.bestRollScore.toLocaleString('it-IT')}`;
+        rollCountEl.textContent = account.rollCount.toLocaleString('it-IT');
+        avgScoreEl.textContent = Math.round(account.totalScore / account.rollCount).toLocaleString('it-IT');
+        unlockedCounterEl.textContent = account.unlockedIds.length;
+        renderBadgesGrid([]);
+        renderHistoryFromState();
+        isRolling = false;
+        rollBtn.disabled = false;
+        return;
+      }
+
+      // Comparsa sequenziale ogni 0,5 secondi in ordine crescente
+      let revealedPoints = 0;
+
+      matched.forEach((badge, idx) => {
+        setTimeout(() => {
+          revealedPoints += badge.points;
+          lastRollScoreEl.textContent = `+${revealedPoints.toLocaleString('it-IT')}`;
+
+          const tierClass = getBadgeTierClass(badge.points);
+          const pill = document.createElement('span');
+          pill.className = `pill-badge ${tierClass}`;
+          pill.textContent = `${badge.name} (+${badge.points.toLocaleString('it-IT')})`;
+          triggeredBadgesEl.appendChild(pill);
+
+          if (badge.points >= 50000) {
+            numberCard.classList.add('jackpot');
+          }
+
+          // All'ultimo badge rivelato aggiorna tutte le statistiche, la griglia e riabilita il tasto
+          if (idx === matched.length - 1) {
+            totalScoreEl.textContent = account.totalScore.toLocaleString('it-IT');
+            bestRollScoreEl.textContent = `+${account.bestRollScore.toLocaleString('it-IT')}`;
+            rollCountEl.textContent = account.rollCount.toLocaleString('it-IT');
+            avgScoreEl.textContent = Math.round(account.totalScore / account.rollCount).toLocaleString('it-IT');
+            unlockedCounterEl.textContent = account.unlockedIds.length;
+
+            renderBadgesGrid(matched.map(b => b.id));
+            renderHistoryFromState();
+
+            isRolling = false;
+            rollBtn.disabled = false;
+          }
+        }, idx * BADGE_REVEAL_DELAY);
+      });
     }
 
     rollBtn.addEventListener('click', handleRoll);
