@@ -2217,8 +2217,7 @@
 
     function applyRandomHardModeTransform() {
       clearHardModeTransforms();
-      const modes = ['flip-180', 'flip-x', 'flip-y'];
-      const chosen = modes[Math.floor(Math.random() * modes.length)];
+      const chosen = Math.random() < 0.5 ? 'flip-x' : 'flip-180';
       document.documentElement.classList.add(chosen);
     }
 
@@ -2340,8 +2339,14 @@
         (account.unlockedSecrets ? account.unlockedSecrets.length : 0);
     }
 
-    function showSuperAnnouncement(nickname, badgeName) {
+    const TWENTY_FOUR_HOURS_MS = 24 * 60 * 60 * 1000;
+
+    function showSuperAnnouncement(nickname, badgeName, timestamp = Date.now()) {
       if (!superAnnouncementBannerEl || !superAnnouncementTextEl) return;
+      if (timestamp && Date.now() - Number(timestamp) > TWENTY_FOUR_HOURS_MS) {
+        superAnnouncementBannerEl.classList.add('hidden');
+        return;
+      }
       superAnnouncementTextEl.textContent = `${nickname} ha sbloccato il badge: ${badgeName.toUpperCase()}`;
       superAnnouncementBannerEl.classList.remove('hidden');
     }
@@ -2418,7 +2423,8 @@
           latestSuperAnnouncement = data.latestSuperAnnouncement;
           showSuperAnnouncement(
             latestSuperAnnouncement.nickname,
-            latestSuperAnnouncement.badgeName
+            latestSuperAnnouncement.badgeName,
+            latestSuperAnnouncement.updatedAt || latestSuperAnnouncement.ts
           );
         }
         if (data.leaderboard) {
@@ -2444,7 +2450,8 @@
           latestSuperAnnouncement = data.latestSuperAnnouncement;
           showSuperAnnouncement(
             latestSuperAnnouncement.nickname,
-            latestSuperAnnouncement.badgeName
+            latestSuperAnnouncement.badgeName,
+            latestSuperAnnouncement.updatedAt || latestSuperAnnouncement.ts
           );
         }
         renderLeaderboard(data.leaderboard || [], data.kingMessage || null);
@@ -2948,6 +2955,7 @@
               showSuperAnnouncement(
                 latestSuperAnnouncement.nickname,
                 latestSuperAnnouncement.badgeName
+                latestSuperAnnouncement.updatedAt || latestSuperAnnouncement.ts
               );
             }
 
@@ -3122,6 +3130,7 @@
           showSuperAnnouncement(
             latestSuperAnnouncement.nickname,
             latestSuperAnnouncement.badgeName
+            latestSuperAnnouncement.updatedAt || latestSuperAnnouncement.ts
           );
         }
         if (data.leaderboard) {
