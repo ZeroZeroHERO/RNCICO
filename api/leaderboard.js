@@ -71,10 +71,10 @@ const RAW_BADGES = [
   { id: 'n11', check: (n) => n === 11 },
   { id: 'n12', check: (n) => n === 12 },
   { id: 'n18', check: (n) => n === 18 },
+  { id: 'n18_spaziali', check: (n) => n === 18 },
   { id: 'n24', check: (n) => n === 24 },
   { id: 'n31', check: (n) => n === 31 },
   { id: 'n33', check: (n) => n === 33 },
-  { id: 'n38', check: (n) => n === 38 },
   { id: 'n48', check: (n) => n === 48 },
   { id: 'n51', check: (n) => n === 51 },
   { id: 'n52', check: (n) => n === 52 },
@@ -86,8 +86,8 @@ const RAW_BADGES = [
   { id: 'n92', check: (n) => n === 92 },
   { id: 'n93', check: (n) => n === 93 },
   { id: 'n94', check: (n) => n === 94 },
-  { id: 'n109', check: (n) => n === 109 },
   { id: 'n100_stamps', check: (n) => n === 100 },
+  { id: 'n109', check: (n) => n === 109 },
   { id: 'n118', check: (n) => n === 118 },
   { id: 'n119', check: (n) => n === 119 },
   { id: 'n123', check: (n) => n === 123 },
@@ -197,8 +197,6 @@ const VALID_SECRET_IDS = new Set([
   'secret_nontivantare'
 ]);
 
-const MAX_POSSIBLE_BADGES = BADGE_CATALOG.size + VALID_SECRET_IDS.size; // 118
-
 async function kvGet(key) {
   const url = process.env.KV_REST_API_URL;
   const token = process.env.KV_REST_API_TOKEN;
@@ -263,9 +261,11 @@ function normalizePlayerRecord(player) {
   const isCrisAccount =
     player.nickname && player.nickname.toLowerCase() === 'crissupergay69';
 
-  // Ripristina esclusivamente l'account di CrisSuperGay69 ai valori originali (83 badge e 3.426.767 pt)
-  // senza imporre alcun limite massimo globale a punti o badge
-  if (isCrisAccount && (Number(player.totalScore) >= 6000000000 || (Number(player.totalScore) === 0 && Number(player.badgesCount) === 0))) {
+  if (
+    isCrisAccount &&
+    (Number(player.totalScore) >= 6000000000 ||
+      (Number(player.totalScore) === 0 && Number(player.badgesCount) === 0))
+  ) {
     const restoredCount = Math.max(83, cleanUnlocked.length + cleanSecrets.length);
     const restoredScore = Math.max(3426767, minScoreFromBadges);
     const restoredRolls = Math.max(Number(player.rollsCount) || 0, 1);
@@ -282,30 +282,12 @@ function normalizePlayerRecord(player) {
     };
   }
 
-  const effectiveBadgesCount = player.serverVerified && !player.needsLegacyRecovery
-    ? cleanUnlocked.length + cleanSecrets.length
-    : Math.max(Number(player.badgesCount) || 0, cleanUnlocked.length + cleanSecrets.length);
+  const effectiveBadgesCount =
+    player.serverVerified && !player.needsLegacyRecovery
+      ? cleanUnlocked.length + cleanSecrets.length
+      : Math.max(Number(player.badgesCount) || 0, cleanUnlocked.length + cleanSecrets.length);
 
   const effectiveScore = Math.max(Number(player.totalScore) || 0, minScoreFromBadges);
-
-  return {
-    ...player,
-    unlockedIds: cleanUnlocked,
-    secretUnlockedIds: cleanSecrets,
-    badgesCount: effectiveBadgesCount,
-    totalScore: effectiveScore,
-    rollsCount: Math.max(0, Number(player.rollsCount) || 0)
-  };
-}
-
-  // Per gli altri giocatori legittimi che avevano già giocato prima della patch, preserva i loro punti reali
-  const effectiveBadgesCount = player.serverVerified
-    ? cleanUnlocked.length + cleanSecrets.length
-    : Math.min(Math.max(Number(player.badgesCount) || 0, cleanUnlocked.length + cleanSecrets.length), MAX_POSSIBLE_BADGES);
-
-  const effectiveScore = player.serverVerified
-    ? Math.max(Number(player.totalScore) || 0, minScoreFromBadges)
-    : Math.max(Number(player.totalScore) || 0, minScoreFromBadges);
 
   return {
     ...player,
@@ -348,14 +330,14 @@ export default async function handler(req, res) {
     const players = (await kvGet(PLAYERS_KEY)) || {};
     let kingMessage = (await kvGet(KING_MSG_KEY)) || null;
 
-    // Pulisce immediatamente su Redis eventuali record manomessi
     let dirty = false;
     for (const [id, p] of Object.entries(players)) {
       const normalized = normalizePlayerRecord(p);
       if (
         normalized.totalScore !== p.totalScore ||
         normalized.badgesCount !== p.badgesCount ||
-        normalized.rollsCount !== p.rollsCount
+        normalized.rollsCount !== p.rollsCount ||
+        normalized.needsLegacyRecovery !== p.needsLegacyRecovery
       ) {
         players[id] = normalized;
         dirty = true;
@@ -388,7 +370,6 @@ export default async function handler(req, res) {
           return res.status(404).json({ error: 'Dispositivo non registrato.' });
         }
 
-        // Sincronizza una tantum gli ID già sbloccati in locale prima dell'aggiornamento anti-cheat
         if (!existing.serverVerified && Array.isArray(unlockedIds)) {
           const validClientIds = sanitizeIdList(unlockedIds, BADGE_CATALOG);
           if (validClientIds.length <= (existing.badgesCount || 0) + 5) {
@@ -396,7 +377,6 @@ export default async function handler(req, res) {
           }
           const validClientSecrets = sanitizeIdList(secretUnlockedIds, VALID_SECRET_IDS);
           existing.secretUnlockedIds = Array.from(new Set([...existing.secretUnlockedIds, ...validClientSecrets]));
-          existing.serverVerified = true;
         }
 
         const result = Math.floor(Math.random() * TOTAL_NUMBERS) + MIN_NUM;
@@ -420,7 +400,12 @@ export default async function handler(req, res) {
 
         const updatedUnlockedIds = Array.from(prevUnlockedSet);
         const updatedSecretIds = existing.secretUnlockedIds || [];
-        const newBadgesCount = updatedUnlockedIds.length + updatedSecretIds.length;
+        const computedCountFromIds = updatedUnlockedIds.length + updatedSecretIds.length;
+
+        const newBadgesCount = existing.needsLegacyRecovery
+          ? Math.max(existing.badgesCount || 0, computedCountFromIds)
+          : computedCountFromIds;
+
         const newTotalScore = (Number(existing.totalScore) || 0) + rollPoints;
         const newRollsCount = (Number(existing.rollsCount) || 0) + 1;
 
@@ -432,6 +417,7 @@ export default async function handler(req, res) {
           totalScore: newTotalScore,
           rollsCount: newRollsCount,
           serverVerified: true,
+          needsLegacyRecovery: existing.needsLegacyRecovery || false,
           updatedAt: Date.now()
         };
 
@@ -465,14 +451,15 @@ export default async function handler(req, res) {
 
         const updatedSecretIds = Array.from(secretSet);
         const updatedUnlockedIds = existing.unlockedIds || [];
+        const useLegacyIncrement = !existing.serverVerified || existing.needsLegacyRecovery;
 
         players[deviceId] = {
           ...existing,
           unlockedIds: updatedUnlockedIds,
           secretUnlockedIds: updatedSecretIds,
-          badgesCount: existing.serverVerified
-            ? updatedUnlockedIds.length + updatedSecretIds.length
-            : Math.min(MAX_POSSIBLE_BADGES, (existing.badgesCount || 0) + (unlockedNow ? 1 : 0)),
+          badgesCount: useLegacyIncrement
+            ? (existing.badgesCount || 0) + (unlockedNow ? 1 : 0)
+            : updatedUnlockedIds.length + updatedSecretIds.length,
           totalScore: (Number(existing.totalScore) || 0) + (unlockedNow ? 67 : 0),
           updatedAt: Date.now()
         };
@@ -596,7 +583,7 @@ export default async function handler(req, res) {
         });
       }
 
-      // 6. SYNC SOLA LETTURA / RIALLINEAMENTO SICURO (non accetta punti o badge arbitrarî)
+      // 6. SYNC SOLA LETTURA / RIALLINEAMENTO SICURO
       if (action === 'sync') {
         if (!existing) {
           return res.status(404).json({ error: 'Dispositivo non registrato.' });
