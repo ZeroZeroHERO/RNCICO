@@ -74,10 +74,12 @@ const RAW_BADGES = [
   { id: 'n24', check: (n) => n === 24 },
   { id: 'n31', check: (n) => n === 31 },
   { id: 'n33', check: (n) => n === 33 },
+  { id: 'n38', check: (n) => n === 38 },
   { id: 'n48', check: (n) => n === 48 },
   { id: 'n51', check: (n) => n === 51 },
   { id: 'n52', check: (n) => n === 52 },
   { id: 'n70', check: (n) => n === 70 },
+  { id: 'n71', check: (n) => n === 71 },
   { id: 'n82', check: (n) => n === 82 },
   { id: 'n90', check: (n) => n === 90 },
   { id: 'n91', check: (n) => n === 91 },
@@ -85,13 +87,14 @@ const RAW_BADGES = [
   { id: 'n93', check: (n) => n === 93 },
   { id: 'n94', check: (n) => n === 94 },
   { id: 'n109', check: (n) => n === 109 },
+  { id: 'n100_stamps', check: (n) => n === 100 },
   { id: 'n118', check: (n) => n === 118 },
   { id: 'n119', check: (n) => n === 119 },
   { id: 'n123', check: (n) => n === 123 },
   { id: 'n126', check: (n) => n === 126 },
   { id: 'n127', check: (n) => n === 127 },
   { id: 'n141', check: (n) => n === 141 },
-  { id: 'n165', check: (n) => n === 165 },
+  { id: 'n166', check: (n) => n === 166 },
   { id: 'n190', check: (n) => n === 190 },
   { id: 'n193_cap', check: (n) => n === 193 },
   { id: 'n195', check: (n) => n === 195 },
@@ -257,17 +260,15 @@ function normalizePlayerRecord(player) {
   const cleanSecrets = sanitizeIdList(player.secretUnlockedIds, VALID_SECRET_IDS);
   const minScoreFromBadges = calculateMinimumScoreForBadges(cleanUnlocked, cleanSecrets);
 
-  // Rileva ed elimina automaticamente la manomissione di CrisSuperGay69 (6.969.696.969 pt / 114 badge)
-  const isTampered =
-    Number(player.totalScore) > 50000000 ||
-    Number(player.badgesCount) > MAX_POSSIBLE_BADGES ||
-    (player.nickname && player.nickname.toLowerCase() === 'crissupergay69' && Number(player.totalScore) >= 6000000000);
+  const isCrisAccount =
+    player.nickname && player.nickname.toLowerCase() === 'crissupergay69';
 
-  if (isTampered) {
-    // Se prima del cheat aveva meno badge/punti salvati negli ID reali, usa quelli reali; altrimenti azzera l'eccesso
-    const restoredCount = cleanUnlocked.length + cleanSecrets.length;
-    const restoredScore = minScoreFromBadges;
-    const restoredRolls = Math.min(Number(player.rollsCount) || 0, 300);
+  // Ripristina esclusivamente l'account di CrisSuperGay69 ai valori originali (83 badge e 3.426.767 pt)
+  // senza imporre alcun limite massimo globale a punti o badge
+  if (isCrisAccount && (Number(player.totalScore) >= 6000000000 || (Number(player.totalScore) === 0 && Number(player.badgesCount) === 0))) {
+    const restoredCount = Math.max(83, cleanUnlocked.length + cleanSecrets.length);
+    const restoredScore = Math.max(3426767, minScoreFromBadges);
+    const restoredRolls = Math.max(Number(player.rollsCount) || 0, 1);
 
     return {
       ...player,
@@ -276,9 +277,26 @@ function normalizePlayerRecord(player) {
       badgesCount: restoredCount,
       totalScore: restoredScore,
       rollsCount: restoredRolls,
-      serverVerified: true
+      serverVerified: false,
+      needsLegacyRecovery: true
     };
   }
+
+  const effectiveBadgesCount = player.serverVerified && !player.needsLegacyRecovery
+    ? cleanUnlocked.length + cleanSecrets.length
+    : Math.max(Number(player.badgesCount) || 0, cleanUnlocked.length + cleanSecrets.length);
+
+  const effectiveScore = Math.max(Number(player.totalScore) || 0, minScoreFromBadges);
+
+  return {
+    ...player,
+    unlockedIds: cleanUnlocked,
+    secretUnlockedIds: cleanSecrets,
+    badgesCount: effectiveBadgesCount,
+    totalScore: effectiveScore,
+    rollsCount: Math.max(0, Number(player.rollsCount) || 0)
+  };
+}
 
   // Per gli altri giocatori legittimi che avevano già giocato prima della patch, preserva i loro punti reali
   const effectiveBadgesCount = player.serverVerified
