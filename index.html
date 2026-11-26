@@ -2127,7 +2127,7 @@
       { id: 'even', name: 'numero pari', description: 'Divisibile per 2', check: (n) => n % 2 === 0 },
       { id: 'prime', name: 'numero primo', description: 'Divisibile solo per 1 e per se stesso', check: (n) => isPrime(n) },
       { id: 'square', name: 'quadrato perfetto', description: 'Es. 4, 9, 16, 25 ... 484', check: (n) => isPerfectSquare(n) },
-      { id: 'palindrome', name: 'Pietro', description: 'Si legge uguale da sinistra e destra', check: (n) => isPalindrome(n) },
+      { id: 'palindrome', name: 'Pietro', description: 'Si legge uguale al contrario, check: (n) => isPalindrome(n) },
       { id: 'repdigit', name: 'cifre uguali', description: 'Tutte le cifre identiche (es. 77, 333)', check: (n) => n >= 10 && new Set(String(n)).size === 1 },
       { id: 'upside_down', name: 'numeri che capovolti si leggono uguali', description: 'Ambigrammi ruotati di 180° (es. 8, 11, 69, 88, 96, 101, 169, 181, ...)', check: (n) => isUpsideDownSame(n) },
       { id: 'mult50', name: 'qualche invito buddybank', description: 'Multiplo di 50', check: (n) => n > 0 && n % 50 === 0 },
