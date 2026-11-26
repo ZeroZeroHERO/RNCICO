@@ -199,26 +199,18 @@ RAW_BADGES.forEach(badge => {
 
 // Super Badge (punti tripli = probDenominator * 3)
 const SUPER_BADGES_CATALOG = [
-  // Badge di test temporaneo: rimuovi questo oggetto dopo il test
-  {
-    id: 'super_test_pari',
-    name: 'TEST NUMERO PARI',
-    probDenominator: 2,
-    points: 2 * 3,
-    check: (rolls) => rolls.length >= 1 && rolls[rolls.length - 1] % 2 === 0
-  },
   {
     id: 'super_deja_vu',
     name: 'DÉJÀ VU',
     probDenominator: 501,
-    points: 501 * 3,
+    points: Math.round((100 / (1 / 501)) * 3),
     check: (rolls) => rolls.length >= 2 && rolls[rolls.length - 1] === rolls[rolls.length - 2]
   },
   {
     id: 'super_collo_terrorista',
     name: 'COLLO TERRORISTA',
     probDenominator: 771,
-    points: 771 * 3,
+    points: Math.round((100 / (1 / 771)) * 3),
     check: (rolls) => {
       if (rolls.length < 3) return false;
       const last3 = rolls.slice(-3);
@@ -229,21 +221,21 @@ const SUPER_BADGES_CATALOG = [
     id: 'super_fanatico_harshad',
     name: 'FANATICO DI HARSHAD',
     probDenominator: 919,
-    points: 919 * 3,
+    points: Math.round((100 / (1 / 919)) * 3),
     check: (rolls) => rolls.length >= 5 && rolls.slice(-5).every(n => isHarshad(n))
   },
   {
     id: 'super_in_pari',
     name: 'IN PARI',
     probDenominator: 1024,
-    points: 1024 * 3,
+    points: Math.round((100 / (1 / 1024)) * 3),
     check: (rolls) => rolls.length >= 10 && rolls.slice(-10).every(n => n % 2 === 0)
   },
   {
     id: 'super_indeciso',
     name: 'INDECISO',
     probDenominator: 1255,
-    points: 1255 * 3,
+    points: Math.round((100 / (1 / 1255)) * 3),
     check: (rolls) => {
       if (rolls.length < 2) return false;
       const a = rolls[rolls.length - 2];
