@@ -475,7 +475,55 @@
     .stat-value.best {
       color: var(--gold);
     }
+/* Annuncio Badge Segreto */
+    .secret-announcement {
+      background: rgba(244, 114, 182, 0.12);
+      border: 1px solid #f472b6;
+      border-radius: 12px;
+      padding: 0.85rem 1.1rem;
+      margin-bottom: 1.25rem;
+      display: flex;
+      align-items: flex-start;
+      gap: 0.75rem;
+      box-shadow: 0 0 18px rgba(244, 114, 182, 0.25);
+      animation: popIn 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+    }
 
+    .secret-announcement.hidden {
+      display: none;
+    }
+
+    .secret-announcement-tag {
+      background: linear-gradient(135deg, #f472b6, #a855f7);
+      color: #ffffff;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.65rem;
+      font-weight: 800;
+      padding: 0.2rem 0.48rem;
+      border-radius: 6px;
+      letter-spacing: 0.06em;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .secret-announcement-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.3rem;
+      font-size: 0.88rem;
+      color: #fbcfe8;
+      line-height: 1.4;
+    }
+
+    .secret-announcement-list strong {
+      color: #ffffff;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .secret-announcement-list em {
+      color: #f9a8d4;
+    }
+    
     /* RNG Main Stage */
     .rng-stage {
       display: flex;
@@ -550,6 +598,15 @@
       0% { transform: scale(1.12); }
       100% { transform: scale(1); }
     }
+    .digit-box.vanish {
+      animation: digitVanish 0.3s ease-in forwards;
+    }
+
+    @keyframes digitVanish {
+      0% { transform: scale(1); opacity: 1; }
+      100% { transform: scale(0.4); opacity: 0; }
+    }
+
 
     @media (max-width: 400px) {
       .digits-wrapper { gap: 0.5rem; }
@@ -1494,6 +1551,12 @@
       </div>
     </div>
 
+
+    <!-- Annuncio Badge Segreto (resta fino al prossimo GENERA) -->
+    <div class="secret-announcement hidden" id="secret-announcement">
+      <span class="secret-announcement-tag">✨ BADGE SEGRETO</span>
+      <div class="secret-announcement-list" id="secret-announcement-list"></div>
+    </div>
     <main class="rng-stage">
       <div class="number-card" id="number-card">
         <span class="range-hint">RANGE: 000 — 500</span>
@@ -2193,6 +2256,23 @@
     const secretTotalCounterEl = document.getElementById('secret-total-counter');
     const secretBadgesGridEl = document.getElementById('secret-badges-grid');
 
+    const secretAnnouncementEl = document.getElementById('secret-announcement');
+    const secretAnnouncementListEl = document.getElementById('secret-announcement-list');
+
+    function showSecretAnnouncement(secretId) {
+      const sb = SECRET_BADGES.find(s => s.id === secretId);
+      if (!sb) return;
+      const line = document.createElement('div');
+      line.innerHTML = `Hai sbloccato <strong>${escapeHtml(sb.name)}</strong> (+${sb.points} pt) — <em>${escapeHtml(sb.description)}</em>`;
+      secretAnnouncementListEl.appendChild(line);
+      secretAnnouncementEl.classList.remove('hidden');
+    }
+
+    function hideSecretAnnouncement() {
+      secretAnnouncementEl.classList.add('hidden');
+      secretAnnouncementListEl.innerHTML = '';
+    }
+
     function generateDeviceId() {
       if (window.crypto && window.crypto.randomUUID) {
         return crypto.randomUUID();
@@ -2395,6 +2475,7 @@
       saveAccount();
 
       SFX.secretUnlock();
+      showSecretAnnouncement(secretId);
       renderStats();
       renderBadges();
       renderSecretBadges();
@@ -2785,7 +2866,7 @@
 
     function setupDigitBoxes(count) {
       digitEls.forEach((el, idx) => {
-        el.classList.remove('locked', 'spinning');
+        el.classList.remove('locked', 'spinning', 'vanish');
         if (idx < count) {
           el.classList.remove('hidden-digit');
           el.textContent = '-';
@@ -2797,8 +2878,8 @@
     }
 
     function animateSlotRoll(targetNumber, onComplete) {
-      const targetDigits = formatDigitsArray(targetNumber);
-      const digitCount = targetDigits.length;
+      const targetDigits = String(targetNumber).padStart(3, '0').split('');
+      const digitCount = 3;
       const locked = new Array(digitCount).fill(false);
 
       setupDigitBoxes(digitCount);
@@ -2809,6 +2890,8 @@
       const fast = speedrunEnabled && isSpeedrunUnlocked();
       const tickRate = fast ? 12 : 60;
       const lockDelay = fast ? Math.round(DIGIT_LOCK_DELAY / 5) : DIGIT_LOCK_DELAY;
+      const zeroPause = fast ? 60 : 450;   // quanto resta visibile lo 0 prima di sparire
+      const vanishTime = fast ? 0 : 300;   // durata dell'animazione di scomparsa
 
       const spinInterval = setInterval(() => {
         let anySpinning = false;
@@ -2826,10 +2909,30 @@
       for (let i = 0; i < digitCount; i++) {
         setTimeout(() => {
           locked[i] = true;
-          digitEls[i].textContent = targetDigits[i];
-          digitEls[i].classList.remove('spinning');
-          digitEls[i].classList.add('locked');
+          const el = digitEls[i];
+          el.textContent = targetDigits[i];
+          el.classList.remove('spinning');
+          el.classList.add('locked');
           SFX.digitLock(i);
+
+          // Zero iniziale (non l'ultima cifra): mostralo un attimo, poi fallo sparire
+          const isLeadingZero = i < digitCount - 1 &&
+            targetDigits.slice(0, i + 1).every(d => d === '0');
+
+          if (isLeadingZero) {
+            setTimeout(() => {
+              if (vanishTime > 0) {
+                el.classList.add('vanish');
+                setTimeout(() => {
+                  el.classList.remove('vanish', 'locked');
+                  el.classList.add('hidden-digit');
+                }, vanishTime);
+              } else {
+                el.classList.remove('locked');
+                el.classList.add('hidden-digit');
+              }
+            }, zeroPause);
+          }
 
           if (i === digitCount - 1) {
             clearInterval(spinInterval);
@@ -2897,6 +3000,7 @@
         }
         return;
       }
+      hideSecretAnnouncement();
 
       if (flex50kTimer) {
         clearTimeout(flex50kTimer);
