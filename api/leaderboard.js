@@ -209,8 +209,8 @@ const SUPER_BADGES_CATALOG = [
   {
     id: 'super_collo_terrorista',
     name: 'COLLO TERRORISTA',
-    probDenominator: 771,
-    points: Math.round((100 / (1 / 771)) * 3),
+    probDenominator: 775,
+    points: Math.round((100 / (1 / 775)) * 3),
     check: (rolls) => {
       if (rolls.length < 3) return false;
       const last3 = rolls.slice(-3);
@@ -227,8 +227,8 @@ const SUPER_BADGES_CATALOG = [
   {
     id: 'super_in_pari',
     name: 'IN PARI',
-    probDenominator: 1024,
-    points: Math.round((100 / (1 / 1024)) * 3),
+    probDenominator: 1003,
+    points: Math.round((100 / (1 / 1003)) * 3),
     check: (rolls) => rolls.length >= 10 && rolls.slice(-10).every(n => n % 2 === 0)
   },
   {
