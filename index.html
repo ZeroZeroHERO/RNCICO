@@ -496,6 +496,17 @@
       font-size: 0.9rem;
     }
 
+    .error-text {
+      color: var(--danger);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.84rem;
+      font-weight: 700;
+      background: rgba(239, 68, 68, 0.12);
+      border: 1px solid rgba(239, 68, 68, 0.35);
+      padding: 0.45rem 0.85rem;
+      border-radius: 8px;
+    }
+
     /* Pillole badge sbloccate al tiro (5 fasce di colore + secret) */
     .pill-badge {
       position: relative;
@@ -518,8 +529,8 @@
       font-family: 'Inter', sans-serif;
       font-size: 0.74rem;
       font-weight: 500;
-      opacity: 0.9;
-      margin-top: 0.15rem;
+      opacity: 0.92;
+      margin-top: 0.18rem;
     }
 
     /* Animazione speciale + etichetta NEW per badge appena sbloccato per la prima volta */
@@ -886,7 +897,7 @@
       font-size: 0.88rem;
     }
 
-    /* Badges Section */
+    /* Badges Section & Filtri */
     .badges-section {
       margin-bottom: 2.5rem;
     }
@@ -895,8 +906,9 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 1rem;
+      margin-bottom: 0.85rem;
       gap: 0.5rem;
+      flex-wrap: wrap;
     }
 
     .section-header h2, .history-section h2 {
@@ -924,10 +936,96 @@
       border-radius: 6px;
     }
 
+    .badges-controls {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 1rem;
+      flex-wrap: wrap;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 10px;
+      padding: 0.55rem 0.75rem;
+    }
+
+    .filter-group {
+      display: flex;
+      gap: 0.4rem;
+      flex-wrap: wrap;
+    }
+
+    .filter-btn {
+      background: transparent;
+      border: 1px solid transparent;
+      color: var(--text-muted);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.74rem;
+      font-weight: 700;
+      padding: 0.35rem 0.7rem;
+      border-radius: 7px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .filter-btn:hover {
+      color: #ffffff;
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .filter-btn.active {
+      background: rgba(59, 130, 246, 0.18);
+      border-color: rgba(59, 130, 246, 0.45);
+      color: #93c5fd;
+    }
+
+    .sort-group {
+      display: flex;
+      align-items: center;
+      gap: 0.45rem;
+    }
+
+    .sort-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: var(--text-muted);
+    }
+
+    .sort-select {
+      background: #0b0d12;
+      border: 1px solid var(--card-border);
+      color: #f1f5f9;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.74rem;
+      font-weight: 700;
+      padding: 0.35rem 0.65rem;
+      border-radius: 7px;
+      outline: none;
+      cursor: pointer;
+      transition: border-color 0.2s ease;
+    }
+
+    .sort-select:focus,
+    .sort-select:hover {
+      border-color: var(--accent);
+    }
+
     .badges-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(235px, 1fr));
       gap: 0.85rem;
+    }
+
+    .badges-empty-filter {
+      grid-column: 1 / -1;
+      text-align: center;
+      padding: 1.5rem;
+      background: var(--card-bg);
+      border: 1px dashed var(--card-border);
+      border-radius: 10px;
+      color: var(--text-muted);
+      font-size: 0.88rem;
     }
 
     .badge-card {
@@ -1282,6 +1380,24 @@
         <h2>BADGE (<span id="unlocked-counter">0</span>/<span id="total-counter">0</span> SBLOCCATI)</h2>
         <span class="formula-tag">Formula: 100 / Probabilità</span>
       </div>
+
+      <div class="badges-controls">
+        <div class="filter-group" id="badge-filter-group">
+          <button type="button" class="filter-btn active" data-filter="all">Tutti</button>
+          <button type="button" class="filter-btn" data-filter="unlocked">Sbloccati</button>
+          <button type="button" class="filter-btn" data-filter="locked">Mancanti</button>
+        </div>
+        <div class="sort-group">
+          <label class="sort-label" for="badge-sort-select">ORDINA:</label>
+          <select id="badge-sort-select" class="sort-select">
+            <option value="rarity_asc">Rarità (Comuni → Rari)</option>
+            <option value="rarity_desc">Rarità (Rari → Comuni)</option>
+            <option value="unlock_recent">Ordine di sblocco (Recenti)</option>
+            <option value="unlock_oldest">Ordine di sblocco (Primi)</option>
+          </select>
+        </div>
+      </div>
+
       <div class="badges-grid" id="badges-grid"></div>
     </section>
 
@@ -1572,6 +1688,7 @@
       { id: 'n11', name: 'tradimenti totali del CEO di NVIDIA', description: 'Esattamente 11', check: (n) => n === 11 },
       { id: 'n12', name: 'israele (daje)', description: 'Esattamente 12', check: (n) => n === 12 },
       { id: 'n18', name: 'membri del K2', description: 'Esattamente 18', check: (n) => n === 18 },
+      { id: 'n18_spaziali', name: 'record di botte spaziali', description: 'Esattamente 18', check: (n) => n === 18 },
       { id: 'n24', name: 'aronnac al', description: 'Esattamente 24', check: (n) => n === 24 },
       { id: 'n31', name: 'NEEWOLLAH', description: 'Esattamente 31', check: (n) => n === 31 },
       { id: 'n33', name: 'Cena da chopstick', description: 'Esattamente 33', check: (n) => n === 33 },
@@ -1587,7 +1704,7 @@
       { id: 'n92', name: 'la paura +2', description: 'Esattamente 92', check: (n) => n === 92 },
       { id: 'n93', name: 'la paura +3', description: 'Esattamente 93', check: (n) => n === 93 },
       { id: 'n94', name: 'la paura +4', description: 'Esattamente 94', check: (n) => n === 94 },
-      { id: 'n100', name: 'totale dei timbri di wii sport resort', description: 'Esattamente 100', check: (n) => n === 100 },
+      { id: 'n100_stamps', name: 'i timbri di wii sport resort', description: 'Esattamente 100', check: (n) => n === 100 },
       { id: 'n109', name: 'brawler di brawl stars', description: 'Esattamente 109', check: (n) => n === 109 },
       { id: 'n118', name: 'CENTODICIOTTOOO', description: 'Esattamente 118', check: (n) => n === 118 },
       { id: 'n119', name: 'ha hittato la seconda torre al contrario', description: 'Esattamente 119', check: (n) => n === 119 },
@@ -1597,7 +1714,7 @@
       { id: 'n141', name: 'radice di 2', description: 'Esattamente 141 (1.41)', check: (n) => n === 141 },
       { id: 'n166', name: 'gruppi che cris e cico hanno in comune', description: 'Esattamente 166', check: (n) => n === 166 },
       { id: 'n190', name: 'la paura + 100', description: 'Esattamente 90 + 100', check: (n) => n === 190 },
-      { id: 'n193', name: 'CAP prati', description: 'Esattamente 193 (00193)', check: (n) => n === 193 },
+      { id: 'n193_cap', name: 'CAP prati', description: 'Esattamente 193 (00193)', check: (n) => n === 193 },
       { id: 'n195', name: 'stati nel mondo', description: 'Esattamente 195 (non comprende palestina)', check: (n) => n === 195 },
       { id: 'n206', name: 'le ossa che puoi rompere a cico', description: 'Esattamente 206', check: (n) => n === 206 },
       { id: 'n216', name: 'il cubo di 6, chiaro no?', description: 'Esattamente 216', check: (n) => n === 216 },
@@ -1714,6 +1831,12 @@
     let recentRollTimestamps = [];
     let flex50kTimer = null;
 
+    // Stato filtri e ordinamento griglia badge
+    let currentBadgeFilter = 'all'; // 'all' | 'unlocked' | 'locked'
+    let currentBadgeSort = 'rarity_asc'; // 'rarity_asc' | 'rarity_desc' | 'unlock_recent' | 'unlock_oldest'
+    let lastActiveBadgeIds = [];
+    let lastNewlyUnlockedIds = [];
+
     // Elementi DOM
     const onboardingModal = document.getElementById('onboarding-modal');
     const registerForm = document.getElementById('register-form');
@@ -1749,6 +1872,8 @@
     const unlockedCounterEl = document.getElementById('unlocked-counter');
     const totalCounterEl = document.getElementById('total-counter');
     const badgesGridEl = document.getElementById('badges-grid');
+    const badgeFilterGroupEl = document.getElementById('badge-filter-group');
+    const badgeSortSelectEl = document.getElementById('badge-sort-select');
     const historyListEl = document.getElementById('history-list');
     const rollBtn = document.getElementById('roll-btn');
     const leaderboardContainer = document.getElementById('leaderboard-container');
@@ -1859,7 +1984,7 @@
       SFX.secretUnlock();
 
       if (!isRolling) {
-        const hasPlaceholder = triggeredBadgesEl.querySelector('.placeholder-text');
+        const hasPlaceholder = triggeredBadgesEl.querySelector('.placeholder-text, .error-text');
         if (hasPlaceholder) {
           triggeredBadgesEl.innerHTML = '';
         }
@@ -1941,7 +2066,18 @@
       if (!account || !serverPlayer) return;
       account.nickname = serverPlayer.nickname || account.nickname;
       if (Array.isArray(serverPlayer.unlockedIds) && serverPlayer.serverVerified) {
-        account.unlockedIds = serverPlayer.unlockedIds;
+        // Preserva l'ordine di sblocco già noto e accoda eventuali nuovi ID dal server
+        const currentOrder = Array.isArray(account.unlockedIds) ? account.unlockedIds : [];
+        const serverSet = new Set(serverPlayer.unlockedIds);
+        const mergedOrder = currentOrder.filter(id => serverSet.has(id));
+        const mergedSet = new Set(mergedOrder);
+        for (const id of serverPlayer.unlockedIds) {
+          if (!mergedSet.has(id)) {
+            mergedOrder.push(id);
+            mergedSet.add(id);
+          }
+        }
+        account.unlockedIds = mergedOrder;
       }
       if (Array.isArray(serverPlayer.secretUnlockedIds)) {
         account.secretUnlockedIds = Array.from(new Set([...(account.secretUnlockedIds || []), ...serverPlayer.secretUnlockedIds]));
@@ -1979,25 +2115,90 @@
       unlockedCounterEl.textContent = getTotalBadgesUnlockedCount();
 
       updateDaltonicoEffect(account.nickname, true);
-      renderBadgesGrid();
+      renderBadgesGrid(lastActiveBadgeIds, lastNewlyUnlockedIds);
       renderTopAuraRolls();
       renderSecretBadges();
     }
 
-    function renderBadgesGrid(activeIds = [], newlyUnlockedIds = []) {
-      badgesGridEl.innerHTML = '';
-      const newSet = new Set(newlyUnlockedIds);
+    function updateFilterButtonsLabels() {
+      const unlockedNormalCount = BADGES.filter(b => b.unlocked).length;
+      const lockedNormalCount = BADGES.length - unlockedNormalCount;
 
-      BADGES.forEach(badge => {
+      const buttons = badgeFilterGroupEl.querySelectorAll('.filter-btn');
+      buttons.forEach(btn => {
+        const f = btn.dataset.filter;
+        btn.classList.toggle('active', f === currentBadgeFilter);
+        if (f === 'all') {
+          btn.textContent = `Tutti (${BADGES.length})`;
+        } else if (f === 'unlocked') {
+          btn.textContent = `Sbloccati (${unlockedNormalCount})`;
+        } else if (f === 'locked') {
+          btn.textContent = `Mancanti (${lockedNormalCount})`;
+        }
+      });
+    }
+
+    function renderBadgesGrid(activeIds = lastActiveBadgeIds, newlyUnlockedIds = lastNewlyUnlockedIds) {
+      lastActiveBadgeIds = Array.isArray(activeIds) ? activeIds : [];
+      lastNewlyUnlockedIds = Array.isArray(newlyUnlockedIds) ? newlyUnlockedIds : [];
+
+      updateFilterButtonsLabels();
+      badgesGridEl.innerHTML = '';
+
+      const newSet = new Set(lastNewlyUnlockedIds);
+      const unlockOrderList = account && Array.isArray(account.unlockedIds) ? account.unlockedIds : [];
+      const unlockIndexMap = new Map();
+      unlockOrderList.forEach((id, idx) => unlockIndexMap.set(id, idx));
+
+      // 1. Filtro (Tutti / Sbloccati / Mancanti)
+      let filtered = BADGES.filter(badge => {
+        if (currentBadgeFilter === 'unlocked') return badge.unlocked;
+        if (currentBadgeFilter === 'locked') return !badge.unlocked;
+        return true;
+      });
+
+      // 2. Ordinamento (Rarità o Ordine di Sblocco)
+      filtered = [...filtered].sort((a, b) => {
+        if (currentBadgeSort === 'rarity_asc') {
+          return a.points - b.points;
+        }
+        if (currentBadgeSort === 'rarity_desc') {
+          return b.points - a.points;
+        }
+        if (currentBadgeSort === 'unlock_recent' || currentBadgeSort === 'unlock_oldest') {
+          const aUnlocked = a.unlocked;
+          const bUnlocked = b.unlocked;
+          if (aUnlocked !== bUnlocked) {
+            return aUnlocked ? -1 : 1; // Gli sbloccati sempre prima dei bloccati
+          }
+          if (!aUnlocked && !bUnlocked) {
+            return a.points - b.points;
+          }
+          const idxA = unlockIndexMap.has(a.id) ? unlockIndexMap.get(a.id) : -1;
+          const idxB = unlockIndexMap.has(b.id) ? unlockIndexMap.get(b.id) : -1;
+          return currentBadgeSort === 'unlock_recent' ? idxB - idxA : idxA - idxB;
+        }
+        return a.points - b.points;
+      });
+
+      if (filtered.length === 0) {
+        const emptyMsg = currentBadgeFilter === 'unlocked'
+          ? 'Non hai ancora sbloccato nessun badge. Premi GENERA NUMERO!'
+          : 'Complimenti! Hai sbloccato tutti i badge standard!';
+        badgesGridEl.innerHTML = `<div class="badges-empty-filter">${emptyMsg}</div>`;
+        return;
+      }
+
+      filtered.forEach(badge => {
         const card = document.createElement('div');
-        const isActive = activeIds.includes(badge.id);
+        const isActive = lastActiveBadgeIds.includes(badge.id);
         const isJustUnlocked = newSet.has(badge.id);
         const tierClass = getBadgeTierClass(badge.points);
         const stateClass = badge.unlocked ? `unlocked ${tierClass}` : 'locked-mystery';
         card.className = `badge-card ${stateClass} ${isActive ? 'active-now' : ''} ${isJustUnlocked ? 'is-new-card' : ''}`;
 
-        const displayName = badge.unlocked ? `✓ ${badge.name}` : '??? BADGE NASCOSTO ???';
-        const displayDesc = badge.unlocked ? badge.description : 'Sbloccalo per scoprire la condizione';
+        const displayName = badge.unlocked ? `✓ ${escapeHtml(badge.name)}` : '??? BADGE NASCOSTO ???';
+        const displayDesc = badge.unlocked ? escapeHtml(badge.description) : 'Sbloccalo per scoprire la condizione';
         const newRibbon = isJustUnlocked ? '<span class="card-new-tag">NEW</span>' : '';
 
         card.innerHTML = `
@@ -2012,6 +2213,24 @@
         badgesGridEl.appendChild(card);
       });
     }
+
+    // Event listener per filtri e ordinamento badge
+    badgeFilterGroupEl.addEventListener('click', (e) => {
+      const btn = e.target.closest('.filter-btn');
+      if (!btn) return;
+      const chosenFilter = btn.dataset.filter;
+      if (chosenFilter && chosenFilter !== currentBadgeFilter) {
+        SFX.click();
+        currentBadgeFilter = chosenFilter;
+        renderBadgesGrid();
+      }
+    });
+
+    badgeSortSelectEl.addEventListener('change', () => {
+      SFX.click();
+      currentBadgeSort = badgeSortSelectEl.value;
+      renderBadgesGrid();
+    });
 
     function renderTopAuraRolls() {
       historyListEl.innerHTML = '';
@@ -2142,12 +2361,21 @@
       refreshLeaderboardBtn.disabled = true;
       try {
         const res = await fetch(API_ENDPOINT);
-        const data = await res.json();
+        const rawText = await res.text();
+        let data = {};
+        try {
+          data = JSON.parse(rawText);
+        } catch (e) {
+          throw new Error(`Risposta server non valida (HTTP ${res.status})`);
+        }
         if (res.ok && data.leaderboard) {
           renderLeaderboard(data.leaderboard, data.kingMessage || null);
+        } else if (!res.ok) {
+          leaderboardContainer.innerHTML = `<div class="leaderboard-empty" style="color:#ef4444;">Errore classifica (HTTP ${res.status}): ${escapeHtml(data.error || 'Errore sconosciuto')}</div>`;
         }
       } catch (err) {
         console.error('Errore fetch classifica:', err);
+        leaderboardContainer.innerHTML = `<div class="leaderboard-empty" style="color:#ef4444;">Errore caricamento classifica: ${escapeHtml(err.message)}</div>`;
       } finally {
         refreshLeaderboardBtn.disabled = false;
       }
@@ -2164,7 +2392,24 @@
             deviceId: account.deviceId
           })
         });
-        const data = await res.json();
+        const rawText = await res.text();
+        let data = {};
+        try {
+          data = JSON.parse(rawText);
+        } catch (e) {
+          throw new Error(`Errore server HTTP ${res.status}`);
+        }
+
+        if (res.status === 404) {
+          // Il deviceId locale non esiste più sul database: riapri registrazione
+          localStorage.removeItem(STORAGE_KEY);
+          account = null;
+          modalError.textContent = 'Sessione scaduta o profilo non trovato sul server: registra di nuovo il nickname.';
+          onboardingModal.classList.remove('hidden');
+          fetchLeaderboard();
+          return;
+        }
+
         if (res.ok) {
           if (data.player) {
             reconcileWithServerPlayer(data.player);
@@ -2172,9 +2417,12 @@
           if (data.leaderboard) {
             renderLeaderboard(data.leaderboard, data.kingMessage || null);
           }
+        } else {
+          triggeredBadgesEl.innerHTML = `<span class="error-text">Errore sincronizzazione (HTTP ${res.status}): ${escapeHtml(data.error || 'Errore server')}</span>`;
         }
       } catch (err) {
         console.error('Errore sincronizzazione server:', err);
+        triggeredBadgesEl.innerHTML = `<span class="error-text">Errore connessione server: ${escapeHtml(err.message)}</span>`;
       }
     }
 
@@ -2200,9 +2448,12 @@
         if (res.ok) {
           SFX.click();
           renderLeaderboard(data.leaderboard, data.kingMessage || null);
+        } else {
+          alert(`Errore (HTTP ${res.status}): ${data.error || 'Impossibile salvare il messaggio'}`);
         }
       } catch (err) {
         console.error('Errore invio messaggio del #1:', err);
+        alert(`Errore di rete: ${err.message}`);
       } finally {
         kingSaveBtn.disabled = false;
         kingSaveBtn.textContent = 'PUBBLICA';
@@ -2302,7 +2553,7 @@
         const data = await res.json();
 
         if (!res.ok) {
-          settingsError.textContent = data.error || 'Username non disponibile.';
+          settingsError.textContent = `${data.error || 'Username non disponibile.'} (HTTP ${res.status})`;
           saveNicknameBtn.disabled = false;
           saveNicknameBtn.textContent = 'SALVA';
           return;
@@ -2322,7 +2573,7 @@
 
         settingsModal.classList.add('hidden');
       } catch (err) {
-        settingsError.textContent = 'Errore di rete. Riprova tra poco.';
+        settingsError.textContent = `Errore di rete: ${err.message}`;
       } finally {
         saveNicknameBtn.disabled = false;
         saveNicknameBtn.textContent = 'SALVA';
@@ -2356,10 +2607,16 @@
           })
         });
 
-        const data = await res.json();
+        const rawText = await res.text();
+        let data = {};
+        try {
+          data = JSON.parse(rawText);
+        } catch (parseErr) {
+          throw new Error(`Risposta server non valida (HTTP ${res.status})`);
+        }
 
         if (!res.ok) {
-          modalError.textContent = data.error || 'Nickname non disponibile.';
+          modalError.textContent = `${data.error || 'Nickname non disponibile.'} (HTTP ${res.status})`;
           registerBtn.disabled = false;
           registerBtn.textContent = 'CONFERMA E GIOCA';
           return;
@@ -2387,13 +2644,14 @@
           fetchLeaderboard();
         }
       } catch (err) {
-        modalError.textContent = 'Errore di rete. Riprova tra poco.';
+        modalError.textContent = `Errore: ${err.message}`;
+      } finally {
         registerBtn.disabled = false;
         registerBtn.textContent = 'CONFERMA E GIOCA';
       }
     });
 
-    // Logica estrazione RNG verificata lato server
+    // Logica estrazione RNG verificata lato server con diagnosi dettagliata degli errori
     async function handleRoll() {
       if (isRolling || !account) return;
       isRolling = true;
@@ -2429,10 +2687,34 @@
             secretUnlockedIds: account.secretUnlockedIds
           })
         });
-        const data = await res.json();
-        if (!res.ok || typeof data.result !== 'number') {
-          throw new Error(data.error || 'Errore estrazione');
+
+        const rawText = await res.text();
+        let data = null;
+        try {
+          data = JSON.parse(rawText);
+        } catch (parseErr) {
+          throw new Error(`Risposta non JSON dal server (HTTP ${res.status})`);
         }
+
+        if (res.status === 404) {
+          intervals.forEach(clearInterval);
+          digitEls.forEach(el => {
+            el.classList.remove('spinning');
+            el.textContent = '-';
+          });
+          localStorage.removeItem(STORAGE_KEY);
+          account = null;
+          isRolling = false;
+          rollBtn.disabled = false;
+          modalError.textContent = data.error || 'Profilo non trovato sul server: inserisci il tuo nickname.';
+          onboardingModal.classList.remove('hidden');
+          return;
+        }
+
+        if (!res.ok || typeof data.result !== 'number') {
+          throw new Error(`${data.error || 'Risposta non valida'} (HTTP ${res.status})`);
+        }
+
         serverRollData = data;
       } catch (err) {
         intervals.forEach(clearInterval);
@@ -2440,7 +2722,7 @@
           el.classList.remove('spinning');
           el.textContent = '-';
         });
-        triggeredBadgesEl.innerHTML = '<span class="placeholder-text">Errore di rete durante il tiro. Riprova!</span>';
+        triggeredBadgesEl.innerHTML = `<span class="error-text">Errore tiro: ${escapeHtml(err.message)}</span>`;
         isRolling = false;
         rollBtn.disabled = false;
         return;
@@ -2485,11 +2767,27 @@
       const newSet = new Set(newlyUnlockedIds);
 
       if (serverRollData.player) {
-        account.unlockedIds = serverRollData.player.unlockedIds || account.unlockedIds;
+        // Mantiene l'ordine di sblocco in account.unlockedIds accodando i nuovi
+        const serverIds = Array.isArray(serverRollData.player.unlockedIds) ? serverRollData.player.unlockedIds : [];
+        const serverSet = new Set(serverIds);
+        const orderedIds = account.unlockedIds.filter(id => serverSet.has(id));
+        const orderedSet = new Set(orderedIds);
+        for (const id of serverIds) {
+          if (!orderedSet.has(id)) {
+            orderedIds.push(id);
+            orderedSet.add(id);
+          }
+        }
+        account.unlockedIds = orderedIds;
         account.secretUnlockedIds = serverRollData.player.secretUnlockedIds || account.secretUnlockedIds;
         account.totalScore = serverRollData.player.totalScore;
         account.rollCount = serverRollData.player.rollsCount;
       } else {
+        newlyUnlockedIds.forEach(id => {
+          if (!account.unlockedIds.includes(id)) {
+            account.unlockedIds.push(id);
+          }
+        });
         account.rollCount += 1;
         account.totalScore += totalRollPoints;
       }
@@ -2554,7 +2852,7 @@
           const pill = document.createElement('span');
           pill.className = `pill-badge ${tierClass} ${isNew ? 'is-new' : ''}`;
 
-          // Mostra la descrizione nella pillola SOLO se il badge è appena stato sbloccato per la prima volta
+          // Mostra la descrizione nella pillola SOLO quando il badge viene sbloccato per la prima volta (NEW)
           pill.innerHTML = isNew
             ? `<span class="new-tag">NEW</span><span>${escapeHtml(badge.name)} (+${badge.points.toLocaleString('it-IT')})</span><span class="pill-badge-desc">${escapeHtml(badge.description)}</span>`
             : `<span>${escapeHtml(badge.name)} (+${badge.points.toLocaleString('it-IT')})</span>`;
