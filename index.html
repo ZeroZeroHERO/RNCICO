@@ -1949,6 +1949,8 @@
       }
     ];
 
+    const LEADERBOARD_MAX_BADGES = () => BADGES.length + SUPER_BADGES.length;
+
     const RAW_BADGES = [
       // 1. Numeri Esatti
       { id: 'n0', name: 'volte in cui stefano ha fatto sesso', description: 'Esattamente 0', check: (n) => n === 0 },
@@ -2523,7 +2525,7 @@
               ${isMe ? '<span class="you-tag">TU</span>' : ''}
               ${specialTagHtml}
             </td>
-            <td class="badges-col">${entry.badgesCount}</td>
+            <td class="badges-col">${entry.badgesCount}<span class="badges-max">/${LEADERBOARD_MAX_BADGES()}</span></td>
             <td class="rolls-col">${(entry.rollsCount || 0).toLocaleString('it-IT')}</td>
             <td class="score-col">${(entry.totalScore || 0).toLocaleString('it-IT')} pt</td>
           </tr>
