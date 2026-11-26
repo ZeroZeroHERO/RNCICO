@@ -547,6 +547,11 @@
       100% { transform: scale(1); }
     }
 
+    @media (max-width: 400px) {
+      .digits-wrapper { gap: 0.5rem; }
+      .digit-box { width: 64px; height: 84px; font-size: 3.2rem; }
+    }
+
     .triggered-badges {
       display: flex;
       flex-wrap: wrap;
@@ -1633,7 +1638,7 @@
       {
         id: 'secret_nontivantare',
         name: 'non ti vantare',
-        description: 'sei rimasto 30 secondi ad ammirare una roll da più di 50.000 punti',
+        description: 'sei rimasto 30 secondi ad ammirare una roll da almeno 50.000 punti',
         hint: 'Suggerimento: AFK',
         points: 67
       },
@@ -1790,7 +1795,7 @@
         });
       },
       badgeReveal(points, isNew) {
-        if (points < 1000) {
+        if (points < 1003) {
           playTone(523.25, 0.14, 'sine', 0.09);
         } else if (points < 5000) {
           playTone(587.33, 0.14, 'triangle', 0.09);
@@ -1899,8 +1904,8 @@
         id: 'super_collo_terrorista',
         name: 'collo terrorista',
         description: 'La somma delle ultime 3 roll è esattamente 911',
-        probDenominator: 771,
-        points: Math.round((100 / (1 / 771)) * 3),
+        probDenominator: 775,
+        points: Math.round((100 / (1 / 775)) * 3),
         check: (rolls) => {
           if (rolls.length < 3) return false;
           const last3 = rolls.slice(-3);
@@ -1922,8 +1927,8 @@
         id: 'super_in_pari',
         name: 'in pari',
         description: 'Hai rollato 10 volte di fila un numero pari',
-        probDenominator: 1024,
-        points: Math.round((100 / (1 / 1024)) * 3),
+        probDenominator: 1003,
+        points: Math.round((100 / (1 / 1003)) * 3),
         check: (rolls) => {
           if (rolls.length < 10) return false;
           return rolls.slice(-10).every(n => n % 2 === 0);
@@ -2217,7 +2222,8 @@
 
     function applyRandomHardModeTransform() {
       clearHardModeTransforms();
-      const chosen = Math.random() < 0.5 ? 'flip-x' : 'flip-180';
+      const options = ['flip-x', 'flip-y', 'flip-180'];
+      const chosen = options[Math.floor(Math.random() * options.length)];
       document.documentElement.classList.add(chosen);
     }
 
@@ -2876,25 +2882,22 @@
 
       SFX.rollStart();
 
-      const now = Date.now();
-      const currentHour = new Date(now).getHours();
-
-      if (currentHour === 3) {
-        unlockSecretBadge('secret_nottambulo');
-      }
-
-      recentRollTimestamps.push(now);
-      recentRollTimestamps = recentRollTimestamps.filter(ts => now - ts <= 30000);
-      if (recentRollTimestamps.length >= 5) {
-        unlockSecretBadge('secret_frettolone');
-      }
-
-      if (hardModeEnabled) {
-        account.hardModeRolls = (account.hardModeRolls || 0) + 1;
-        if (account.hardModeRolls >= 3) {
-          unlockSecretBadge('secret_impasible');
+              const now = Date.now();
+        if (new Date(now).getHours() === 3) {
+          unlockSecretBadge('secret_nottambulo');
         }
-      }
+        recentRollTimestamps.push(now);
+        recentRollTimestamps = recentRollTimestamps.filter(ts => now - ts <= 30000);
+        if (recentRollTimestamps.length >= 5) {
+          unlockSecretBadge('secret_frettolone');
+        }
+        if (hardModeEnabled) {
+          account.hardModeRolls = (account.hardModeRolls || 0) + 1;
+          saveAccount();
+          if (account.hardModeRolls >= 3) {
+            unlockSecretBadge('secret_impasible');
+          }
+        }
 
       try {
         const res = await fetch(API_ENDPOINT, {
@@ -3129,7 +3132,7 @@
           latestSuperAnnouncement = data.latestSuperAnnouncement;
           showSuperAnnouncement(
             latestSuperAnnouncement.nickname,
-            latestSuperAnnouncement.badgeName
+            latestSuperAnnouncement.badgeName,
             latestSuperAnnouncement.updatedAt || latestSuperAnnouncement.ts
           );
         }
