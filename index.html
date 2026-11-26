@@ -760,6 +760,10 @@
       box-shadow: 0 0 18px rgba(168, 85, 247, 0.45);
     }
 
+    .pill-badge.tier-super.is-new {
+      animation: newUnlockBurst 0.55s cubic-bezier(0.18, 0.89, 0.32, 1.28), rainbowFlow 4s ease infinite, newGlowPulse 1.8s ease-in-out infinite;
+    }
+
     @keyframes popIn {
       0% { transform: scale(0.75); opacity: 0; }
       100% { transform: scale(1); opacity: 1; }
@@ -2354,7 +2358,7 @@
     }
 
       scheduleNext();
-    }
+    
 
     function createDefaultAccount(deviceId, nickname) {
       return {
@@ -3112,7 +3116,7 @@
               renderLeaderboard(data.leaderboard, data.kingMessage || null);
             }
 
-            if (rollScore > 50000) {
+            if (rollScore >= 50000) {
               flex50kTimer = setTimeout(() => {
                 unlockSecretBadge('secret_nontivantare');
               }, 30000);
