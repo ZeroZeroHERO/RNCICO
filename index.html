@@ -2702,17 +2702,18 @@
 
       historyListEl.innerHTML = account.topRolls.map((item, index) => {
         const rank = index + 1;
+        const pts = Number(item.score ?? item.points ?? 0);
         let classes = 'history-item';
-        if (item.score > 0) classes += ' has-points';
-        if (rank === 1 && item.score > 0) classes += ' top-1';
-        else if (rank === 2 && item.score > 0) classes += ' top-2';
-        else if (rank === 3 && item.score > 0) classes += ' top-3';
+        if (pts > 0) classes += ' has-points';
+        if (rank === 1 && pts > 0) classes += ' top-1';
+        else if (rank === 2 && pts > 0) classes += ' top-2';
+        else if (rank === 3 && pts > 0) classes += ' top-3';
 
         return `
           <div class="${classes}">
             <span class="aura-rank">#${rank}</span>
             <strong>${item.number}</strong>
-            <span>(+${item.score.toLocaleString('it-IT')})</span>
+            <span>(+${pts.toLocaleString('it-IT')})</span>
           </div>
         `;
       }).join('');
@@ -2720,11 +2721,14 @@
 
     function updateTopRolls(number, score) {
       if (!account) return;
-      account.topRolls.push({ number, score, ts: Date.now() });
-      account.topRolls.sort((a, b) => b.score - a.score || b.ts - a.ts);
+      account.topRolls.push({ number, score: Number(score) || 0, ts: Date.now() });
+      account.topRolls.sort((a, b) => {
+        const ptsA = Number(a.score ?? a.points ?? 0);
+        const ptsB = Number(b.score ?? b.points ?? 0);
+        return ptsB - ptsA || (b.ts || 0) - (a.ts || 0);
+      });
       account.topRolls = account.topRolls.slice(0, 12);
     }
-
     // ==========================================
     // ANIMAZIONE E LOGICA DI ESTRAZIONE SERVER-SIDE
     // ==========================================
