@@ -71,6 +71,7 @@ const RAW_BADGES = [
   { id: 'n11', check: (n) => n === 11 },
   { id: 'n12', check: (n) => n === 12 },
   { id: 'n18', check: (n) => n === 18 },
+  { id: 'n18_spaziali', check: (n) => n === 18 },
   { id: 'n24', check: (n) => n === 24 },
   { id: 'n31', check: (n) => n === 31 },
   { id: 'n33', check: (n) => n === 33 },
@@ -355,7 +356,14 @@ export default async function handler(req, res) {
     }
 
     if (req.method === 'POST') {
-      const body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
+      let body = req.body;
+      if (typeof body === 'string') {
+        try {
+          body = JSON.parse(body);
+        } catch (parseErr) {
+          return res.status(400).json({ error: 'Payload JSON non valido.' });
+        }
+      }
       const { action, deviceId, nickname, message, secretId, unlockedIds, secretUnlockedIds } = body || {};
 
       if (!deviceId || typeof deviceId !== 'string') {
@@ -367,7 +375,7 @@ export default async function handler(req, res) {
       // 1. ESTRAZIONE NUMERO LATO SERVER (anti-cheat)
       if (action === 'roll') {
         if (!existing) {
-          return res.status(404).json({ error: 'Dispositivo non registrato.' });
+          return res.status(404).json({ error: 'Dispositivo non registrato su questo server.' });
         }
 
         if (!existing.serverVerified && Array.isArray(unlockedIds)) {
@@ -596,12 +604,12 @@ export default async function handler(req, res) {
         });
       }
 
-      return res.status(400).json({ error: 'Azione non riconosciuta.' });
+      return res.status(400).json({ error: `Azione non riconosciuta: ${String(action)}` });
     }
 
     return res.status(405).json({ error: 'Metodo non consentito.' });
   } catch (err) {
     console.error('Errore API leaderboard:', err);
-    return res.status(500).json({ error: 'Errore interno del server.' });
+    return res.status(500).json({ error: err.message || 'Errore interno del server.' });
   }
 }
