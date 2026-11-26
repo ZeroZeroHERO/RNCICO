@@ -411,6 +411,17 @@ export default async function handler(req, res) {
     const superUnlockers = (await kvGet(SUPER_UNLOCKERS_KEY)) || {};
     let latestSuperAnnouncement = (await kvGet(LATEST_SUPER_ANN_KEY)) || null;
 
+    const TWENTY_FOUR_HOURS_MS = 24 * 60 * 60 * 1000;
+    if (
+      latestSuperAnnouncement &&
+      latestSuperAnnouncement.updatedAt &&
+      Date.now() - Number(latestSuperAnnouncement.updatedAt) > TWENTY_FOUR_HOURS_MS
+    ) {
+      latestSuperAnnouncement = null;
+      await kvSet(LATEST_SUPER_ANN_KEY, null);
+    }
+    
+
     let dirty = false;
     for (const [id, p] of Object.entries(players)) {
       const normalized = normalizePlayerRecord(p);
