@@ -2289,32 +2289,42 @@
       localStorage.setItem(STORAGE_KEY, JSON.stringify(account));
     }
 
+    function mergeServerPlayerIntoAccount(serverPlayer) {
+      if (!account || !serverPlayer) return;
+      if (serverPlayer.nickname) account.nickname = serverPlayer.nickname;
+      if (Array.isArray(serverPlayer.unlockedIds)) {
+        const merged = new Set([...account.unlockedBadges, ...serverPlayer.unlockedIds]);
+        account.unlockedBadges = Array.from(merged);
+        serverPlayer.unlockedIds.forEach(id => {
+          if (!account.unlockedOrder.includes(id)) account.unlockedOrder.push(id);
+        });
+      }
+      if (Array.isArray(serverPlayer.superUnlockedIds)) {
+        const mergedSuper = new Set([...account.unlockedSuperBadges, ...serverPlayer.superUnlockedIds]);
+        account.unlockedSuperBadges = Array.from(mergedSuper);
+      }
+      if (Array.isArray(serverPlayer.secretUnlockedIds)) {
+        const mergedSecrets = new Set([...account.unlockedSecrets, ...serverPlayer.secretUnlockedIds]);
+        account.unlockedSecrets = Array.from(mergedSecrets);
+      }
+      if (Array.isArray(serverPlayer.recentRolls) && serverPlayer.recentRolls.length > 0) {
+        account.recentRolls = serverPlayer.recentRolls;
+      }
+      if (typeof serverPlayer.rollsCount === 'number') {
+        account.rollCount = Math.max(account.rollCount, serverPlayer.rollsCount);
+      }
+      if (typeof serverPlayer.totalScore === 'number') {
+        account.totalScore = Math.max(account.totalScore, serverPlayer.totalScore);
+      }
+      syncBadgesFromAccount();
+      saveAccount();
+    }
+
     function syncBadgesFromAccount() {
       const unlockedSet = new Set(account ? account.unlockedBadges : []);
       BADGES.forEach(b => {
         b.unlocked = unlockedSet.has(b.id);
       });
-    }
-
-    function calculatePersistentScore() {
-      if (!account) return 0;
-      const normalSet = new Set(account.unlockedBadges);
-      const superSet = new Set(account.unlockedSuperBadges || []);
-      const secretSet = new Set(account.unlockedSecrets || []);
-
-      const normalPoints = BADGES
-        .filter(b => normalSet.has(b.id))
-        .reduce((sum, b) => sum + b.points, 0);
-
-      const superPoints = SUPER_BADGES
-        .filter(sb => superSet.has(sb.id))
-        .reduce((sum, sb) => sum + sb.points, 0);
-
-      const secretPoints = SECRET_BADGES
-        .filter(sb => secretSet.has(sb.id))
-        .reduce((sum, sb) => sum + sb.points, 0);
-
-      return normalPoints + superPoints + secretPoints;
     }
 
     function getTotalUnlockedCount() {
@@ -2326,24 +2336,42 @@
 
     function showSuperAnnouncement(nickname, badgeName) {
       if (!superAnnouncementBannerEl || !superAnnouncementTextEl) return;
-      superAnnouncementTextEl.textContent = `${nickname} ha sbloccato il badge: ${badgeName}`;
+      superAnnouncementTextEl.textContent = `${nickname} ha sbloccato il badge: ${badgeName.toUpperCase()}`;
       superAnnouncementBannerEl.classList.remove('hidden');
     }
 
-    function unlockSecretBadge(secretId) {
+    async function unlockSecretBadge(secretId) {
       if (!account) return false;
       if (!Array.isArray(account.unlockedSecrets)) account.unlockedSecrets = [];
       if (account.unlockedSecrets.includes(secretId)) return false;
 
       account.unlockedSecrets.push(secretId);
-      account.totalScore = calculatePersistentScore();
+      account.totalScore += 67;
       saveAccount();
 
       SFX.secretUnlock();
       renderStats();
       renderBadges();
       renderSecretBadges();
-      syncLeaderboardWithServer();
+
+      try {
+        const res = await fetch(API_ENDPOINT, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: 'unlock_secret',
+            deviceId: account.deviceId,
+            secretId
+          })
+        });
+        if (res.ok) {
+          const data = await res.json();
+          if (data.player) mergeServerPlayerIntoAccount(data.player);
+          if (data.leaderboard) renderLeaderboard(data.leaderboard, data.kingMessage || null);
+        }
+      } catch (err) {
+        console.warn('Sync badge segreto offline:', err);
+      }
       return true;
     }
 
@@ -2357,7 +2385,7 @@
     // ==========================================
     // API & SINCRONIZZAZIONE SERVER
     // ==========================================
-    async function syncLeaderboardWithServer(extraPayload = {}) {
+    async function syncLeaderboardWithServer() {
       if (!account) return;
       try {
         const res = await fetch(API_ENDPOINT, {
@@ -2365,17 +2393,17 @@
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             action: 'sync',
-            deviceId: account.deviceId,
-            nickname: account.nickname,
-            badgeCount: getTotalUnlockedCount(),
-            rollCount: account.rollCount,
-            totalScore: account.totalScore,
-            unlockedSuperBadges: account.unlockedSuperBadges || [],
-            ...extraPayload
+            deviceId: account.deviceId
           })
         });
         if (!res.ok) return;
         const data = await res.json();
+        if (data.player) {
+          mergeServerPlayerIntoAccount(data.player);
+          renderStats();
+          renderBadges();
+          renderSecretBadges();
+        }
         if (data.superUnlockers) {
           globalSuperUnlockers = data.superUnlockers;
           renderSuperBadges();
@@ -2423,7 +2451,6 @@
     }
 
     function renderLeaderboard(entries, kingMessage) {
-      // Gestione Messaggio del #1
       if (entries && entries.length > 0) {
         const topPlayer = entries[0];
         kingBannerEl.classList.remove('hidden');
@@ -2477,8 +2504,8 @@
               ${isMe ? '<span class="you-tag">TU</span>' : ''}
               ${specialTagHtml}
             </td>
-            <td class="badges-col">${entry.badgeCount}</td>
-            <td class="rolls-col">${(entry.rollCount || 0).toLocaleString('it-IT')}</td>
+            <td class="badges-col">${entry.badgesCount}</td>
+            <td class="rolls-col">${(entry.rollsCount || 0).toLocaleString('it-IT')}</td>
             <td class="score-col">${(entry.totalScore || 0).toLocaleString('it-IT')} pt</td>
           </tr>
         `;
@@ -2699,11 +2726,9 @@
     }
 
     // ==========================================
-    // ANIMAZIONE E LOGICA DI ESTRAZIONE
+    // ANIMAZIONE E LOGICA DI ESTRAZIONE SERVER-SIDE
     // ==========================================
     function formatDigitsArray(num) {
-      if (num < 10) return [String(num)];
-      if (num < 100) return String(num).split('');
       return String(num).split('');
     }
 
@@ -2809,7 +2834,7 @@
       });
     }
 
-    function handleRoll() {
+    async function handleRoll() {
       if (!account) return;
 
       // Controllo badge segreto "tryharder" (10 click mentre sta rollando)
@@ -2821,7 +2846,6 @@
         return;
       }
 
-      // Reset timer AFK 50k appena si effettua un nuovo roll
       if (flex50kTimer) {
         clearTimeout(flex50kTimer);
         flex50kTimer = null;
@@ -2838,19 +2862,16 @@
       const now = Date.now();
       const currentHour = new Date(now).getHours();
 
-      // Badge segreto "nottambulo" (roll tra le 03:00 e le 03:59)
       if (currentHour === 3) {
         unlockSecretBadge('secret_nottambulo');
       }
 
-      // Badge segreto "frettolone" (5 roll in meno di 30 secondi)
       recentRollTimestamps.push(now);
       recentRollTimestamps = recentRollTimestamps.filter(ts => now - ts <= 30000);
       if (recentRollTimestamps.length >= 5) {
         unlockSecretBadge('secret_frettolone');
       }
 
-      // Badge segreto "impasible" (3 roll con Difficoltà avanzata attiva)
       if (hardModeEnabled) {
         account.hardModeRolls = (account.hardModeRolls || 0) + 1;
         if (account.hardModeRolls >= 3) {
@@ -2858,94 +2879,94 @@
         }
       }
 
-      const rolled = Math.floor(Math.random() * TOTAL_NUMBERS) + MIN_NUM;
-
-      // Salva lo storico degli ultimi 10 roll per i Super Badge
-      account.recentRolls.push(rolled);
-      if (account.recentRolls.length > 10) {
-        account.recentRolls = account.recentRolls.slice(-10);
-      }
-
-      const previouslyUnlocked = new Set(account.unlockedBadges);
-      const previouslyUnlockedSuper = new Set(account.unlockedSuperBadges || []);
-
-      const matchedNormal = BADGES.filter(b => b.check(rolled));
-      const matchedSuper = SUPER_BADGES.filter(sb => sb.check(account.recentRolls));
-
-      const normalRollScore = matchedNormal.reduce((sum, b) => sum + b.points, 0);
-      const superRollScore = matchedSuper.reduce((sum, sb) => sum + sb.points, 0);
-      const rollScore = normalRollScore + superRollScore;
-
-      const newlyUnlockedIds = [];
-      matchedNormal.forEach(b => {
-        if (!previouslyUnlocked.has(b.id)) {
-          account.unlockedBadges.push(b.id);
-          account.unlockedOrder.push(b.id);
-          newlyUnlockedIds.push(b.id);
-          b.unlocked = true;
-        }
-      });
-
-      const newlyUnlockedSuper = [];
-      matchedSuper.forEach(sb => {
-        if (!previouslyUnlockedSuper.has(sb.id)) {
-          account.unlockedSuperBadges.push(sb.id);
-          newlyUnlockedSuper.push(sb);
-        }
-      });
-
-      const revealQueue = [
-        ...matchedNormal.map(b => ({
-          ...b,
-          isSuper: false,
-          isNew: newlyUnlockedIds.includes(b.id)
-        })),
-        ...matchedSuper.map(sb => ({
-          ...sb,
-          isSuper: true,
-          isNew: newlyUnlockedSuper.some(n => n.id === sb.id)
-        }))
-      ];
-
-      account.rollCount += 1;
-      account.lastRollScore = rollScore;
-      if (rollScore > account.bestRollScore) {
-        account.bestRollScore = rollScore;
-      }
-      account.totalScore = calculatePersistentScore();
-      updateTopRolls(rolled, rollScore);
-      saveAccount();
-
-      animateSlotRoll(rolled, () => {
-        revealBadgesSequentially(revealQueue, rollScore, () => {
-          renderStats();
-          renderBadges(matchedNormal.map(b => b.id), newlyUnlockedIds);
-          renderSuperBadges(matchedSuper.map(sb => sb.id), newlyUnlockedSuper.map(n => n.id));
-          renderHistory();
-
-          let extraSyncPayload = {};
-          if (newlyUnlockedSuper.length > 0) {
-            const latestSuper = newlyUnlockedSuper[newlyUnlockedSuper.length - 1];
-            showSuperAnnouncement(account.nickname, latestSuper.name);
-            extraSyncPayload = {
-              newSuperBadges: newlyUnlockedSuper.map(s => ({ id: s.id, name: s.name }))
-            };
-          }
-
-          syncLeaderboardWithServer(extraSyncPayload);
-
-          // Badge segreto "non ti vantare" (30s fermo dopo un roll > 50.000 punti)
-          if (rollScore > 50000) {
-            flex50kTimer = setTimeout(() => {
-              unlockSecretBadge('secret_nontivantare');
-            }, 30000);
-          }
-
-          isRolling = false;
-          clicksWhileRolling = 0;
-          rollBtn.classList.remove('is-busy');
+      try {
+        const res = await fetch(API_ENDPOINT, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: 'roll',
+            deviceId: account.deviceId,
+            unlockedIds: account.unlockedBadges,
+            secretUnlockedIds: account.unlockedSecrets
+          })
         });
-      });
+
+        const data = await res.json();
+        if (!res.ok) {
+          throw new Error(data.error || 'Errore durante il roll sul server.');
+        }
+
+        const rolled = data.result;
+        const rollScore = data.rollPoints;
+        const newlyUnlockedIds = data.newlyUnlockedIds || [];
+        const matchedSuperIds = data.matchedSuperIds || [];
+        const newlyUnlockedSuperIds = data.newlyUnlockedSuperIds || [];
+
+        const matchedNormal = BADGES.filter(b => b.check(rolled));
+        const matchedSuper = SUPER_BADGES.filter(sb => matchedSuperIds.includes(sb.id));
+
+        if (data.player) {
+          mergeServerPlayerIntoAccount(data.player);
+        }
+        account.lastRollScore = rollScore;
+        if (rollScore > account.bestRollScore) {
+          account.bestRollScore = rollScore;
+        }
+        updateTopRolls(rolled, rollScore);
+        saveAccount();
+
+        const revealQueue = [
+          ...matchedNormal.map(b => ({
+            ...b,
+            isSuper: false,
+            isNew: newlyUnlockedIds.includes(b.id)
+          })),
+          ...matchedSuper.map(sb => ({
+            ...sb,
+            isSuper: true,
+            isNew: newlyUnlockedSuperIds.includes(sb.id)
+          }))
+        ];
+
+        animateSlotRoll(rolled, () => {
+          revealBadgesSequentially(revealQueue, rollScore, () => {
+            if (data.superUnlockers) {
+              globalSuperUnlockers = data.superUnlockers;
+            }
+            if (data.latestSuperAnnouncement) {
+              latestSuperAnnouncement = data.latestSuperAnnouncement;
+              showSuperAnnouncement(
+                latestSuperAnnouncement.nickname,
+                latestSuperAnnouncement.badgeName
+              );
+            }
+
+            renderStats();
+            renderBadges(matchedNormal.map(b => b.id), newlyUnlockedIds);
+            renderSuperBadges(matchedSuperIds, newlyUnlockedSuperIds);
+            renderHistory();
+
+            if (data.leaderboard) {
+              renderLeaderboard(data.leaderboard, data.kingMessage || null);
+            }
+
+            if (rollScore > 50000) {
+              flex50kTimer = setTimeout(() => {
+                unlockSecretBadge('secret_nontivantare');
+              }, 30000);
+            }
+
+            isRolling = false;
+            clicksWhileRolling = 0;
+            rollBtn.classList.remove('is-busy');
+          });
+        });
+      } catch (err) {
+        triggeredBadgesEl.innerHTML = `<span class="error-text">${escapeHtml(err.message)}</span>`;
+        isRolling = false;
+        clicksWhileRolling = 0;
+        rollBtn.classList.remove('is-busy');
+      }
     }
 
     // ==========================================
@@ -2985,15 +3006,14 @@
           return;
         }
 
-        account = createDefaultAccount(deviceId, data.nickname || rawNick);
+        const confirmedNick = (data.player && data.player.nickname) || rawNick;
+        account = createDefaultAccount(deviceId, confirmedNick);
+        if (data.player) mergeServerPlayerIntoAccount(data.player);
         saveAccount();
         onboardingModal.classList.add('hidden');
         startApp();
       } catch (err) {
-        account = createDefaultAccount(deviceId, rawNick);
-        saveAccount();
-        onboardingModal.classList.add('hidden');
-        startApp();
+        modalError.textContent = 'Impossibile contattare il server.';
       } finally {
         registerBtn.disabled = false;
         registerBtn.textContent = 'CONFERMA E GIOCA';
@@ -3026,30 +3046,21 @@
     soundToggleInput.addEventListener('change', () => {
       soundEnabled = soundToggleInput.checked;
       localStorage.setItem(SOUND_PREF_KEY, String(soundEnabled));
-      if (soundEnabled) {
-        SFX.click();
-      }
+      if (soundEnabled) SFX.click();
     });
 
     speedrunToggleInput.addEventListener('change', () => {
       speedrunEnabled = speedrunToggleInput.checked;
       localStorage.setItem(SPEEDRUN_PREF_KEY, String(speedrunEnabled));
-      if (soundEnabled) {
-        SFX.click();
-      }
+      if (soundEnabled) SFX.click();
     });
 
     hardModeToggleInput.addEventListener('change', () => {
       hardModeEnabled = hardModeToggleInput.checked;
       localStorage.setItem(HARDMODE_PREF_KEY, String(hardModeEnabled));
-      if (soundEnabled) {
-        SFX.click();
-      }
-      if (hardModeEnabled) {
-        startHardModeCycle();
-      } else {
-        stopHardModeCycle();
-      }
+      if (soundEnabled) SFX.click();
+      if (hardModeEnabled) startHardModeCycle();
+      else stopHardModeCycle();
     });
 
     settingsForm.addEventListener('submit', async (e) => {
@@ -3088,10 +3099,21 @@
           return;
         }
 
-        account.nickname = data.nickname || newNick;
+        account.nickname = (data.player && data.player.nickname) || newNick;
         saveAccount();
         renderStats();
         checkDaltonicoUnlock(account.nickname);
+        if (data.superUnlockers) {
+          globalSuperUnlockers = data.superUnlockers;
+          renderSuperBadges();
+        }
+        if (data.latestSuperAnnouncement) {
+          latestSuperAnnouncement = data.latestSuperAnnouncement;
+          showSuperAnnouncement(
+            latestSuperAnnouncement.nickname,
+            latestSuperAnnouncement.badgeName
+          );
+        }
         if (data.leaderboard) {
           renderLeaderboard(data.leaderboard, data.kingMessage || null);
         }
@@ -3104,7 +3126,7 @@
       }
     });
 
-    // Salvataggio Messaggio del #1
+    // Salvataggio Messaggio del #1 (action: 'set_king_message')
     kingEditorForm.addEventListener('submit', async (e) => {
       e.preventDefault();
       if (!account) return;
@@ -3118,7 +3140,7 @@
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            action: 'king_message',
+            action: 'set_king_message',
             deviceId: account.deviceId,
             message: msg
           })
@@ -3139,7 +3161,6 @@
       }
     });
 
-    // Filtri e Ordinamento Griglia Badge
     badgeFilterGroupEl.addEventListener('click', (e) => {
       const btn = e.target.closest('.filter-btn');
       if (!btn) return;
@@ -3156,7 +3177,6 @@
       renderBadges();
     });
 
-    // Badge segreto 1: "cookie clicker" (10 click consecutivi sul titolo RNCICO)
     mainTitleEl.addEventListener('click', () => {
       titleClickStreak++;
       SFX.tick();
@@ -3171,7 +3191,6 @@
       }
     });
 
-    // Badge segreto 3: "mostro" (click sul contatore bambini senza acqua)
     thirstyKidsBox.addEventListener('click', () => {
       SFX.babyCry();
       unlockSecretBadge('secret_mostro');
@@ -3185,7 +3204,6 @@
 
     function startApp() {
       syncBadgesFromAccount();
-      account.totalScore = calculatePersistentScore();
       saveAccount();
 
       checkDaltonicoUnlock(account.nickname);
@@ -3200,7 +3218,6 @@
       syncLeaderboardWithServer();
     }
 
-    // Avvio iniziale
     account = loadAccount();
     if (!account) {
       onboardingModal.classList.remove('hidden');
