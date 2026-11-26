@@ -1,6 +1,201 @@
 const PLAYERS_KEY = 'rncico:players';
 const KING_MSG_KEY = 'rncico:king_message';
 
+const MIN_NUM = 0;
+const MAX_NUM = 500;
+const TOTAL_NUMBERS = MAX_NUM - MIN_NUM + 1;
+
+function isPrime(n) {
+  if (n < 2) return false;
+  for (let i = 2; i <= Math.sqrt(n); i++) {
+    if (n % i === 0) return false;
+  }
+  return true;
+}
+
+function isFactorial(n) {
+  return [1, 2, 6, 24, 120].includes(n);
+}
+
+function isPalindrome(n) {
+  const s = String(n);
+  return s.length > 1 && s === s.split('').reverse().join('');
+}
+
+function isPerfectSquare(n) {
+  return n > 0 && Number.isInteger(Math.sqrt(n));
+}
+
+function isHarshad(n) {
+  if (n <= 0) return false;
+  const sumDigits = String(n).split('').reduce((acc, d) => acc + Number(d), 0);
+  return n % sumDigits === 0;
+}
+
+function isPowerOfTwo(n) {
+  return n > 0 && (n & (n - 1)) === 0;
+}
+
+function isBinaryDigits(n) {
+  return /^[01]+$/.test(String(n));
+}
+
+function isPerfectNumber(n) {
+  return [6, 28, 496].includes(n);
+}
+
+function isFibonacci(n) {
+  return [0, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144, 233, 377].includes(n);
+}
+
+function isDivisorOf496(n) {
+  return n > 0 && 496 % n === 0;
+}
+
+function isUpsideDownSame(n) {
+  const map = { '0': '0', '1': '1', '6': '9', '8': '8', '9': '6' };
+  const s = String(n);
+  const flipped = s.split('').reverse().map(c => map[c] || '').join('');
+  return s === flipped;
+}
+
+const RAW_BADGES = [
+  { id: 'n0', check: (n) => n === 0 },
+  { id: 'n1', check: (n) => n === 1 },
+  { id: 'n2', check: (n) => n === 2 },
+  { id: 'n3', check: (n) => n === 3 },
+  { id: 'n4', check: (n) => n === 4 },
+  { id: 'n6', check: (n) => n === 6 },
+  { id: 'n9', check: (n) => n === 9 },
+  { id: 'n10', check: (n) => n === 10 },
+  { id: 'n11', check: (n) => n === 11 },
+  { id: 'n12', check: (n) => n === 12 },
+  { id: 'n18', check: (n) => n === 18 },
+  { id: 'n24', check: (n) => n === 24 },
+  { id: 'n31', check: (n) => n === 31 },
+  { id: 'n33', check: (n) => n === 33 },
+  { id: 'n48', check: (n) => n === 48 },
+  { id: 'n51', check: (n) => n === 51 },
+  { id: 'n52', check: (n) => n === 52 },
+  { id: 'n70', check: (n) => n === 70 },
+  { id: 'n82', check: (n) => n === 82 },
+  { id: 'n90', check: (n) => n === 90 },
+  { id: 'n91', check: (n) => n === 91 },
+  { id: 'n92', check: (n) => n === 92 },
+  { id: 'n93', check: (n) => n === 93 },
+  { id: 'n94', check: (n) => n === 94 },
+  { id: 'n109', check: (n) => n === 109 },
+  { id: 'n118', check: (n) => n === 118 },
+  { id: 'n119', check: (n) => n === 119 },
+  { id: 'n123', check: (n) => n === 123 },
+  { id: 'n126', check: (n) => n === 126 },
+  { id: 'n127', check: (n) => n === 127 },
+  { id: 'n141', check: (n) => n === 141 },
+  { id: 'n165', check: (n) => n === 165 },
+  { id: 'n190', check: (n) => n === 190 },
+  { id: 'n193_cap', check: (n) => n === 193 },
+  { id: 'n195', check: (n) => n === 195 },
+  { id: 'n206', check: (n) => n === 206 },
+  { id: 'n216', check: (n) => n === 216 },
+  { id: 'n271', check: (n) => n === 271 },
+  { id: 'n286', check: (n) => n === 286 },
+  { id: 'n287', check: (n) => n === 287 },
+  { id: 'n297', check: (n) => n === 297 },
+  { id: 'n312', check: (n) => n === 312 },
+  { id: 'n314', check: (n) => n === 314 },
+  { id: 'n343', check: (n) => n === 343 },
+  { id: 'n350', check: (n) => n === 350 },
+  { id: 'n365', check: (n) => n === 365 },
+  { id: 'n373', check: (n) => n === 373 },
+  { id: 'n404', check: (n) => n === 404 },
+  { id: 'n412', check: (n) => n === 412 },
+  { id: 'n420', check: (n) => n === 420 },
+  { id: 'n441', check: (n) => n === 441 },
+  { id: 'n500', check: (n) => n === 500 },
+  { id: 'siri_timer', check: (n) => n === 5 || n === 300 },
+  { id: 'coc_troops', check: (n) => n === 352 || n === 407 },
+  { id: 'meta_expected', check: (n) => n === 250 || n === 251 },
+  { id: 'tel_cico', check: (n) => n === 391 },
+  { id: 'tel_cico_rev', check: (n) => n === 193 },
+  { id: 'tel_carlo', check: (n) => n === 380 },
+  { id: 'tel_carlo_rev', check: (n) => n === 83 },
+  { id: 'tel_cris_emma', check: (n) => n === 327 },
+  { id: 'tel_ila', check: (n) => n === 324 },
+  { id: 'tel_ila_rev', check: (n) => n === 423 },
+  { id: 'cont89', check: (n) => String(n).includes('89') },
+  { id: 'cont69', check: (n) => String(n).includes('69') },
+  { id: 'cont67', check: (n) => String(n).includes('67') },
+  { id: 'cont23', check: (n) => String(n).includes('23') },
+  { id: 'cont77', check: (n) => String(n).includes('77') },
+  { id: 'end26', check: (n) => n % 100 === 26 },
+  { id: 'end22', check: (n) => n % 100 === 22 },
+  { id: 'end88', check: (n) => n % 100 === 88 },
+  { id: 'near100', check: (n) => n % 100 === 99 || n % 100 === 1 },
+  { id: 'end2', check: (n) => n % 10 === 2 },
+  { id: 'end4', check: (n) => n % 10 === 4 },
+  { id: 'end6', check: (n) => n % 10 === 6 },
+  { id: 'end8', check: (n) => n % 10 === 8 },
+  { id: 'under10', check: (n) => n >= 1 && n <= 9 },
+  { id: 'alphabet', check: (n) => n >= 1 && n <= 26 },
+  { id: 'over490', check: (n) => n > 490 },
+  { id: 'carlo_sides', check: (n) => n >= 40 && n <= 50 },
+  { id: 'cico_mom', check: (n) => n >= 105 && n <= 124 },
+  { id: 'leo_aviator', check: (n) => n >= 325 && n <= 335 },
+  { id: 'emma_debt', check: (n) => n >= 375 && n <= 385 },
+  { id: 'cannora_early', check: (n) => n >= 415 && n <= 419 },
+  { id: 'cannora_late', check: (n) => n >= 421 && n <= 424 },
+  { id: 'vale_cannore', check: (n) => n >= 430 && n <= 439 },
+  { id: 'luce_carlo', check: (n) => n >= 380 && n <= 450 },
+  { id: 'odd', check: (n) => n % 2 !== 0 },
+  { id: 'even', check: (n) => n % 2 === 0 },
+  { id: 'prime', check: (n) => isPrime(n) },
+  { id: 'square', check: (n) => isPerfectSquare(n) },
+  { id: 'palindrome', check: (n) => isPalindrome(n) },
+  { id: 'repdigit', check: (n) => n >= 10 && new Set(String(n)).size === 1 },
+  { id: 'upside_down', check: (n) => isUpsideDownSame(n) },
+  { id: 'mult50', check: (n) => n > 0 && n % 50 === 0 },
+  { id: 'mult70', check: (n) => n > 0 && n % 70 === 0 },
+  { id: 'mult37', check: (n) => n > 0 && n % 37 === 0 },
+  { id: 'mult100', check: (n) => n > 0 && n % 100 === 0 },
+  { id: 'mult104', check: (n) => n > 0 && n % 104 === 0 },
+  { id: 'pow2', check: (n) => isPowerOfTwo(n) },
+  { id: 'factorial', check: (n) => isFactorial(n) },
+  { id: 'harshad', check: (n) => isHarshad(n) },
+  { id: 'binary', check: (n) => isBinaryDigits(n) },
+  { id: 'perfect', check: (n) => isPerfectNumber(n) },
+  { id: 'fibonacci', check: (n) => isFibonacci(n) },
+  { id: 'div97', check: (n) => n === 1 || n === 97 },
+  { id: 'div496', check: (n) => isDivisorOf496(n) },
+  { id: 'self_pow', check: (n) => [1, 4, 27, 256].includes(n) },
+  { id: 'elem_se', check: (n) => n === 34 },
+  { id: 'elem_sr', check: (n) => n === 38 },
+  { id: 'elem_w', check: (n) => n === 74 },
+  { id: 'elem_es', check: (n) => n === 99 },
+  { id: 'elem_rf', check: (n) => n === 104 },
+  { id: 'mc_ores', check: (n) => [263, 264, 265, 266, 331, 351, 388, 406].includes(n) }
+];
+
+const BADGE_CATALOG = new Map();
+RAW_BADGES.forEach(badge => {
+  let matchingCount = 0;
+  for (let i = MIN_NUM; i <= MAX_NUM; i++) {
+    if (badge.check(i)) matchingCount++;
+  }
+  const probability = matchingCount / TOTAL_NUMBERS;
+  const points = matchingCount > 0 ? Math.round(100 / probability) : 0;
+  BADGE_CATALOG.set(badge.id, { ...badge, points });
+});
+
+const VALID_SECRET_IDS = new Set([
+  'secret_cookie',
+  'secret_daltonico',
+  'secret_mostro',
+  'secret_frettolone',
+  'secret_nontivantare'
+]);
+
+const MAX_POSSIBLE_BADGES = BADGE_CATALOG.size + VALID_SECRET_IDS.size; // 118
+
 async function kvGet(key) {
   const url = process.env.KV_REST_API_URL;
   const token = process.env.KV_REST_API_TOKEN;
@@ -34,8 +229,79 @@ async function kvSet(key, value) {
   return res.json();
 }
 
+function sanitizeIdList(list, allowedSetOrMap) {
+  if (!Array.isArray(list)) return [];
+  const out = [];
+  const seen = new Set();
+  for (const id of list) {
+    if (typeof id === 'string' && !seen.has(id) && allowedSetOrMap.has(id)) {
+      seen.add(id);
+      out.push(id);
+    }
+  }
+  return out;
+}
+
+function calculateMinimumScoreForBadges(unlockedIds, secretUnlockedIds) {
+  let sum = 0;
+  for (const id of unlockedIds) {
+    const b = BADGE_CATALOG.get(id);
+    if (b) sum += b.points;
+  }
+  sum += secretUnlockedIds.length * 67;
+  return sum;
+}
+
+function normalizePlayerRecord(player) {
+  const cleanUnlocked = sanitizeIdList(player.unlockedIds, BADGE_CATALOG);
+  const cleanSecrets = sanitizeIdList(player.secretUnlockedIds, VALID_SECRET_IDS);
+  const minScoreFromBadges = calculateMinimumScoreForBadges(cleanUnlocked, cleanSecrets);
+
+  // Rileva ed elimina automaticamente la manomissione di CrisSuperGay69 (6.969.696.969 pt / 114 badge)
+  const isTampered =
+    Number(player.totalScore) > 50000000 ||
+    Number(player.badgesCount) > MAX_POSSIBLE_BADGES ||
+    (player.nickname && player.nickname.toLowerCase() === 'crissupergay69' && Number(player.totalScore) >= 6000000000);
+
+  if (isTampered) {
+    // Se prima del cheat aveva meno badge/punti salvati negli ID reali, usa quelli reali; altrimenti azzera l'eccesso
+    const restoredCount = cleanUnlocked.length + cleanSecrets.length;
+    const restoredScore = minScoreFromBadges;
+    const restoredRolls = Math.min(Number(player.rollsCount) || 0, 300);
+
+    return {
+      ...player,
+      unlockedIds: cleanUnlocked,
+      secretUnlockedIds: cleanSecrets,
+      badgesCount: restoredCount,
+      totalScore: restoredScore,
+      rollsCount: restoredRolls,
+      serverVerified: true
+    };
+  }
+
+  // Per gli altri giocatori legittimi che avevano già giocato prima della patch, preserva i loro punti reali
+  const effectiveBadgesCount = player.serverVerified
+    ? cleanUnlocked.length + cleanSecrets.length
+    : Math.min(Math.max(Number(player.badgesCount) || 0, cleanUnlocked.length + cleanSecrets.length), MAX_POSSIBLE_BADGES);
+
+  const effectiveScore = player.serverVerified
+    ? Math.max(Number(player.totalScore) || 0, minScoreFromBadges)
+    : Math.max(Number(player.totalScore) || 0, minScoreFromBadges);
+
+  return {
+    ...player,
+    unlockedIds: cleanUnlocked,
+    secretUnlockedIds: cleanSecrets,
+    badgesCount: effectiveBadgesCount,
+    totalScore: effectiveScore,
+    rollsCount: Math.max(0, Number(player.rollsCount) || 0)
+  };
+}
+
 function buildTop10(playersMap) {
   return Object.values(playersMap)
+    .map(normalizePlayerRecord)
     .sort((a, b) => {
       if (b.badgesCount !== a.badgesCount) return b.badgesCount - a.badgesCount;
       if (b.totalScore !== a.totalScore) return b.totalScore - a.totalScore;
@@ -64,6 +330,23 @@ export default async function handler(req, res) {
     const players = (await kvGet(PLAYERS_KEY)) || {};
     let kingMessage = (await kvGet(KING_MSG_KEY)) || null;
 
+    // Pulisce immediatamente su Redis eventuali record manomessi
+    let dirty = false;
+    for (const [id, p] of Object.entries(players)) {
+      const normalized = normalizePlayerRecord(p);
+      if (
+        normalized.totalScore !== p.totalScore ||
+        normalized.badgesCount !== p.badgesCount ||
+        normalized.rollsCount !== p.rollsCount
+      ) {
+        players[id] = normalized;
+        dirty = true;
+      }
+    }
+    if (dirty) {
+      await kvSet(PLAYERS_KEY, players);
+    }
+
     if (req.method === 'GET') {
       return res.status(200).json({
         leaderboard: buildTop10(players),
@@ -73,12 +356,120 @@ export default async function handler(req, res) {
 
     if (req.method === 'POST') {
       const body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
-      const { action, deviceId, nickname, badgesCount, totalScore, rollsCount, message } = body || {};
+      const { action, deviceId, nickname, message, secretId, unlockedIds, secretUnlockedIds } = body || {};
 
       if (!deviceId || typeof deviceId !== 'string') {
         return res.status(400).json({ error: 'Device ID non valido.' });
       }
 
+      const existing = players[deviceId] ? normalizePlayerRecord(players[deviceId]) : null;
+
+      // 1. ESTRAZIONE NUMERO LATO SERVER (anti-cheat)
+      if (action === 'roll') {
+        if (!existing) {
+          return res.status(404).json({ error: 'Dispositivo non registrato.' });
+        }
+
+        // Sincronizza una tantum gli ID già sbloccati in locale prima dell'aggiornamento anti-cheat
+        if (!existing.serverVerified && Array.isArray(unlockedIds)) {
+          const validClientIds = sanitizeIdList(unlockedIds, BADGE_CATALOG);
+          if (validClientIds.length <= (existing.badgesCount || 0) + 5) {
+            existing.unlockedIds = Array.from(new Set([...existing.unlockedIds, ...validClientIds]));
+          }
+          const validClientSecrets = sanitizeIdList(secretUnlockedIds, VALID_SECRET_IDS);
+          existing.secretUnlockedIds = Array.from(new Set([...existing.secretUnlockedIds, ...validClientSecrets]));
+          existing.serverVerified = true;
+        }
+
+        const result = Math.floor(Math.random() * TOTAL_NUMBERS) + MIN_NUM;
+        const matched = [];
+        for (const badge of BADGE_CATALOG.values()) {
+          if (badge.check(result)) {
+            matched.push(badge);
+          }
+        }
+
+        const rollPoints = matched.reduce((sum, b) => sum + b.points, 0);
+        const prevUnlockedSet = new Set(existing.unlockedIds);
+        const newlyUnlockedIds = [];
+
+        for (const badge of matched) {
+          if (!prevUnlockedSet.has(badge.id)) {
+            prevUnlockedSet.add(badge.id);
+            newlyUnlockedIds.push(badge.id);
+          }
+        }
+
+        const updatedUnlockedIds = Array.from(prevUnlockedSet);
+        const updatedSecretIds = existing.secretUnlockedIds || [];
+        const newBadgesCount = updatedUnlockedIds.length + updatedSecretIds.length;
+        const newTotalScore = (Number(existing.totalScore) || 0) + rollPoints;
+        const newRollsCount = (Number(existing.rollsCount) || 0) + 1;
+
+        players[deviceId] = {
+          ...existing,
+          unlockedIds: updatedUnlockedIds,
+          secretUnlockedIds: updatedSecretIds,
+          badgesCount: newBadgesCount,
+          totalScore: newTotalScore,
+          rollsCount: newRollsCount,
+          serverVerified: true,
+          updatedAt: Date.now()
+        };
+
+        await kvSet(PLAYERS_KEY, players);
+
+        return res.status(200).json({
+          result,
+          rollPoints,
+          newlyUnlockedIds,
+          player: players[deviceId],
+          leaderboard: buildTop10(players),
+          kingMessage
+        });
+      }
+
+      // 2. SBLOCCO BADGE SEGRETO VALIDATO LATO SERVER
+      if (action === 'unlock_secret') {
+        if (!existing) {
+          return res.status(404).json({ error: 'Dispositivo non registrato.' });
+        }
+        if (!VALID_SECRET_IDS.has(secretId)) {
+          return res.status(400).json({ error: 'Badge segreto non valido.' });
+        }
+
+        const secretSet = new Set(existing.secretUnlockedIds || []);
+        let unlockedNow = false;
+        if (!secretSet.has(secretId)) {
+          secretSet.add(secretId);
+          unlockedNow = true;
+        }
+
+        const updatedSecretIds = Array.from(secretSet);
+        const updatedUnlockedIds = existing.unlockedIds || [];
+
+        players[deviceId] = {
+          ...existing,
+          unlockedIds: updatedUnlockedIds,
+          secretUnlockedIds: updatedSecretIds,
+          badgesCount: existing.serverVerified
+            ? updatedUnlockedIds.length + updatedSecretIds.length
+            : Math.min(MAX_POSSIBLE_BADGES, (existing.badgesCount || 0) + (unlockedNow ? 1 : 0)),
+          totalScore: (Number(existing.totalScore) || 0) + (unlockedNow ? 67 : 0),
+          updatedAt: Date.now()
+        };
+
+        await kvSet(PLAYERS_KEY, players);
+
+        return res.status(200).json({
+          unlockedNow,
+          player: players[deviceId],
+          leaderboard: buildTop10(players),
+          kingMessage
+        });
+      }
+
+      // 3. MESSAGGIO DEL #1 IN CLASSIFICA
       if (action === 'set_king_message') {
         const top10 = buildTop10(players);
         const king = top10[0];
@@ -104,14 +495,13 @@ export default async function handler(req, res) {
         });
       }
 
-      const cleanNick = String(nickname || '').trim();
-      if (cleanNick.length < 2 || cleanNick.length > 20) {
-        return res.status(400).json({ error: 'Il nickname deve avere tra 2 e 20 caratteri.' });
-      }
-
-      const existing = players[deviceId];
-
+      // 4. REGISTRAZIONE
       if (action === 'register') {
+        const cleanNick = String(nickname || '').trim();
+        if (cleanNick.length < 2 || cleanNick.length > 20) {
+          return res.status(400).json({ error: 'Il nickname deve avere tra 2 e 20 caratteri.' });
+        }
+
         if (existing) {
           return res.status(200).json({
             player: existing,
@@ -130,9 +520,12 @@ export default async function handler(req, res) {
         players[deviceId] = {
           deviceId,
           nickname: cleanNick,
-          badgesCount: Number(badgesCount) || 0,
-          totalScore: Number(totalScore) || 0,
-          rollsCount: Number(rollsCount) || 0,
+          unlockedIds: [],
+          secretUnlockedIds: [],
+          badgesCount: 0,
+          totalScore: 0,
+          rollsCount: 0,
+          serverVerified: true,
           updatedAt: Date.now()
         };
 
@@ -144,9 +537,15 @@ export default async function handler(req, res) {
         });
       }
 
+      // 5. CAMBIO NICKNAME
       if (action === 'rename') {
         if (!existing) {
           return res.status(404).json({ error: 'Profilo non trovato.' });
+        }
+
+        const cleanNick = String(nickname || '').trim();
+        if (cleanNick.length < 2 || cleanNick.length > 20) {
+          return res.status(400).json({ error: 'Il nickname deve avere tra 2 e 20 caratteri.' });
         }
 
         const nickTakenByOthers = Object.entries(players).some(
@@ -162,7 +561,6 @@ export default async function handler(req, res) {
           updatedAt: Date.now()
         };
 
-        // Aggiorna anche l'autore del messaggio del re se il #1 ha cambiato nome
         const newTop10 = buildTop10(players);
         if (newTop10[0] && newTop10[0].deviceId === deviceId && kingMessage) {
           kingMessage = {
@@ -180,26 +578,14 @@ export default async function handler(req, res) {
         });
       }
 
+      // 6. SYNC SOLA LETTURA / RIALLINEAMENTO SICURO (non accetta punti o badge arbitrarî)
       if (action === 'sync') {
         if (!existing) {
           return res.status(404).json({ error: 'Dispositivo non registrato.' });
         }
 
-        const incomingRolls = Number(rollsCount);
-        players[deviceId] = {
-          ...existing,
-          nickname: existing.nickname,
-          badgesCount: Math.max(existing.badgesCount || 0, Number(badgesCount) || 0),
-          totalScore: Math.max(existing.totalScore || 0, Number(totalScore) || 0),
-          rollsCount: Number.isFinite(incomingRolls)
-            ? Math.max(existing.rollsCount || 0, incomingRolls)
-            : (existing.rollsCount || 0),
-          updatedAt: Date.now()
-        };
-
-        await kvSet(PLAYERS_KEY, players);
         return res.status(200).json({
-          player: players[deviceId],
+          player: existing,
           leaderboard: buildTop10(players),
           kingMessage
         });
