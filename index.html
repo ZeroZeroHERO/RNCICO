@@ -202,6 +202,10 @@
       transform: translateX(22px);
       background-color: #ffffff;
     }
+    .switch input:disabled + .slider {
+      opacity: 0.35;
+      cursor: not-allowed;
+    }
 
     .nickname-input {
       width: 100%;
@@ -1402,7 +1406,7 @@
       <div class="sound-toggle-row">
         <div class="sound-toggle-info">
           <strong>Modalità Speedrun</strong>
-          <span>Numeri e suoni 5x più veloci a parità di durata</span>
+          <span id="speedrun-desc">Numeri e suoni 5x più veloci a parità di durata</span>
         </div>
         <label class="switch">
           <input type="checkbox" id="speedrun-toggle" />
@@ -2145,6 +2149,7 @@
     const saveNicknameBtn = document.getElementById('save-nickname-btn');
     const soundToggleInput = document.getElementById('sound-toggle');
     const speedrunToggleInput = document.getElementById('speedrun-toggle');
+    const speedrunDescEl = document.getElementById('speedrun-desc');
     const hardModeToggleInput = document.getElementById('hardmode-toggle');
 
     const digitEls = [
@@ -2351,6 +2356,21 @@
       return account.unlockedBadges.length +
         (account.unlockedSuperBadges ? account.unlockedSuperBadges.length : 0) +
         (account.unlockedSecrets ? account.unlockedSecrets.length : 0);
+    }
+
+        const SPEEDRUN_MIN_BADGES = 100;
+
+    function isSpeedrunUnlocked() {
+      return getTotalUnlockedCount() >= SPEEDRUN_MIN_BADGES;
+    }
+
+    function updateSpeedrunToggleState() {
+      const unlocked = isSpeedrunUnlocked();
+      speedrunToggleInput.disabled = !unlocked;
+      speedrunToggleInput.checked = unlocked && speedrunEnabled;
+      speedrunDescEl.textContent = unlocked
+        ? 'Numeri e suoni 5x più veloci a parità di durata'
+        : `🔒 Si sblocca con ${SPEEDRUN_MIN_BADGES} badge (ne hai ${getTotalUnlockedCount()})`;
     }
 
     const TWENTY_FOUR_HOURS_MS = 24 * 60 * 60 * 1000;
@@ -2786,8 +2806,9 @@
         digitEls[i].classList.add('spinning');
       }
 
-      const tickRate = speedrunEnabled ? 12 : 60;
-      const lockDelay = speedrunEnabled ? Math.round(DIGIT_LOCK_DELAY / 5) : DIGIT_LOCK_DELAY;
+      const fast = speedrunEnabled && isSpeedrunUnlocked();
+      const tickRate = fast ? 12 : 60;
+      const lockDelay = fast ? Math.round(DIGIT_LOCK_DELAY / 5) : DIGIT_LOCK_DELAY;
 
       const spinInterval = setInterval(() => {
         let anySpinning = false;
@@ -3055,7 +3076,7 @@
       settingsError.textContent = '';
       newNicknameInput.value = account.nickname;
       soundToggleInput.checked = soundEnabled;
-      speedrunToggleInput.checked = speedrunEnabled;
+      updateSpeedrunToggleState();
       hardModeToggleInput.checked = hardModeEnabled;
       settingsModal.classList.remove('hidden');
       setTimeout(() => newNicknameInput.focus(), 50);
@@ -3079,6 +3100,10 @@
     });
 
     speedrunToggleInput.addEventListener('change', () => {
+      if (!isSpeedrunUnlocked()) {
+        updateSpeedrunToggleState();
+        return;
+      }
       speedrunEnabled = speedrunToggleInput.checked;
       localStorage.setItem(SPEEDRUN_PREF_KEY, String(speedrunEnabled));
       if (soundEnabled) SFX.click();
