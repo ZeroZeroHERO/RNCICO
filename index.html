@@ -29,22 +29,26 @@
     }
 
     html {
-      transition: filter 0.35s ease, transform 0.35s ease;
+      transition: filter 0.35s ease;
     }
 
     html.daltonico-mode {
       filter: grayscale(100%);
     }
 
-    html.flip-180 {
+    .container {
+      transition: transform 0.35s ease;
+    }
+
+    html.flip-180 .container {
       transform: rotate(180deg);
     }
 
-    html.flip-x {
+    html.flip-x .container {
       transform: scaleX(-1);
     }
 
-    html.flip-y {
+    html.flip-y .container {
       transform: scaleY(-1);
     }
 
@@ -3015,23 +3019,6 @@
 
       SFX.rollStart();
 
-              const now = Date.now();
-        if (new Date(now).getHours() === 3) {
-          unlockSecretBadge('secret_nottambulo');
-        }
-        recentRollTimestamps.push(now);
-        recentRollTimestamps = recentRollTimestamps.filter(ts => now - ts <= 30000);
-        if (recentRollTimestamps.length >= 5) {
-          unlockSecretBadge('secret_frettolone');
-        }
-        if (hardModeEnabled) {
-          account.hardModeRolls = (account.hardModeRolls || 0) + 1;
-          saveAccount();
-          if (account.hardModeRolls >= 3) {
-            unlockSecretBadge('secret_impasible');
-          }
-        }
-
       try {
         const res = await fetch(API_ENDPOINT, {
           method: 'POST',
@@ -3067,6 +3054,24 @@
         }
         updateTopRolls(rolled, rollScore);
         saveAccount();
+                     
+        
+        const now = Date.now();
+        if (new Date(now).getHours() === 3) {
+          unlockSecretBadge('secret_nottambulo');
+        }
+        recentRollTimestamps.push(now);
+        recentRollTimestamps = recentRollTimestamps.filter(ts => now - ts <= 30000);
+        if (recentRollTimestamps.length >= 5) {
+          unlockSecretBadge('secret_frettolone');
+        }
+        if (hardModeEnabled) {
+          account.hardModeRolls = (account.hardModeRolls || 0) + 1;
+          saveAccount();
+          if (account.hardModeRolls >= 3) {
+            unlockSecretBadge('secret_impasible');
+          }
+        }
 
         const revealQueue = [
           ...matchedNormal.map(b => ({
