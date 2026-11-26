@@ -1,5 +1,7 @@
 const PLAYERS_KEY = 'rncico:players';
 const KING_MSG_KEY = 'rncico:king_message';
+const SUPER_UNLOCKERS_KEY = 'rncico:super_unlockers';
+const LATEST_SUPER_ANN_KEY = 'rncico:latest_super_announcement';
 
 const MIN_NUM = 0;
 const MAX_NUM = 500;
@@ -76,6 +78,7 @@ const RAW_BADGES = [
   { id: 'n31', check: (n) => n === 31 },
   { id: 'n33', check: (n) => n === 33 },
   { id: 'n35', check: (n) => n === 35 },
+  { id: 'n36_smalto', check: (n) => n === 36 },
   { id: 'n48', check: (n) => n === 48 },
   { id: 'n51', check: (n) => n === 51 },
   { id: 'n52', check: (n) => n === 52 },
@@ -89,6 +92,7 @@ const RAW_BADGES = [
   { id: 'n94', check: (n) => n === 94 },
   { id: 'n100_stamps', check: (n) => n === 100 },
   { id: 'n109', check: (n) => n === 109 },
+  { id: 'n110_daniele', check: (n) => n === 110 },
   { id: 'n118', check: (n) => n === 118 },
   { id: 'n119', check: (n) => n === 119 },
   { id: 'n123', check: (n) => n === 123 },
@@ -99,9 +103,11 @@ const RAW_BADGES = [
   { id: 'n190', check: (n) => n === 190 },
   { id: 'n193_cap', check: (n) => n === 193 },
   { id: 'n195', check: (n) => n === 195 },
+  { id: 'n198_cr', check: (n) => n === 198 },
   { id: 'n206', check: (n) => n === 206 },
   { id: 'n216', check: (n) => n === 216 },
   { id: 'n271', check: (n) => n === 271 },
+  { id: 'n271_benjamin', check: (n) => n === 271 },
   { id: 'n286', check: (n) => n === 286 },
   { id: 'n287', check: (n) => n === 287 },
   { id: 'n297', check: (n) => n === 297 },
@@ -111,6 +117,7 @@ const RAW_BADGES = [
   { id: 'n350', check: (n) => n === 350 },
   { id: 'n365', check: (n) => n === 365 },
   { id: 'n373', check: (n) => n === 373 },
+  { id: 'n401_nanda', check: (n) => n === 401 },
   { id: 'n404', check: (n) => n === 404 },
   { id: 'n412', check: (n) => n === 412 },
   { id: 'n420', check: (n) => n === 420 },
@@ -190,12 +197,73 @@ RAW_BADGES.forEach(badge => {
   BADGE_CATALOG.set(badge.id, { ...badge, points });
 });
 
+// Super Badge (punti tripli = probDenominator * 3)
+const SUPER_BADGES_CATALOG = [
+  // Badge di test temporaneo: rimuovi questo oggetto dopo il test
+  {
+    id: 'super_test_pari',
+    name: 'TEST NUMERO PARI',
+    probDenominator: 2,
+    points: 2 * 3,
+    check: (rolls) => rolls.length >= 1 && rolls[rolls.length - 1] % 2 === 0
+  },
+  {
+    id: 'super_deja_vu',
+    name: 'DÉJÀ VU',
+    probDenominator: 501,
+    points: 501 * 3,
+    check: (rolls) => rolls.length >= 2 && rolls[rolls.length - 1] === rolls[rolls.length - 2]
+  },
+  {
+    id: 'super_collo_terrorista',
+    name: 'COLLO TERRORISTA',
+    probDenominator: 771,
+    points: 771 * 3,
+    check: (rolls) => {
+      if (rolls.length < 3) return false;
+      const last3 = rolls.slice(-3);
+      return last3[0] + last3[1] + last3[2] === 911;
+    }
+  },
+  {
+    id: 'super_fanatico_harshad',
+    name: 'FANATICO DI HARSHAD',
+    probDenominator: 919,
+    points: 919 * 3,
+    check: (rolls) => rolls.length >= 5 && rolls.slice(-5).every(n => isHarshad(n))
+  },
+  {
+    id: 'super_in_pari',
+    name: 'IN PARI',
+    probDenominator: 1024,
+    points: 1024 * 3,
+    check: (rolls) => rolls.length >= 10 && rolls.slice(-10).every(n => n % 2 === 0)
+  },
+  {
+    id: 'super_indeciso',
+    name: 'INDECISO',
+    probDenominator: 1255,
+    points: 1255 * 3,
+    check: (rolls) => {
+      if (rolls.length < 2) return false;
+      const a = rolls[rolls.length - 2];
+      const b = rolls[rolls.length - 1];
+      return (a < 10 && b > 490) || (a > 490 && b < 10);
+    }
+  }
+];
+
+const SUPER_BADGE_MAP = new Map(SUPER_BADGES_CATALOG.map(sb => [sb.id, sb]));
+
 const VALID_SECRET_IDS = new Set([
   'secret_cookie',
   'secret_daltonico',
   'secret_mostro',
   'secret_frettolone',
-  'secret_nontivantare'
+  'secret_nontivantare',
+  'secret_nottambulo',
+  'secret_tryharder',
+  'secret_impasible'
 ]);
 
 async function kvGet(key) {
@@ -244,11 +312,23 @@ function sanitizeIdList(list, allowedSetOrMap) {
   return out;
 }
 
-function calculateMinimumScoreForBadges(unlockedIds, secretUnlockedIds) {
+function sanitizeRecentRolls(list) {
+  if (!Array.isArray(list)) return [];
+  return list
+    .map(n => Number(n))
+    .filter(n => Number.isInteger(n) && n >= MIN_NUM && n <= MAX_NUM)
+    .slice(-10);
+}
+
+function calculateMinimumScoreForBadges(unlockedIds, secretUnlockedIds, superUnlockedIds = []) {
   let sum = 0;
   for (const id of unlockedIds) {
     const b = BADGE_CATALOG.get(id);
     if (b) sum += b.points;
+  }
+  for (const id of superUnlockedIds) {
+    const sb = SUPER_BADGE_MAP.get(id);
+    if (sb) sum += sb.points;
   }
   sum += secretUnlockedIds.length * 67;
   return sum;
@@ -257,7 +337,9 @@ function calculateMinimumScoreForBadges(unlockedIds, secretUnlockedIds) {
 function normalizePlayerRecord(player) {
   const cleanUnlocked = sanitizeIdList(player.unlockedIds, BADGE_CATALOG);
   const cleanSecrets = sanitizeIdList(player.secretUnlockedIds, VALID_SECRET_IDS);
-  const minScoreFromBadges = calculateMinimumScoreForBadges(cleanUnlocked, cleanSecrets);
+  const cleanSupers = sanitizeIdList(player.superUnlockedIds, SUPER_BADGE_MAP);
+  const cleanRecentRolls = sanitizeRecentRolls(player.recentRolls);
+  const minScoreFromBadges = calculateMinimumScoreForBadges(cleanUnlocked, cleanSecrets, cleanSupers);
 
   const isCrisAccount =
     player.nickname && player.nickname.toLowerCase() === 'crissupergay69';
@@ -267,7 +349,7 @@ function normalizePlayerRecord(player) {
     (Number(player.totalScore) >= 6000000000 ||
       (Number(player.totalScore) === 0 && Number(player.badgesCount) === 0))
   ) {
-    const restoredCount = Math.max(83, cleanUnlocked.length + cleanSecrets.length);
+    const restoredCount = Math.max(83, cleanUnlocked.length + cleanSecrets.length + cleanSupers.length);
     const restoredScore = Math.max(3426767, minScoreFromBadges);
     const restoredRolls = Math.max(Number(player.rollsCount) || 0, 1);
 
@@ -275,6 +357,8 @@ function normalizePlayerRecord(player) {
       ...player,
       unlockedIds: cleanUnlocked,
       secretUnlockedIds: cleanSecrets,
+      superUnlockedIds: cleanSupers,
+      recentRolls: cleanRecentRolls,
       badgesCount: restoredCount,
       totalScore: restoredScore,
       rollsCount: restoredRolls,
@@ -285,8 +369,8 @@ function normalizePlayerRecord(player) {
 
   const effectiveBadgesCount =
     player.serverVerified && !player.needsLegacyRecovery
-      ? cleanUnlocked.length + cleanSecrets.length
-      : Math.max(Number(player.badgesCount) || 0, cleanUnlocked.length + cleanSecrets.length);
+      ? cleanUnlocked.length + cleanSecrets.length + cleanSupers.length
+      : Math.max(Number(player.badgesCount) || 0, cleanUnlocked.length + cleanSecrets.length + cleanSupers.length);
 
   const effectiveScore = Math.max(Number(player.totalScore) || 0, minScoreFromBadges);
 
@@ -294,6 +378,8 @@ function normalizePlayerRecord(player) {
     ...player,
     unlockedIds: cleanUnlocked,
     secretUnlockedIds: cleanSecrets,
+    superUnlockedIds: cleanSupers,
+    recentRolls: cleanRecentRolls,
     badgesCount: effectiveBadgesCount,
     totalScore: effectiveScore,
     rollsCount: Math.max(0, Number(player.rollsCount) || 0)
@@ -330,6 +416,8 @@ export default async function handler(req, res) {
   try {
     const players = (await kvGet(PLAYERS_KEY)) || {};
     let kingMessage = (await kvGet(KING_MSG_KEY)) || null;
+    const superUnlockers = (await kvGet(SUPER_UNLOCKERS_KEY)) || {};
+    let latestSuperAnnouncement = (await kvGet(LATEST_SUPER_ANN_KEY)) || null;
 
     let dirty = false;
     for (const [id, p] of Object.entries(players)) {
@@ -351,7 +439,9 @@ export default async function handler(req, res) {
     if (req.method === 'GET') {
       return res.status(200).json({
         leaderboard: buildTop10(players),
-        kingMessage
+        kingMessage,
+        superUnlockers,
+        latestSuperAnnouncement
       });
     }
 
@@ -372,7 +462,7 @@ export default async function handler(req, res) {
 
       const existing = players[deviceId] ? normalizePlayerRecord(players[deviceId]) : null;
 
-      // 1. ESTRAZIONE NUMERO LATO SERVER (anti-cheat)
+      // 1. ESTRAZIONE NUMERO LATO SERVER (anti-cheat + controllo Super Badge su recentRolls)
       if (action === 'roll') {
         if (!existing) {
           return res.status(404).json({ error: 'Dispositivo non registrato su questo server.' });
@@ -388,6 +478,10 @@ export default async function handler(req, res) {
         }
 
         const result = Math.floor(Math.random() * TOTAL_NUMBERS) + MIN_NUM;
+
+        // Aggiorna la coda degli ultimi 10 roll del giocatore lato server
+        const updatedRecentRolls = [...(existing.recentRolls || []), result].slice(-10);
+
         const matched = [];
         for (const badge of BADGE_CATALOG.values()) {
           if (badge.check(result)) {
@@ -395,7 +489,17 @@ export default async function handler(req, res) {
           }
         }
 
-        const rollPoints = matched.reduce((sum, b) => sum + b.points, 0);
+        const matchedSuper = [];
+        for (const sBadge of SUPER_BADGES_CATALOG) {
+          if (sBadge.check(updatedRecentRolls)) {
+            matchedSuper.push(sBadge);
+          }
+        }
+
+        const normalRollPoints = matched.reduce((sum, b) => sum + b.points, 0);
+        const superRollPoints = matchedSuper.reduce((sum, sb) => sum + sb.points, 0);
+        const rollPoints = normalRollPoints + superRollPoints;
+
         const prevUnlockedSet = new Set(existing.unlockedIds);
         const newlyUnlockedIds = [];
 
@@ -406,9 +510,35 @@ export default async function handler(req, res) {
           }
         }
 
+        const prevSuperSet = new Set(existing.superUnlockedIds || []);
+        const newlyUnlockedSuperIds = [];
+        let superUnlockersDirty = false;
+
+        for (const sb of matchedSuper) {
+          if (!prevSuperSet.has(sb.id)) {
+            prevSuperSet.add(sb.id);
+            newlyUnlockedSuperIds.push(sb.id);
+          }
+          if (!Array.isArray(superUnlockers[sb.id])) {
+            superUnlockers[sb.id] = [];
+          }
+          if (!superUnlockers[sb.id].includes(existing.nickname)) {
+            superUnlockers[sb.id].push(existing.nickname);
+            superUnlockersDirty = true;
+          }
+          latestSuperAnnouncement = {
+            nickname: existing.nickname,
+            badgeName: sb.name,
+            badgeId: sb.id,
+            updatedAt: Date.now()
+          };
+          superUnlockersDirty = true;
+        }
+
         const updatedUnlockedIds = Array.from(prevUnlockedSet);
+        const updatedSuperIds = Array.from(prevSuperSet);
         const updatedSecretIds = existing.secretUnlockedIds || [];
-        const computedCountFromIds = updatedUnlockedIds.length + updatedSecretIds.length;
+        const computedCountFromIds = updatedUnlockedIds.length + updatedSecretIds.length + updatedSuperIds.length;
 
         const newBadgesCount = existing.needsLegacyRecovery
           ? Math.max(existing.badgesCount || 0, computedCountFromIds)
@@ -421,6 +551,8 @@ export default async function handler(req, res) {
           ...existing,
           unlockedIds: updatedUnlockedIds,
           secretUnlockedIds: updatedSecretIds,
+          superUnlockedIds: updatedSuperIds,
+          recentRolls: updatedRecentRolls,
           badgesCount: newBadgesCount,
           totalScore: newTotalScore,
           rollsCount: newRollsCount,
@@ -430,14 +562,22 @@ export default async function handler(req, res) {
         };
 
         await kvSet(PLAYERS_KEY, players);
+        if (superUnlockersDirty) {
+          await kvSet(SUPER_UNLOCKERS_KEY, superUnlockers);
+          await kvSet(LATEST_SUPER_ANN_KEY, latestSuperAnnouncement);
+        }
 
         return res.status(200).json({
           result,
           rollPoints,
           newlyUnlockedIds,
+          matchedSuperIds: matchedSuper.map(sb => sb.id),
+          newlyUnlockedSuperIds,
           player: players[deviceId],
           leaderboard: buildTop10(players),
-          kingMessage
+          kingMessage,
+          superUnlockers,
+          latestSuperAnnouncement
         });
       }
 
@@ -459,15 +599,17 @@ export default async function handler(req, res) {
 
         const updatedSecretIds = Array.from(secretSet);
         const updatedUnlockedIds = existing.unlockedIds || [];
+        const updatedSuperIds = existing.superUnlockedIds || [];
         const useLegacyIncrement = !existing.serverVerified || existing.needsLegacyRecovery;
 
         players[deviceId] = {
           ...existing,
           unlockedIds: updatedUnlockedIds,
           secretUnlockedIds: updatedSecretIds,
+          superUnlockedIds: updatedSuperIds,
           badgesCount: useLegacyIncrement
             ? (existing.badgesCount || 0) + (unlockedNow ? 1 : 0)
-            : updatedUnlockedIds.length + updatedSecretIds.length,
+            : updatedUnlockedIds.length + updatedSecretIds.length + updatedSuperIds.length,
           totalScore: (Number(existing.totalScore) || 0) + (unlockedNow ? 67 : 0),
           updatedAt: Date.now()
         };
@@ -478,7 +620,9 @@ export default async function handler(req, res) {
           unlockedNow,
           player: players[deviceId],
           leaderboard: buildTop10(players),
-          kingMessage
+          kingMessage,
+          superUnlockers,
+          latestSuperAnnouncement
         });
       }
 
@@ -504,7 +648,9 @@ export default async function handler(req, res) {
         await kvSet(KING_MSG_KEY, kingMessage);
         return res.status(200).json({
           leaderboard: top10,
-          kingMessage
+          kingMessage,
+          superUnlockers,
+          latestSuperAnnouncement
         });
       }
 
@@ -519,7 +665,9 @@ export default async function handler(req, res) {
           return res.status(200).json({
             player: existing,
             leaderboard: buildTop10(players),
-            kingMessage
+            kingMessage,
+            superUnlockers,
+            latestSuperAnnouncement
           });
         }
 
@@ -535,6 +683,8 @@ export default async function handler(req, res) {
           nickname: cleanNick,
           unlockedIds: [],
           secretUnlockedIds: [],
+          superUnlockedIds: [],
+          recentRolls: [],
           badgesCount: 0,
           totalScore: 0,
           rollsCount: 0,
@@ -546,7 +696,9 @@ export default async function handler(req, res) {
         return res.status(201).json({
           player: players[deviceId],
           leaderboard: buildTop10(players),
-          kingMessage
+          kingMessage,
+          superUnlockers,
+          latestSuperAnnouncement
         });
       }
 
@@ -568,11 +720,35 @@ export default async function handler(req, res) {
           return res.status(409).json({ error: 'Questo nickname è già usato da un altro giocatore!' });
         }
 
+        const oldNick = existing.nickname;
         players[deviceId] = {
           ...existing,
           nickname: cleanNick,
           updatedAt: Date.now()
         };
+
+        // Aggiorna anche i nomi nella lista dei Super Badge sbloccati
+        let superDirty = false;
+        for (const badgeId of Object.keys(superUnlockers)) {
+          if (Array.isArray(superUnlockers[badgeId])) {
+            const idx = superUnlockers[badgeId].indexOf(oldNick);
+            if (idx !== -1) {
+              superUnlockers[badgeId][idx] = cleanNick;
+              superDirty = true;
+            }
+          }
+        }
+        if (latestSuperAnnouncement && latestSuperAnnouncement.nickname === oldNick) {
+          latestSuperAnnouncement = {
+            ...latestSuperAnnouncement,
+            nickname: cleanNick
+          };
+          superDirty = true;
+        }
+        if (superDirty) {
+          await kvSet(SUPER_UNLOCKERS_KEY, superUnlockers);
+          await kvSet(LATEST_SUPER_ANN_KEY, latestSuperAnnouncement);
+        }
 
         const newTop10 = buildTop10(players);
         if (newTop10[0] && newTop10[0].deviceId === deviceId && kingMessage) {
@@ -587,7 +763,9 @@ export default async function handler(req, res) {
         return res.status(200).json({
           player: players[deviceId],
           leaderboard: newTop10,
-          kingMessage
+          kingMessage,
+          superUnlockers,
+          latestSuperAnnouncement
         });
       }
 
@@ -600,7 +778,9 @@ export default async function handler(req, res) {
         return res.status(200).json({
           player: existing,
           leaderboard: buildTop10(players),
-          kingMessage
+          kingMessage,
+          superUnlockers,
+          latestSuperAnnouncement
         });
       }
 
