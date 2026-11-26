@@ -40,16 +40,16 @@
       transition: transform 0.35s ease;
     }
 
-    html.flip-180 .container {
-      transform: rotate(180deg);
-    }
-
     html.flip-x .container {
       transform: scaleX(-1);
     }
 
-    html.flip-y .container {
-      transform: scaleY(-1);
+    html.flip-180 .container {
+      transform: rotate(180deg);
+    }
+
+    html.flip-x.flip-180 .container {
+      transform: rotate(180deg) scaleX(-1);
     }
 
     body {
@@ -1478,7 +1478,7 @@
       <div class="sound-toggle-row">
         <div class="sound-toggle-info">
           <strong>Difficoltà avanzata</strong>
-          <span>Capovolge o specchia lo schermo ogni 2 secondi</span>
+          <span>Capovolge o specchia lo schermo ogni 2,5 secondi</span>
         </div>
         <label class="switch">
           <input type="checkbox" id="hardmode-toggle" />
@@ -2311,11 +2311,21 @@
       document.documentElement.classList.remove('flip-180', 'flip-x', 'flip-y');
     }
 
+    const containerEl = document.querySelector('.container');
+
+    // Il centro della trasformazione è sempre il centro dello schermo, non della pagina
+    function updateRotationOrigin() {
+      const cy = window.scrollY + window.innerHeight / 2 - containerEl.offsetTop;
+      containerEl.style.transformOrigin = `50% ${cy}px`;
+    }
+
+    window.addEventListener('scroll', updateRotationOrigin, { passive: true });
+    window.addEventListener('resize', updateRotationOrigin);
+
     function applyRandomHardModeTransform() {
-      clearHardModeTransforms();
-      const options = ['flip-x', 'flip-y', 'flip-180'];
-      const chosen = options[Math.floor(Math.random() * options.length)];
-      document.documentElement.classList.add(chosen);
+      updateRotationOrigin();
+      const move = Math.random() < 0.5 ? 'flip-x' : 'flip-180';
+      document.documentElement.classList.toggle(move);
     }
 
     function stopHardModeCycle() {
@@ -2334,21 +2344,14 @@
       stopHardModeCycle();
       if (!hardModeEnabled) return;
 
-      const delays = [2000, 3000, 4000];
-      let step = 0;
-
-      const scheduleNext = () => {
-        const delay = step < delays.length ? delays[step] : 5000;
-        step++;
-        hardModeTimeout = setTimeout(() => {
-          if (!hardModeEnabled) {
-            stopHardModeCycle();
-            return;
-          }
-          applyRandomHardModeTransform();
-          scheduleNext();
-        }, delay);
-      };
+      hardModeInterval = setInterval(() => {
+        if (!hardModeEnabled) {
+          stopHardModeCycle();
+          return;
+        }
+        applyRandomHardModeTransform();
+      }, 2500);
+    }
 
       scheduleNext();
     }
