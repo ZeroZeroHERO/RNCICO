@@ -435,6 +435,15 @@
       flex-shrink: 0;
     }
 
+    #super-announcement-text {
+      font-weight: 500;
+    }
+
+    #super-announcement-text strong {
+      font-weight: 800;
+      color: #fde68a;
+    }
+
     /* Stats Bar (5 box) */
     .stats-bar {
       display: grid;
@@ -2673,7 +2682,10 @@
         superAnnouncementBannerEl.classList.add('hidden');
         return;
       }
-      superAnnouncementTextEl.textContent = `${nickname} ha sbloccato il SUPER BADGE: ${badgeName.toUpperCase()}`;
+      const time = new Date(Number(timestamp) || Date.now())
+        .toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' });
+      superAnnouncementTextEl.innerHTML =
+        `${escapeHtml(nickname)} alle ${time} ha sbloccato il super badge <strong>${escapeHtml(badgeName)}</strong>`;
       superAnnouncementBannerEl.classList.remove('hidden');
     }
 
