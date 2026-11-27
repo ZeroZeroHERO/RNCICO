@@ -381,6 +381,8 @@ const SUPER_BADGE_MAP = new Map(SUPER_BADGES_CATALOG.map(sb => [sb.id, sb]));
 const HARD_MODE_MULTIPLIER = 1.2;
 const SPEEDRUN_MULTIPLIER = 0.5;
 const SUPER_BADGE_ROLL_MULTIPLIER = 2;
+const COMBO_10_MULTIPLIER = 1.1;
+const COMBO_100_MULTIPLIER = 1.2;
 
 const VALID_SECRET_IDS = new Set([
   'secret_cookie',
@@ -699,8 +701,20 @@ export default async function handler(req, res) {
 
         const normalRollPoints = matched.reduce((sum, b) => sum + b.points, 0);
         const superRollPoints = matchedSuper.reduce((sum, sb) => sum + sb.points, 0);
+        // Combo: il gioco dice a che combo sei, il server la accetta solo se le roll
+        // sono davvero arrivate una dopo l'altra (al massimo 30 secondi tra una e l'altra)
+        const nowMs = Date.now();
+        const rollChain = (existing.lastRollAt && nowMs - Number(existing.lastRollAt) <= 30000)
+          ? (Number(existing.rollChain) || 1) + 1
+          : 1;
+        const claimedCombo = Math.max(1, Math.floor(Number(combo)) || 1);
+        const acceptedCombo = Math.min(claimedCombo, rollChain);
+
         const basePoints = normalRollPoints + superRollPoints;
         let multiplier = 1;
+        // Streak: da X10 vale 1.1x, da X100 vale 1.2x
+        if (acceptedCombo >= 100) multiplier *= COMBO_100_MULTIPLIER;
+        else if (acceptedCombo >= 10) multiplier *= COMBO_10_MULTIPLIER;
         if (hardMode === true) multiplier *= HARD_MODE_MULTIPLIER;
         if (speedrun === true) multiplier *= SPEEDRUN_MULTIPLIER;
         // Ogni Super Badge della roll raddoppia il totale (i moltiplicatori si moltiplicano tra loro)
@@ -754,14 +768,6 @@ export default async function handler(req, res) {
         const newTotalScore = (Number(existing.totalScore) || 0) + rollPoints;
         const newRollsCount = (Number(existing.rollsCount) || 0) + 1;
 
-        // Combo: il gioco dice a che combo sei, il server la accetta solo se le roll
-        // sono davvero arrivate una dopo l'altra (al massimo 30 secondi tra una e l'altra)
-        const nowMs = Date.now();
-        const rollChain = (existing.lastRollAt && nowMs - Number(existing.lastRollAt) <= 30000)
-          ? (Number(existing.rollChain) || 1) + 1
-          : 1;
-        const claimedCombo = Math.max(1, Math.floor(Number(combo)) || 1);
-        const acceptedCombo = Math.min(claimedCombo, rollChain);
 
         players[deviceId] = {
           ...existing,
