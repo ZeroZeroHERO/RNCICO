@@ -197,6 +197,7 @@ const RAW_BADGES = [
   { id: 'n100_laurea', check: (n) => n === 100 },
   { id: 'cannora_frazione', check: (n) => n === 210 || n === 140 || n === 105 },
   { id: 'n25', check: (n) => n === 25 },
+  { id: 'n101_carica', check: (n) => n === 101 },
   { id: 'elem_se', check: (n) => n === 34 },
   { id: 'elem_sr', check: (n) => n === 38 },
   { id: 'elem_w', check: (n) => n === 74 },
@@ -300,17 +301,44 @@ function cleanClaimedNumber(value) {
   return Number.isInteger(n) && n >= MIN_NUM && n <= MAX_NUM ? n : null;
 }
 
-// Tiene la roll con più punti tra quella salvata e i candidati (in caso di pareggio resta quella salvata)
+const MAX_MULTIPLIER = Math.pow(2, 6) * 1.2;
+
+function cleanMultiplier(value) {
+  const m = Number(value);
+  if (!Number.isFinite(m) || m <= 0 || m > MAX_MULTIPLIER) return 1;
+  return Math.round(m * 100) / 100;
+}
+
+// Tiene la roll con più punti tra quella salvata e i candidati.
+// A parità di punti, completa i dettagli (numero, super, moltiplicatore) se mancavano.
 function pickBestRoll(existing, candidates) {
   let best = {
     points: Number(existing.bestRollPoints) || 0,
     number: typeof existing.bestRollNumber === 'number' ? existing.bestRollNumber : null,
-    superIds: Array.isArray(existing.bestRollSuperIds) ? existing.bestRollSuperIds : []
+    superIds: Array.isArray(existing.bestRollSuperIds) ? existing.bestRollSuperIds : [],
+    multiplier: typeof existing.bestRollMultiplier === 'number' ? existing.bestRollMultiplier : 1
   };
   for (const c of candidates) {
-    if (c && c.points > best.points) best = c;
+    if (!c) continue;
+    if (c.points > best.points) {
+      best = c;
+    } else if (c.points === best.points && best.number === null && c.number !== null) {
+      best = c;
+    }
   }
-  return { bestRollPoints: best.points, bestRollNumber: best.number, bestRollSuperIds: best.superIds };
+  return {
+    bestRollPoints: best.points,
+    bestRollNumber: best.number,
+    bestRollSuperIds: best.superIds || [],
+    bestRollMultiplier: typeof best.multiplier === 'number' ? best.multiplier : 1
+  };
+}
+
+// Super badge ottenuti finora secondo le roll salvate nel browser del giocatore (mai più dei tiri fatti)
+function cleanSuperTimesClaim(value, rollsCount) {
+  const n = Math.floor(Number(value));
+  if (!Number.isFinite(n) || n <= 0) return 0;
+  return Math.min(n, Math.max(0, Number(rollsCount) || 0));
 }
 
 function claimFromBody(body) {
@@ -319,7 +347,8 @@ function claimFromBody(body) {
   return {
     points,
     number: cleanClaimedNumber(body.bestRollNumber),
-    superIds: sanitizeIdList(body.bestRollSuperIds, SUPER_BADGE_MAP)
+    superIds: sanitizeIdList(body.bestRollSuperIds, SUPER_BADGE_MAP),
+    multiplier: cleanMultiplier(body.bestRollMultiplier)
   };
 }
 
@@ -511,6 +540,7 @@ function buildTop10(playersMap, sortKey = 'badges') {
       bestRollPoints: Number(p.bestRollPoints) || 0,
       bestRollNumber: typeof p.bestRollNumber === 'number' ? p.bestRollNumber : null,
       bestRollSuperIds: Array.isArray(p.bestRollSuperIds) ? p.bestRollSuperIds : [],
+      bestRollMultiplier: typeof p.bestRollMultiplier === 'number' ? p.bestRollMultiplier : 1,
       superCount: getSuperTimes(p)
     }));
 }
@@ -710,10 +740,10 @@ export default async function handler(req, res) {
           totalScore: newTotalScore,
           rollsCount: newRollsCount,
           ...pickBestRoll(existing, [
-            { points: rollPoints, number: result, superIds: matchedSuper.map(sb => sb.id) },
+            { points: rollPoints, number: result, superIds: matchedSuper.map(sb => sb.id), multiplier: cleanMultiplier(multiplier) },
             claimFromBody(body)
           ]),
-          superTimesCount: getSuperTimes(existing) + matchedSuper.length,
+          superTimesCount: Math.max(getSuperTimes(existing), cleanSuperTimesClaim(body.superTimesClaim, existing.rollsCount)) + matchedSuper.length,
           serverVerified: true,
           needsLegacyRecovery: existing.needsLegacyRecovery || false,
           updatedAt: Date.now()
@@ -942,9 +972,17 @@ export default async function handler(req, res) {
         }
 
         // Allinea la "roll con più aura" a quella che il giocatore vede nelle sue statistiche
-        const claim = claimFromBody(body);
-        if (claim && claim.points > (Number(existing.bestRollPoints) || 0)) {
-          players[deviceId] = { ...existing, ...pickBestRoll(existing, [claim]) };
+        // Allinea miglior roll e super badge ottenuti con quello che il giocatore vede nel suo gioco
+        const best = pickBestRoll(existing, [claimFromBody(body)]);
+        const superTimes = Math.max(getSuperTimes(existing), cleanSuperTimesClaim(body.superTimesClaim, existing.rollsCount));
+        const changed =
+          best.bestRollPoints !== (Number(existing.bestRollPoints) || 0) ||
+          best.bestRollNumber !== (typeof existing.bestRollNumber === 'number' ? existing.bestRollNumber : null) ||
+          JSON.stringify(best.bestRollSuperIds) !== JSON.stringify(existing.bestRollSuperIds || []) ||
+          best.bestRollMultiplier !== (typeof existing.bestRollMultiplier === 'number' ? existing.bestRollMultiplier : 1) ||
+          superTimes !== getSuperTimes(existing);
+        if (changed) {
+          players[deviceId] = { ...existing, ...best, superTimesCount: superTimes };
           await kvSet(PLAYERS_KEY, players);
         }
 
