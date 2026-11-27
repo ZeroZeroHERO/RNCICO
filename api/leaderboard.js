@@ -247,6 +247,11 @@ const SUPER_BADGES_CATALOG = [
 
 const SUPER_BADGE_MAP = new Map(SUPER_BADGES_CATALOG.map(sb => [sb.id, sb]));
 
+// Moltiplicatori di punti per roll
+const HARD_MODE_MULTIPLIER = 1.2;
+const SPEEDRUN_MULTIPLIER = 0.5;
+const SUPER_BADGE_ROLL_MULTIPLIER = 2;
+
 const VALID_SECRET_IDS = new Set([
   'secret_cookie',
   'secret_daltonico',
@@ -378,22 +383,53 @@ function normalizePlayerRecord(player) {
   };
 }
 
-function buildTop10(playersMap) {
+const LEADERBOARD_SORTS = {
+  // Badge: badge sbloccati, poi aura totale
+  badges: (a, b) =>
+    (b.badgesCount - a.badgesCount) ||
+    (b.totalScore - a.totalScore) ||
+    ((a.updatedAt || 0) - (b.updatedAt || 0)),
+  // Roll con più aura
+  best: (a, b) =>
+    ((Number(b.bestRollPoints) || 0) - (Number(a.bestRollPoints) || 0)) ||
+    (b.totalScore - a.totalScore),
+  // Aura totale
+  score: (a, b) =>
+    (b.totalScore - a.totalScore) ||
+    (b.badgesCount - a.badgesCount),
+  // Tiri fatti
+  rolls: (a, b) =>
+    ((Number(b.rollsCount) || 0) - (Number(a.rollsCount) || 0)) ||
+    (b.totalScore - a.totalScore),
+  // Super badge ottenuti
+  super: (a, b) =>
+    ((b.superUnlockedIds || []).length - (a.superUnlockedIds || []).length) ||
+    (b.totalScore - a.totalScore)
+};
+
+function buildTop10(playersMap, sortKey = 'badges') {
+  const compare = LEADERBOARD_SORTS[sortKey] || LEADERBOARD_SORTS.badges;
   return Object.values(playersMap)
     .map(normalizePlayerRecord)
-    .sort((a, b) => {
-      if (b.badgesCount !== a.badgesCount) return b.badgesCount - a.badgesCount;
-      if (b.totalScore !== a.totalScore) return b.totalScore - a.totalScore;
-      return (a.updatedAt || 0) - (b.updatedAt || 0);
-    })
+    .sort(compare)
     .slice(0, 10)
-    .map(({ deviceId, nickname, badgesCount, totalScore, rollsCount }) => ({
-      deviceId,
-      nickname,
-      badgesCount,
-      totalScore,
-      rollsCount: Number(rollsCount) || 0
+    .map(p => ({
+      deviceId: p.deviceId,
+      nickname: p.nickname,
+      badgesCount: p.badgesCount,
+      totalScore: p.totalScore,
+      rollsCount: Number(p.rollsCount) || 0,
+      bestRollPoints: Number(p.bestRollPoints) || 0,
+      superCount: (p.superUnlockedIds || []).length
     }));
+}
+
+function buildAllLeaderboards(playersMap) {
+  const out = {};
+  for (const key of Object.keys(LEADERBOARD_SORTS)) {
+    out[key] = buildTop10(playersMap, key);
+  }
+  return out;
 }
 
 export default async function handler(req, res) {
@@ -414,11 +450,27 @@ export default async function handler(req, res) {
     const TWENTY_FOUR_HOURS_MS = 24 * 60 * 60 * 1000;
     if (
       latestSuperAnnouncement &&
-      latestSuperAnnouncement.updatedAt &&
-      Date.now() - Number(latestSuperAnnouncement.updatedAt) > TWENTY_FOUR_HOURS_MS
+      (latestSuperAnnouncement.updatedAt || latestSuperAnnouncement.ts) &&
+      Date.now() - Number(latestSuperAnnouncement.updatedAt || latestSuperAnnouncement.ts) > TWENTY_FOUR_HOURS_MS
     ) {
       latestSuperAnnouncement = null;
       await kvSet(LATEST_SUPER_ANN_KEY, null);
+    }
+
+    // Rimuove annunci e liste di Super Badge che non esistono più (es. badge di prova)
+    if (latestSuperAnnouncement && !SUPER_BADGE_MAP.has(latestSuperAnnouncement.badgeId)) {
+      latestSuperAnnouncement = null;
+      await kvSet(LATEST_SUPER_ANN_KEY, null);
+    }
+    let unlockersCleaned = false;
+    for (const key of Object.keys(superUnlockers)) {
+      if (!SUPER_BADGE_MAP.has(key)) {
+        delete superUnlockers[key];
+        unlockersCleaned = true;
+      }
+    }
+    if (unlockersCleaned) {
+      await kvSet(SUPER_UNLOCKERS_KEY, superUnlockers);
     }
     
 
@@ -442,6 +494,7 @@ export default async function handler(req, res) {
     if (req.method === 'GET') {
       return res.status(200).json({
         leaderboard: buildTop10(players),
+          leaderboards: buildAllLeaderboards(players),
         kingMessage,
         superUnlockers,
         latestSuperAnnouncement
@@ -457,7 +510,7 @@ export default async function handler(req, res) {
           return res.status(400).json({ error: 'Payload JSON non valido.' });
         }
       }
-      const { action, deviceId, nickname, message, secretId, unlockedIds, secretUnlockedIds } = body || {};
+      const { action, deviceId, nickname, message, secretId, unlockedIds, secretUnlockedIds, hardMode, speedrun } = body || {};
 
       if (!deviceId || typeof deviceId !== 'string') {
         return res.status(400).json({ error: 'Device ID non valido.' });
@@ -501,7 +554,13 @@ export default async function handler(req, res) {
 
         const normalRollPoints = matched.reduce((sum, b) => sum + b.points, 0);
         const superRollPoints = matchedSuper.reduce((sum, sb) => sum + sb.points, 0);
-        const rollPoints = normalRollPoints + superRollPoints;
+        const basePoints = normalRollPoints + superRollPoints;
+        let multiplier = 1;
+        if (hardMode === true) multiplier *= HARD_MODE_MULTIPLIER;
+        if (speedrun === true) multiplier *= SPEEDRUN_MULTIPLIER;
+        // Ogni Super Badge della roll raddoppia il totale (i moltiplicatori si moltiplicano tra loro)
+        multiplier *= Math.pow(SUPER_BADGE_ROLL_MULTIPLIER, matchedSuper.length);
+        const rollPoints = Math.round(basePoints * multiplier);
 
         const prevUnlockedSet = new Set(existing.unlockedIds);
         const newlyUnlockedIds = [];
@@ -559,6 +618,7 @@ export default async function handler(req, res) {
           badgesCount: newBadgesCount,
           totalScore: newTotalScore,
           rollsCount: newRollsCount,
+          bestRollPoints: Math.max(Number(existing.bestRollPoints) || 0, rollPoints),
           serverVerified: true,
           needsLegacyRecovery: existing.needsLegacyRecovery || false,
           updatedAt: Date.now()
@@ -573,11 +633,14 @@ export default async function handler(req, res) {
         return res.status(200).json({
           result,
           rollPoints,
+          basePoints,
+          multiplier,
           newlyUnlockedIds,
           matchedSuperIds: matchedSuper.map(sb => sb.id),
           newlyUnlockedSuperIds,
           player: players[deviceId],
           leaderboard: buildTop10(players),
+          leaderboards: buildAllLeaderboards(players),
           kingMessage,
           superUnlockers,
           latestSuperAnnouncement
@@ -623,6 +686,7 @@ export default async function handler(req, res) {
           unlockedNow,
           player: players[deviceId],
           leaderboard: buildTop10(players),
+          leaderboards: buildAllLeaderboards(players),
           kingMessage,
           superUnlockers,
           latestSuperAnnouncement
@@ -651,6 +715,7 @@ export default async function handler(req, res) {
         await kvSet(KING_MSG_KEY, kingMessage);
         return res.status(200).json({
           leaderboard: top10,
+          leaderboards: buildAllLeaderboards(players),
           kingMessage,
           superUnlockers,
           latestSuperAnnouncement
@@ -668,6 +733,7 @@ export default async function handler(req, res) {
           return res.status(200).json({
             player: existing,
             leaderboard: buildTop10(players),
+          leaderboards: buildAllLeaderboards(players),
             kingMessage,
             superUnlockers,
             latestSuperAnnouncement
@@ -699,6 +765,7 @@ export default async function handler(req, res) {
         return res.status(201).json({
           player: players[deviceId],
           leaderboard: buildTop10(players),
+          leaderboards: buildAllLeaderboards(players),
           kingMessage,
           superUnlockers,
           latestSuperAnnouncement
@@ -766,6 +833,7 @@ export default async function handler(req, res) {
         return res.status(200).json({
           player: players[deviceId],
           leaderboard: newTop10,
+          leaderboards: buildAllLeaderboards(players),
           kingMessage,
           superUnlockers,
           latestSuperAnnouncement
@@ -781,6 +849,7 @@ export default async function handler(req, res) {
         return res.status(200).json({
           player: existing,
           leaderboard: buildTop10(players),
+          leaderboards: buildAllLeaderboards(players),
           kingMessage,
           superUnlockers,
           latestSuperAnnouncement
