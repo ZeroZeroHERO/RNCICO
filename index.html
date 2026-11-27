@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>RNCICO - Edizione Personalizzata</title>
-  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700;800&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Bangers&family=JetBrains+Mono:wght@400;700;800&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
   <style>
     :root {
       --bg-color: #0b0d12;
@@ -554,70 +554,123 @@
       color: #f9a8d4;
     }
     
-    /* Fumetto della combo */
-    .combo-bubble {
+    /* Fumetto della combo (esplosione a fumetto che esce dall'angolo) */
+    .combo-burst {
       position: absolute;
-      top: 0.9rem;
-      right: 0.9rem;
-      padding: 0.35rem 0.7rem;
-      border-radius: 12px;
-      background: linear-gradient(135deg, #f97316, #ef4444);
-      color: #ffffff;
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 1.05rem;
-      font-weight: 800;
-      box-shadow: 0 0 14px rgba(249, 115, 22, 0.5);
-      transition: opacity 0.4s ease;
+      top: -34px;
+      right: -30px;
+      width: 104px;
+      height: 104px;
+      transform: rotate(-9deg);
       z-index: 2;
-      animation: comboPop 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+      pointer-events: none;
+      transition: opacity 0.4s ease;
     }
 
-    /* codina del fumetto */
-    .combo-bubble::after {
-      content: '';
-      position: absolute;
-      bottom: -7px;
-      left: 14px;
-      border-width: 8px 7px 0 0;
-      border-style: solid;
-      border-color: #ef4444 transparent transparent transparent;
-    }
-
-    .combo-bubble.hidden {
+    .combo-burst.hidden {
       display: none;
     }
 
-    .combo-bubble.fading {
-      opacity: 0.25;
+    .combo-burst.fading {
+      opacity: 0.3;
     }
 
-    .combo-bubble.milestone-10 {
-      animation: comboTen 0.8s ease;
+    .combo-jump,
+    .combo-shake {
+      position: absolute;
+      inset: 0;
     }
 
-    .combo-bubble.milestone-100 {
-      animation: comboHundred 1.6s ease;
-      background: linear-gradient(120deg, #f87171, #facc15, #4ade80, #60a5fa, #c084fc, #f472b6);
-      background-size: 300% 300%;
+    .combo-burst svg {
+      position: absolute;
+      overflow: visible;
     }
+
+    .combo-burst .combo-star {
+      inset: 0;
+      width: 104px;
+      height: 104px;
+    }
+
+    .combo-burst .combo-flames {
+      display: none;
+      left: 0;
+      top: -30px;
+      width: 104px;
+      height: 70px;
+    }
+
+    .combo-burst.lvl-100 .combo-flames {
+      display: block;
+    }
+
+    .combo-flames path {
+      transform-box: fill-box;
+      transform-origin: 50% 100%;
+      animation: comboFlick 0.35s ease-in-out infinite alternate;
+    }
+
+    .combo-flames path:nth-child(2) { animation-duration: 0.27s; }
+    .combo-flames path:nth-child(3) { animation-duration: 0.41s; }
+    .combo-flames path:nth-child(4) { animation-duration: 0.31s; }
+    .combo-flames path:nth-child(5) { animation-duration: 0.23s; }
+
+    .combo-jump.pop { animation: comboPop 0.55s cubic-bezier(0.18, 0.89, 0.32, 1.28); }
+    .combo-jump.jump-10 { animation: comboJump10 0.6s ease-out; }
+    .combo-jump.jump-100 { animation: comboJump100 1.1s ease-out; }
+
+    .combo-burst.lvl-10 .combo-shake { animation: comboShakeSoft 0.22s linear infinite; }
+    .combo-burst.lvl-100 .combo-shake { animation: comboShakeHard 0.12s linear infinite; }
 
     @keyframes comboPop {
-      0% { transform: scale(0.5); }
-      100% { transform: scale(1); }
+      0% { transform: rotate(-21deg) scale(0); }
+      60% { transform: rotate(5deg) scale(1.2); }
+      100% { transform: rotate(0deg) scale(1); }
     }
 
-    @keyframes comboTen {
-      0% { transform: scale(1); box-shadow: 0 0 14px rgba(249, 115, 22, 0.5); }
-      35% { transform: scale(1.7) rotate(-6deg); box-shadow: 0 0 40px rgba(250, 204, 21, 0.95); }
-      100% { transform: scale(1) rotate(0deg); box-shadow: 0 0 14px rgba(249, 115, 22, 0.5); }
+    @keyframes comboJump10 {
+      0% { transform: translateY(0); }
+      35% { transform: rotate(-3deg) translateY(-18px) scale(1.08); }
+      65% { transform: rotate(2deg) translateY(0) scale(0.96); }
+      82% { transform: translateY(-5px); }
+      100% { transform: translateY(0); }
     }
 
-    @keyframes comboHundred {
-      0% { transform: scale(1); background-position: 0% 50%; }
-      20% { transform: scale(2.6) rotate(-10deg); }
-      40% { transform: scale(2.2) rotate(8deg); }
-      60% { transform: scale(2.5) rotate(-4deg); }
-      100% { transform: scale(1) rotate(0deg); background-position: 100% 50%; }
+    @keyframes comboJump100 {
+      0% { transform: rotate(0deg) translateY(0) scale(1); }
+      25% { transform: rotate(-191deg) translateY(-46px) scale(1.35); }
+      50% { transform: rotate(-360deg) translateY(-30px) scale(1.25); }
+      70% { transform: rotate(-360deg) translateY(0) scale(0.92); }
+      85% { transform: rotate(-360deg) translateY(-10px) scale(1.04); }
+      100% { transform: rotate(-360deg) translateY(0) scale(1); }
+    }
+
+    @keyframes comboShakeSoft {
+      0%, 100% { transform: translate(0, 0); }
+      25% { transform: translate(1px, -1px) rotate(0.6deg); }
+      50% { transform: translate(-1px, 1px); }
+      75% { transform: translate(1px, 1px) rotate(-0.6deg); }
+    }
+
+    @keyframes comboShakeHard {
+      0%, 100% { transform: translate(0, 0); }
+      20% { transform: translate(3px, -2px) rotate(2deg); }
+      40% { transform: translate(-3px, 2px) rotate(-2deg); }
+      60% { transform: translate(2px, 2px) rotate(1.5deg); }
+      80% { transform: translate(-2px, -2px) rotate(-1.5deg); }
+    }
+
+    @keyframes comboFlick {
+      0% { transform: scaleY(0.75) scaleX(1.05); }
+      100% { transform: scaleY(1.15) scaleX(0.92); }
+    }
+
+    /* Sul telefono il fumetto esce un po' meno, per non uscire dallo schermo */
+    @media (max-width: 600px) {
+      .combo-burst {
+        top: -30px;
+        right: -12px;
+      }
     }
 
     .combo-flash {
@@ -1933,7 +1986,20 @@
     </div>
     <main class="rng-stage">
       <div class="number-card" id="number-card">
-        <div class="combo-bubble hidden" id="combo-bubble">X2</div>
+        <div class="combo-burst hidden" id="combo-burst">
+          <div class="combo-jump" id="combo-jump">
+            <div class="combo-shake">
+              <svg class="combo-flames" viewBox="0 0 120 80" aria-hidden="true">
+                <path d="M20 78 C10 55 26 45 24 22 C38 40 42 55 34 78Z" fill="#ef4444"/>
+                <path d="M40 78 C30 48 52 34 46 4 C66 30 68 56 58 78Z" fill="#f97316"/>
+                <path d="M62 78 C54 50 72 36 70 12 C86 36 88 58 80 78Z" fill="#ef4444"/>
+                <path d="M84 78 C78 58 92 48 94 28 C106 48 104 64 98 78Z" fill="#f97316"/>
+                <path d="M46 78 C42 60 56 52 58 34 C70 52 70 66 64 78Z" fill="#facc15"/>
+              </svg>
+              <svg class="combo-star" id="combo-star" viewBox="0 0 120 120" aria-hidden="true"></svg>
+            </div>
+          </div>
+        </div>
         <span class="range-hint">RANGE: 000 — 500</span>
         
         <div class="digits-wrapper">
@@ -3636,6 +3702,8 @@
 
       const parts = [];
       if (superCount > 0) parts.push(superCount > 1 ? `${superCount} super badge 2x` : 'super badge 2x');
+      const comboMult = getComboMultiplier(comboCount);
+      if (comboMult !== 1) parts.push(`streak ${String(comboMult).replace('.', ',')}x`);
       if (hardModeEnabled) parts.push('avanzata 1.2x');
       if (speedrunEnabled && isSpeedrunUnlocked()) parts.push('speedrun 0.5x');
       const multText = String(multiplier).replace('.', ',');
@@ -3739,10 +3807,54 @@
     // COMBO (roll entro 10 secondi dalla fine della precedente)
     // ==========================================
     const COMBO_WINDOW_MS = 10000;
-    const comboBubbleEl = document.getElementById('combo-bubble');
+    const comboBurstEl = document.getElementById('combo-burst');
+    const comboJumpEl = document.getElementById('combo-jump');
+    const comboStarEl = document.getElementById('combo-star');
     let comboCount = 0;
     let lastRollEndAt = 0;
     let comboExpireTimer = null;
+
+    // Punti dell'esplosione a fumetto (sempre uguali, così la forma non cambia a ogni roll)
+    const COMBO_STAR_POINTS = (() => {
+      const pts = [];
+      let seed = 3;
+      const rnd = () => { seed = (seed * 9301 + 49297) % 233280; return seed / 233280; };
+      const spikes = 13;
+      for (let i = 0; i < spikes * 2; i++) {
+        const r = i % 2 ? 36 * (0.88 + rnd() * 0.2) : 54 * (0.85 + rnd() * 0.3);
+        const a = Math.PI * i / spikes - Math.PI / 2;
+        pts.push(`${(62 + Math.cos(a) * r).toFixed(1)},${(64 + Math.sin(a) * r).toFixed(1)}`);
+      }
+      return pts.join(' ');
+    })();
+
+    function getComboMultiplier(count) {
+      if (count >= 100) return 1.2;
+      if (count >= 10) return 1.1;
+      return 1;
+    }
+
+    function drawComboStar(count) {
+      const ink = '#0b0d12';
+      const level = count >= 100 ? 100 : count >= 10 ? 10 : 0;
+      const fill = level === 100 ? '#ef4444' : level === 10 ? '#facc15' : '#ffffff';
+      const dots = level === 100 ? '#991b1b' : level === 10 ? '#ca8a04' : '#9ca3af';
+      const textColor = level === 100 ? '#ffffff' : ink;
+      const label = `X${count}`;
+      const fs = label.length > 4 ? 24 : label.length > 3 ? 30 : 36;
+      comboStarEl.innerHTML = `
+        <defs><pattern id="combo-dots" width="6" height="6" patternUnits="userSpaceOnUse"><circle cx="3" cy="3" r="1.3" fill="${dots}"/></pattern></defs>
+        <polygon points="${COMBO_STAR_POINTS}" fill="${ink}" transform="translate(3,3)"/>
+        <polygon points="${COMBO_STAR_POINTS}" fill="${fill}" stroke="${ink}" stroke-width="3" stroke-linejoin="round"/>
+        <polygon points="${COMBO_STAR_POINTS}" fill="url(#combo-dots)" opacity=".55" clip-path="inset(55% 0 0 0)"/>
+        <path d="M14 10 L22 34" stroke="${ink}" stroke-width="5" stroke-linecap="round"/>
+        <circle cx="25" cy="43" r="3.4" fill="${ink}"/>
+        <path d="M6 30 L13 33 M30 6 L31 14" stroke="${ink}" stroke-width="2.5" stroke-linecap="round"/>
+        <text x="62" y="${(64 + fs * 0.36).toFixed(1)}" text-anchor="middle" font-family="Bangers, Impact, sans-serif"
+          font-size="${fs}" fill="${textColor}" stroke="${ink}" stroke-width="${level === 100 ? 1.5 : 0}"
+          paint-order="stroke" transform="rotate(-6 62 64)">${label}</text>`;
+      comboBurstEl.className = `combo-burst${level === 100 ? ' lvl-100' : level === 10 ? ' lvl-10' : ''}`;
+    }
 
     function registerComboOnRollStart() {
       clearTimeout(comboExpireTimer);
@@ -3753,20 +3865,22 @@
 
     function renderComboBubble(animate) {
       if (comboCount < 2) {
-        comboBubbleEl.className = 'combo-bubble hidden';
+        comboBurstEl.className = 'combo-burst hidden';
         return;
       }
-      comboBubbleEl.textContent = `X${comboCount}`;
-      let cls = 'combo-bubble';
-      if (animate && comboCount % 100 === 0) cls += ' milestone-100';
-      else if (animate && comboCount % 10 === 0) cls += ' milestone-10';
-      comboBubbleEl.className = 'combo-bubble hidden';
-      void comboBubbleEl.offsetWidth; // fa ripartire l'animazione
-      comboBubbleEl.className = cls;
+      drawComboStar(comboCount);
+      if (!animate) return;
 
-      if (animate && comboCount % 100 === 0) {
+      let anim = 'pop';
+      if (comboCount % 100 === 0) anim = 'jump-100';
+      else if (comboCount % 10 === 0) anim = 'jump-10';
+      comboJumpEl.className = 'combo-jump';
+      void comboJumpEl.offsetWidth; // fa ripartire l'animazione
+      comboJumpEl.className = `combo-jump ${anim}`;
+
+      if (anim === 'jump-100') {
         comboBigCelebration();
-      } else if (animate && comboCount % 10 === 0) {
+      } else if (anim === 'jump-10') {
         playTone(784, 0.12, 'triangle', 0.1);
         playTone(1046.5, 0.18, 'triangle', 0.1, 0.08);
       }
@@ -3786,9 +3900,9 @@
     function startComboWindow() {
       lastRollEndAt = Date.now();
       clearTimeout(comboExpireTimer);
-      if (comboCount >= 2) comboBubbleEl.classList.remove('fading');
+      if (comboCount >= 2) comboBurstEl.classList.remove('fading');
       comboExpireTimer = setTimeout(() => {
-        if (comboCount >= 2) comboBubbleEl.classList.add('fading');
+        if (comboCount >= 2) comboBurstEl.classList.add('fading');
         comboCount = 0;
       }, COMBO_WINDOW_MS);
     }
