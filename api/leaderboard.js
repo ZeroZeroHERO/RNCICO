@@ -295,8 +295,8 @@ const SUPER_BADGES_CATALOG = [
   {
     id: 'super_spaccato',
     name: 'SPACCATO AL MINUTO',
-    probDenominator: 2397,
-    points: Math.round((100 / (1 / 2397)) * 3),
+    probDenominator: 501,
+    points: Math.round((100 / (1 / 501)) * 3),
     check: (rolls) => rolls.length >= 1 && rolls[rolls.length - 1] === getNowTimeNumber()
   }
 ];
