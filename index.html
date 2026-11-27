@@ -561,7 +561,8 @@
       right: -24px;
       width: 83px;
       height: 83px;
-      transform: rotate(-9deg);
+      transform: rotate(-9deg) scale(0.7);
+      transform-origin: 100% 0;
       z-index: 2;
       pointer-events: none;
       transition: opacity 0.4s ease;
@@ -2035,7 +2036,7 @@
         <button type="button" class="filter-btn" data-sort="score">Aura totale</button>
         <button type="button" class="filter-btn" data-sort="rolls">Tiri fatti</button>
         <button type="button" class="filter-btn" data-sort="super">Super badge</button>
-        <button type="button" class="filter-btn" data-sort="combo">Combo più alta</button>
+        <button type="button" class="filter-btn" data-sort="combo">Streak più alta</button>
       </div>
 
       <!-- Riquadro Messaggio del Primo in Classifica -->
@@ -3266,7 +3267,7 @@
       score:  { title: 'AURA TOTALE',       value: e => `${(e.totalScore || 0).toLocaleString('it-IT')} pt` },
       rolls:  { title: 'TIRI FATTI',        value: e => (e.rollsCount || 0).toLocaleString('it-IT') },
       super:  { title: 'SUPER BADGE OTTENUTI', value: e => (e.superCount || 0).toLocaleString('it-IT') },
-      combo:  { title: 'COMBO PIÙ ALTA',    value: e => `X${(e.bestCombo || 0).toLocaleString('it-IT')}` }
+      combo:  { title: 'STREAK PIÙ ALTA',    value: e => `X${(e.bestCombo || 0).toLocaleString('it-IT')}` }
     };
 
     function renderBestRollCell(e) {
