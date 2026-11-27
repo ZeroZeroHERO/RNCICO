@@ -619,7 +619,8 @@
 
     .triggered-badges {
       display: flex;
-      flex-wrap: wrap;
+      flex-direction: column;
+      align-items: center;
       justify-content: center;
       gap: 0.65rem;
       min-height: 36px;
@@ -762,6 +763,117 @@
 
     .pill-badge.tier-super.is-new {
       animation: newUnlockBurst 0.55s cubic-bezier(0.18, 0.89, 0.32, 1.28), rainbowFlow 4s ease infinite, newGlowPulse 1.8s ease-in-out infinite;
+    }
+
+    /* Totale punti della roll */
+    .roll-total {
+      margin: 1.3rem auto 0;
+      display: inline-flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.2rem;
+      padding: 0.8rem 1.6rem;
+      border-radius: 14px;
+      border: 2px solid var(--card-border);
+      background: #0d1017;
+      animation: totalPop 0.45s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+    }
+
+    .roll-total.hidden {
+      display: none;
+    }
+
+    .roll-total-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.68rem;
+      font-weight: 800;
+      letter-spacing: 0.14em;
+      color: var(--text-muted);
+    }
+
+    .roll-total-value {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 2.1rem;
+      font-weight: 800;
+      line-height: 1.1;
+    }
+
+    .roll-total-mult {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.72rem;
+      color: var(--text-muted);
+    }
+
+    .roll-total-mult:empty {
+      display: none;
+    }
+
+    .roll-total.total-zero { border-color: #334155; }
+    .roll-total.total-zero .roll-total-value { color: #64748b; }
+
+    .roll-total.total-green { border-color: #10b981; background: rgba(16, 185, 129, 0.1); }
+    .roll-total.total-green .roll-total-value { color: #34d399; }
+
+    .roll-total.total-blue { border-color: #3b82f6; background: rgba(59, 130, 246, 0.12); }
+    .roll-total.total-blue .roll-total-value { color: #60a5fa; }
+
+    .roll-total.total-purple { border-color: #a855f7; background: rgba(168, 85, 247, 0.12); }
+    .roll-total.total-purple .roll-total-value { color: #c084fc; }
+
+    .roll-total.total-red { border-color: #ef4444; background: rgba(239, 68, 68, 0.12); }
+    .roll-total.total-red .roll-total-value { color: #f87171; }
+
+    .roll-total.total-gold {
+      border-color: #eab308;
+      background: rgba(234, 179, 8, 0.14);
+      box-shadow: 0 0 22px rgba(234, 179, 8, 0.35);
+    }
+    .roll-total.total-gold .roll-total-value { color: #facc15; }
+
+    .roll-total.total-rainbow {
+      border-color: #f472b6;
+      background: linear-gradient(120deg, rgba(239, 68, 68, 0.2), rgba(245, 158, 11, 0.2), rgba(16, 185, 129, 0.2), rgba(59, 130, 246, 0.2), rgba(168, 85, 247, 0.2), rgba(236, 72, 153, 0.2));
+      background-size: 300% 300%;
+      animation: totalPop 0.45s cubic-bezier(0.18, 0.89, 0.32, 1.28), rainbowFlow 3s ease infinite, rainbowBorder 3s linear infinite;
+      box-shadow: 0 0 28px rgba(236, 72, 153, 0.45);
+    }
+    .roll-total.total-rainbow .roll-total-value {
+      background: linear-gradient(90deg, #f87171, #facc15, #4ade80, #60a5fa, #c084fc, #f472b6);
+      background-size: 200% 100%;
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      animation: rainbowFlow 2.5s linear infinite;
+    }
+
+    @keyframes rainbowBorder {
+      0% { border-color: #f87171; }
+      20% { border-color: #facc15; }
+      40% { border-color: #4ade80; }
+      60% { border-color: #60a5fa; }
+      80% { border-color: #c084fc; }
+      100% { border-color: #f87171; }
+    }
+
+    @keyframes totalPop {
+      0% { transform: scale(0.6); opacity: 0; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    /* Selettore classifica */
+    .lb-sort-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+      margin-bottom: 0.85rem;
+    }
+
+    .lb-value-col {
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 800;
+      color: var(--emerald);
+      text-align: right;
+      white-space: nowrap;
     }
 
     @keyframes popIn {
@@ -1471,7 +1583,7 @@
       <div class="sound-toggle-row">
         <div class="sound-toggle-info">
           <strong>Modalità Speedrun</strong>
-          <span id="speedrun-desc">Numeri e suoni 5x più veloci a parità di durata</span>
+          <span id="speedrun-desc">Numeri e suoni 5x più veloci • punti dimezzati (0.5x)</span>
         </div>
         <label class="switch">
           <input type="checkbox" id="speedrun-toggle" />
@@ -1482,7 +1594,7 @@
       <div class="sound-toggle-row">
         <div class="sound-toggle-info">
           <strong>Difficoltà avanzata</strong>
-          <span>Capovolge o specchia lo schermo ogni 2,5 secondi</span>
+          <span>Capovolge o specchia lo schermo ogni 2,5 secondi • punti 1.2x</span>
         </div>
         <label class="switch">
           <input type="checkbox" id="hardmode-toggle" />
@@ -1578,6 +1690,12 @@
         <div class="triggered-badges" id="triggered-badges">
           <span class="placeholder-text">Premi GENERA per iniziare</span>
         </div>
+
+        <div class="roll-total hidden" id="roll-total">
+          <span class="roll-total-label">TOTALE ROLL</span>
+          <span class="roll-total-value" id="roll-total-value">+0</span>
+          <span class="roll-total-mult" id="roll-total-mult"></span>
+        </div>
       </div>
 
       <button id="roll-btn" class="roll-btn">
@@ -1588,8 +1706,16 @@
     <!-- Classifica Top 10 + Messaggio del #1 -->
     <section class="leaderboard-section">
       <div class="section-header">
-        <h2>TOP 10 POSSESSORI DI BADGE</h2>
+        <h2>TOP 10</h2>
         <button type="button" class="refresh-btn" id="refresh-leaderboard-btn">AGGIORNA</button>
+      </div>
+
+      <div class="lb-sort-group" id="lb-sort-group">
+        <button type="button" class="filter-btn active" data-sort="best">Roll con più aura</button>
+        <button type="button" class="filter-btn" data-sort="badges">Badge</button>
+        <button type="button" class="filter-btn" data-sort="score">Aura totale</button>
+        <button type="button" class="filter-btn" data-sort="rolls">Tiri fatti</button>
+        <button type="button" class="filter-btn" data-sort="super">Super badge</button>
       </div>
 
       <!-- Riquadro Messaggio del Primo in Classifica -->
@@ -1647,7 +1773,7 @@
     <section class="super-section" id="super-section">
       <div class="section-header">
         <h2>SUPER BADGE (<span id="super-unlocked-counter">0</span>/<span id="super-total-counter">0</span> SBLOCCATI)</h2>
-        <span class="super-tag">Probabilità &lt; 1/500 • Punti Tripli (3x)</span>
+        <span class="super-tag">Probabilità &lt; 1/500 • Punti Tripli (3x) • Roll 2x</span>
       </div>
       <div class="badges-grid" id="super-badges-grid"></div>
     </section>
@@ -2062,7 +2188,7 @@
       { id: 'n118', name: 'CENTODICIOTTOOO', description: 'Esattamente 118', check: (n) => n === 118 },
       { id: 'n119', name: 'ha hittato la seconda torre al contrario', description: 'Esattamente 119', check: (n) => n === 119 },
       { id: 'n123', name: 'le carte di clash royale', description: 'Esattamente 123', check: (n) => n === 123 },
-      { id: 'n126', name: 'follower di Orgojo_Romano', description: '126(k)', check: (n) => n === 126 },
+      { id: 'n126', name: 'follower di Orgojo_Romano', description: 'Esattamente 126', check: (n) => n === 126 },
       { id: 'n127', name: 'civico di leo', description: 'Esattamente 127', check: (n) => n === 127 },
       { id: 'n141', name: 'radice di 2', description: 'Esattamente 141 (1.41)', check: (n) => n === 141 },
       { id: 'n166', name: 'gruppi che cris e cico hanno in comune', description: 'Esattamente 166', check: (n) => n === 166 },
@@ -2196,6 +2322,11 @@
     let lastActiveBadgeIds = [];
     let lastNewlyUnlockedIds = [];
 
+    // Stato classifica
+    let currentLbSort = 'best';
+    let lastLeaderboards = null;
+    let lastKingMessage = null;
+
     // Elementi DOM
     const onboardingModal = document.getElementById('onboarding-modal');
     const registerForm = document.getElementById('register-form');
@@ -2244,6 +2375,10 @@
     const rollBtn = document.getElementById('roll-btn');
     const leaderboardContainer = document.getElementById('leaderboard-container');
     const refreshLeaderboardBtn = document.getElementById('refresh-leaderboard-btn');
+    const lbSortGroupEl = document.getElementById('lb-sort-group');
+    const rollTotalEl = document.getElementById('roll-total');
+    const rollTotalValueEl = document.getElementById('roll-total-value');
+    const rollTotalMultEl = document.getElementById('roll-total-mult');
 
     // Elementi DOM Messaggio del #1
     const kingBannerEl = document.getElementById('king-banner');
@@ -2357,7 +2492,6 @@
       }, 2500);
     }
 
-    
 
     function createDefaultAccount(deviceId, nickname) {
       return {
@@ -2430,6 +2564,9 @@
       if (typeof serverPlayer.totalScore === 'number') {
         account.totalScore = Math.max(account.totalScore, serverPlayer.totalScore);
       }
+      if (typeof serverPlayer.bestRollPoints === 'number') {
+        account.bestRollScore = Math.max(account.bestRollScore || 0, serverPlayer.bestRollPoints);
+      }
       syncBadgesFromAccount();
       saveAccount();
     }
@@ -2459,7 +2596,7 @@
       speedrunToggleInput.disabled = !unlocked;
       speedrunToggleInput.checked = unlocked && speedrunEnabled;
       speedrunDescEl.textContent = unlocked
-        ? 'Numeri e suoni 5x più veloci a parità di durata'
+        ? 'Numeri e suoni 5x più veloci • punti dimezzati (0.5x)'
         : `🔒 Si sblocca con ${SPEEDRUN_MIN_BADGES} badge (ne hai ${getTotalUnlockedCount()})`;
     }
 
@@ -2503,7 +2640,7 @@
         if (res.ok) {
           const data = await res.json();
           if (data.player) mergeServerPlayerIntoAccount(data.player);
-          if (data.leaderboard) renderLeaderboard(data.leaderboard, data.kingMessage || null);
+          applyLeaderboardData(data);
         }
       } catch (err) {
         console.warn('Sync badge segreto offline:', err);
@@ -2552,9 +2689,7 @@
             latestSuperAnnouncement.updatedAt || latestSuperAnnouncement.ts
           );
         }
-        if (data.leaderboard) {
-          renderLeaderboard(data.leaderboard, data.kingMessage || null);
-        }
+        applyLeaderboardData(data);
       } catch (err) {
         console.warn('Sync classifica offline:', err);
       }
@@ -2579,7 +2714,8 @@
             latestSuperAnnouncement.updatedAt || latestSuperAnnouncement.ts
           );
         }
-        renderLeaderboard(data.leaderboard || [], data.kingMessage || null);
+        if (!data.leaderboards && !data.leaderboard) data.leaderboard = [];
+        applyLeaderboardData(data);
       } catch (err) {
         leaderboardContainer.innerHTML = `<div class="leaderboard-empty">Classifica non raggiungibile al momento.</div>`;
       } finally {
@@ -2588,13 +2724,40 @@
       }
     }
 
-    function renderLeaderboard(entries, kingMessage) {
-      if (entries && entries.length > 0) {
-        const topPlayer = entries[0];
+    const LB_COLUMNS = {
+      best:   { title: 'ROLL CON PIÙ AURA', value: e => `${(e.bestRollPoints || 0).toLocaleString('it-IT')} pt` },
+      badges: { title: 'BADGE',             value: e => `${e.badgesCount}/${LEADERBOARD_MAX_BADGES()}` },
+      score:  { title: 'AURA TOTALE',       value: e => `${(e.totalScore || 0).toLocaleString('it-IT')} pt` },
+      rolls:  { title: 'TIRI FATTI',        value: e => (e.rollsCount || 0).toLocaleString('it-IT') },
+      super:  { title: 'SUPER BADGE',       value: e => `${e.superCount || 0}/${SUPER_BADGES.length}` }
+    };
+
+    // Salva le classifiche arrivate dal server e ridisegna
+    function applyLeaderboardData(data) {
+      if (!data) return;
+      if (data.leaderboards) {
+        lastLeaderboards = data.leaderboards;
+      } else if (Array.isArray(data.leaderboard)) {
+        // Server vecchio: c'è solo la classifica per badge
+        lastLeaderboards = { badges: data.leaderboard };
+      } else {
+        return;
+      }
+      if ('kingMessage' in data) lastKingMessage = data.kingMessage || null;
+      renderLeaderboard();
+    }
+
+    function renderLeaderboard() {
+      const boards = lastLeaderboards || {};
+
+      // Il #1 del messaggio è sempre il primo per badge (regola del server)
+      const kingBoard = boards.badges || [];
+      if (kingBoard.length > 0) {
+        const topPlayer = kingBoard[0];
         kingBannerEl.classList.remove('hidden');
         kingBannerAuthorEl.textContent = `@${topPlayer.nickname}`;
 
-        const msgText = kingMessage && kingMessage.text ? kingMessage.text.trim() : '';
+        const msgText = lastKingMessage && lastKingMessage.text ? lastKingMessage.text.trim() : '';
         if (msgText) {
           kingBannerTextEl.textContent = `«${msgText}»`;
           kingBannerTextEl.classList.remove('empty-msg');
@@ -2616,7 +2779,11 @@
         kingBannerEl.classList.add('hidden');
       }
 
-      if (!entries || entries.length === 0) {
+      const sortKey = boards[currentLbSort] ? currentLbSort : 'badges';
+      const entries = boards[sortKey] || [];
+      const column = LB_COLUMNS[sortKey];
+
+      if (entries.length === 0) {
         leaderboardContainer.innerHTML = `<div class="leaderboard-empty">Nessun giocatore ancora in classifica. Sii il primo!</div>`;
         return;
       }
@@ -2642,9 +2809,7 @@
               ${isMe ? '<span class="you-tag">TU</span>' : ''}
               ${specialTagHtml}
             </td>
-            <td class="badges-col">${entry.badgesCount}<span class="badges-max">/${LEADERBOARD_MAX_BADGES()}</span></td>
-            <td class="rolls-col">${(entry.rollsCount || 0).toLocaleString('it-IT')}</td>
-            <td class="score-col">${(entry.totalScore || 0).toLocaleString('it-IT')} pt</td>
+            <td class="lb-value-col">${column.value(entry)}</td>
           </tr>
         `;
       }).join('');
@@ -2655,9 +2820,7 @@
             <tr>
               <th>POS</th>
               <th>GIOCATORE</th>
-              <th style="text-align:right;">BADGE</th>
-              <th style="text-align:right;">ROLL</th>
-              <th style="text-align:right;">AURA</th>
+              <th style="text-align:right;">${column.title}</th>
             </tr>
           </thead>
           <tbody>${rowsHtml}</tbody>
@@ -2952,6 +3115,37 @@
       }
     }
 
+    function getRollTotalTierClass(points) {
+      if (points <= 0) return 'total-zero';
+      if (points < 1000) return 'total-green';
+      if (points < 5000) return 'total-blue';
+      if (points < 10000) return 'total-purple';
+      if (points < 50000) return 'total-red';
+      if (points <= 100000) return 'total-gold';
+      return 'total-rainbow';
+    }
+
+    function showRollTotal(points, basePoints, multiplier, superCount) {
+      rollTotalEl.className = `roll-total ${getRollTotalTierClass(points)}`;
+      rollTotalValueEl.textContent = `+${points.toLocaleString('it-IT')}`;
+
+      if (multiplier === 1 || basePoints <= 0) {
+        rollTotalMultEl.textContent = '';
+        return;
+      }
+      const parts = [];
+      if (superCount > 0) parts.push(superCount > 1 ? `${superCount} super badge 2x` : 'super badge 2x');
+      if (hardModeEnabled) parts.push('avanzata 1.2x');
+      if (speedrunEnabled && isSpeedrunUnlocked()) parts.push('speedrun 0.5x');
+      const multText = String(multiplier).replace('.', ',');
+      rollTotalMultEl.textContent =
+        `${basePoints.toLocaleString('it-IT')} × ${multText}${parts.length ? ' (' + parts.join(' • ') + ')' : ''}`;
+    }
+
+    function hideRollTotal() {
+      rollTotalEl.className = 'roll-total hidden';
+    }
+
     function revealBadgesSequentially(badgeItems, rollScore, onAllRevealed) {
       if (badgeItems.length === 0) {
         triggeredBadgesEl.innerHTML = `<span class="placeholder-text">Nessun badge attivato (+0 pt)</span>`;
@@ -2985,7 +3179,8 @@
             SFX.badgeReveal(item.points, item.isNew);
           }
 
-          triggeredBadgesEl.appendChild(pill);
+          // Il badge nuovo va in cima, quelli già usciti scendono
+          triggeredBadgesEl.prepend(pill);
 
           if (idx === badgeItems.length - 1) {
             setTimeout(() => {
@@ -3011,6 +3206,7 @@
         return;
       }
       hideSecretAnnouncement();
+      hideRollTotal();
 
       if (flex50kTimer) {
         clearTimeout(flex50kTimer);
@@ -3033,7 +3229,9 @@
             action: 'roll',
             deviceId: account.deviceId,
             unlockedIds: account.unlockedBadges,
-            secretUnlockedIds: account.unlockedSecrets
+            secretUnlockedIds: account.unlockedSecrets,
+            hardMode: hardModeEnabled,
+            speedrun: speedrunEnabled && isSpeedrunUnlocked()
           })
         });
 
@@ -3094,6 +3292,12 @@
 
         animateSlotRoll(rolled, () => {
           revealBadgesSequentially(revealQueue, rollScore, () => {
+            showRollTotal(
+              rollScore,
+              typeof data.basePoints === 'number' ? data.basePoints : rollScore,
+              typeof data.multiplier === 'number' ? Math.round(data.multiplier * 100) / 100 : 1,
+              matchedSuperIds.length
+            );
             if (data.superUnlockers) {
               globalSuperUnlockers = data.superUnlockers;
             }
@@ -3111,9 +3315,7 @@
             renderSuperBadges(matchedSuperIds, newlyUnlockedSuperIds);
             renderHistory();
 
-            if (data.leaderboard) {
-              renderLeaderboard(data.leaderboard, data.kingMessage || null);
-            }
+            applyLeaderboardData(data);
 
             if (rollScore >= 50000) {
               flex50kTimer = setTimeout(() => {
@@ -3284,9 +3486,7 @@
             latestSuperAnnouncement.updatedAt || latestSuperAnnouncement.ts
           );
         }
-        if (data.leaderboard) {
-          renderLeaderboard(data.leaderboard, data.kingMessage || null);
-        }
+        applyLeaderboardData(data);
         settingsModal.classList.add('hidden');
       } catch (err) {
         settingsError.textContent = 'Errore di connessione al server.';
@@ -3319,7 +3519,7 @@
         const data = await res.json();
         if (res.ok && data.leaderboard) {
           SFX.click();
-          renderLeaderboard(data.leaderboard, data.kingMessage || null);
+          applyLeaderboardData(data);
         } else {
           alert(data.error || 'Solo il #1 in classifica può pubblicare un messaggio.');
         }
@@ -3364,6 +3564,16 @@
     thirstyKidsBox.addEventListener('click', () => {
       SFX.babyCry();
       unlockSecretBadge('secret_mostro');
+    });
+
+    lbSortGroupEl.addEventListener('click', (e) => {
+      const btn = e.target.closest('.filter-btn');
+      if (!btn) return;
+      SFX.click();
+      lbSortGroupEl.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      currentLbSort = btn.dataset.sort;
+      renderLeaderboard();
     });
 
     rollBtn.addEventListener('click', handleRoll);
