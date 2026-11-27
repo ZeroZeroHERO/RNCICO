@@ -3564,7 +3564,7 @@
         return;
       }
 
-      historyListEl.innerHTML = account.topRolls.map((item, index) => {
+      historyListEl.innerHTML = account.topRolls.slice(0, 10).map((item, index) => {
         const rank = index + 1;
         const pts = Number(item.score ?? item.points ?? 0);
         let classes = 'history-item';
@@ -3591,7 +3591,7 @@
         const ptsB = Number(b.score ?? b.points ?? 0);
         return ptsB - ptsA || (b.ts || 0) - (a.ts || 0);
       });
-      account.topRolls = account.topRolls.slice(0, 12);
+      account.topRolls = account.topRolls.slice(0, 10);
     }
     // ==========================================
     // ANIMAZIONE E LOGICA DI ESTRAZIONE SERVER-SIDE
@@ -4037,6 +4037,8 @@
       DeviceMotionEvent.requestPermission()
         .then(state => { if (state === 'granted') startMotionListening(); })
         .catch(() => {});
+            // Se "shaker" è già sbloccato non serve più chiedere i sensori di movimento
+      if (account && Array.isArray(account.unlockedSecrets) && account.unlockedSecrets.includes('secret_shaker')) return;
     }
 
     if (typeof window.DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission !== 'function') {
