@@ -554,6 +554,167 @@
       color: #f9a8d4;
     }
     
+    /* Fumetto della combo */
+    .combo-bubble {
+      position: absolute;
+      top: 0.9rem;
+      right: 0.9rem;
+      padding: 0.35rem 0.7rem;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #f97316, #ef4444);
+      color: #ffffff;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 1.05rem;
+      font-weight: 800;
+      box-shadow: 0 0 14px rgba(249, 115, 22, 0.5);
+      transition: opacity 0.4s ease;
+      z-index: 2;
+      animation: comboPop 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+    }
+
+    /* codina del fumetto */
+    .combo-bubble::after {
+      content: '';
+      position: absolute;
+      bottom: -7px;
+      left: 14px;
+      border-width: 8px 7px 0 0;
+      border-style: solid;
+      border-color: #ef4444 transparent transparent transparent;
+    }
+
+    .combo-bubble.hidden {
+      display: none;
+    }
+
+    .combo-bubble.fading {
+      opacity: 0.25;
+    }
+
+    .combo-bubble.milestone-10 {
+      animation: comboTen 0.8s ease;
+    }
+
+    .combo-bubble.milestone-100 {
+      animation: comboHundred 1.6s ease;
+      background: linear-gradient(120deg, #f87171, #facc15, #4ade80, #60a5fa, #c084fc, #f472b6);
+      background-size: 300% 300%;
+    }
+
+    @keyframes comboPop {
+      0% { transform: scale(0.5); }
+      100% { transform: scale(1); }
+    }
+
+    @keyframes comboTen {
+      0% { transform: scale(1); box-shadow: 0 0 14px rgba(249, 115, 22, 0.5); }
+      35% { transform: scale(1.7) rotate(-6deg); box-shadow: 0 0 40px rgba(250, 204, 21, 0.95); }
+      100% { transform: scale(1) rotate(0deg); box-shadow: 0 0 14px rgba(249, 115, 22, 0.5); }
+    }
+
+    @keyframes comboHundred {
+      0% { transform: scale(1); background-position: 0% 50%; }
+      20% { transform: scale(2.6) rotate(-10deg); }
+      40% { transform: scale(2.2) rotate(8deg); }
+      60% { transform: scale(2.5) rotate(-4deg); }
+      100% { transform: scale(1) rotate(0deg); background-position: 100% 50%; }
+    }
+
+    .combo-flash {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: clamp(2.5rem, 12vw, 7rem);
+      font-weight: 800;
+      color: #ffffff;
+      text-shadow: 0 0 30px rgba(250, 204, 21, 0.9);
+      background: radial-gradient(circle, rgba(250, 204, 21, 0.35), rgba(11, 13, 18, 0.6));
+      pointer-events: none;
+      z-index: 9998;
+      animation: comboFlash 1.8s ease forwards;
+    }
+
+    @keyframes comboFlash {
+      0% { opacity: 0; transform: scale(0.6); }
+      20% { opacity: 1; transform: scale(1.1); }
+      70% { opacity: 1; transform: scale(1); }
+      100% { opacity: 0; transform: scale(1.3); }
+    }
+
+    /* Effetti dei numeri */
+    .fx-fake-404 {
+      position: fixed;
+      inset: 0;
+      background: #ffffff;
+      color: #000000;
+      font-family: 'Times New Roman', serif;
+      text-align: center;
+      padding-top: 2rem;
+      z-index: 9998;
+    }
+
+    .fx-fake-404 h1 {
+      font-size: 2rem;
+      font-weight: bold;
+      margin-bottom: 0.8rem;
+    }
+
+    .fx-fake-404 hr {
+      border: none;
+      border-top: 1px solid #aaaaaa;
+      margin: 0.8rem auto;
+      width: 90%;
+    }
+
+    .container.fx-vanished {
+      visibility: hidden;
+    }
+
+    .fx-confetti {
+      position: fixed;
+      top: -20px;
+      width: 9px;
+      height: 14px;
+      border-radius: 2px;
+      pointer-events: none;
+      z-index: 9997;
+      animation: confettiFall linear forwards;
+    }
+
+    @keyframes confettiFall {
+      0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+      100% { transform: translateY(110vh) rotate(720deg); opacity: 0.8; }
+    }
+
+    .fx-sixseven {
+      position: fixed;
+      top: 0;
+      left: 0;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: clamp(1.6rem, 7vw, 3.2rem);
+      font-weight: 800;
+      white-space: nowrap;
+      pointer-events: none;
+      z-index: 9997;
+      text-shadow: 0 0 14px rgba(0, 0, 0, 0.6);
+    }
+
+    .fx-siren {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 9997;
+      animation: sirenLights 0.5s linear infinite;
+    }
+
+    @keyframes sirenLights {
+      0%, 49% { box-shadow: inset 0 0 90px 30px rgba(239, 68, 68, 0.85); }
+      50%, 100% { box-shadow: inset 0 0 90px 30px rgba(59, 130, 246, 0.85); }
+    }
+
     /* RNG Main Stage */
     .rng-stage {
       display: flex;
@@ -563,6 +724,7 @@
     }
 
     .number-card {
+      position: relative;
       width: 100%;
       background: var(--card-bg);
       border: 1px solid var(--card-border);
@@ -1771,6 +1933,7 @@
     </div>
     <main class="rng-stage">
       <div class="number-card" id="number-card">
+        <div class="combo-bubble hidden" id="combo-bubble">X2</div>
         <span class="range-hint">RANGE: 000 — 500</span>
         
         <div class="digits-wrapper">
@@ -1810,6 +1973,7 @@
         <button type="button" class="filter-btn" data-sort="score">Aura totale</button>
         <button type="button" class="filter-btn" data-sort="rolls">Tiri fatti</button>
         <button type="button" class="filter-btn" data-sort="super">Super badge</button>
+        <button type="button" class="filter-btn" data-sort="combo">Combo più alta</button>
       </div>
 
       <!-- Riquadro Messaggio del Primo in Classifica -->
@@ -1961,6 +2125,20 @@
         name: 'impasible',
         description: 'hai fatto almeno 3 roll nella modalità difficoltà avanzata',
         hint: 'Suggerimento: sei un vero pro player?',
+        points: 67
+      },
+      {
+        id: 'secret_nonguardavi',
+        name: 'dai non stavi guardando',
+        description: 'hai cambiato scheda mentre il numero girava',
+        hint: 'Suggerimento: pornhub',
+        points: 67
+      },
+      {
+        id: 'secret_shaker',
+        name: 'shaker',
+        description: 'hai scosso il telefono',
+        hint: 'Suggerimento: cubo di pasqua',
         points: 67
       }
     ];
@@ -2190,6 +2368,16 @@
     // ==========================================
     // Numero della data di oggi (ora italiana): gg/mm fino a settembre, mm/gg per ottobre-dicembre
     // (solo se il giorno ha una cifra). Restituisce null nei giorni in cui non può uscire.
+    // Ora attuale (ora italiana, 24h) come numero: 03:51 → 351, 00:07 → 7. null dopo le 05:00.
+    function getNowTimeNumber(date = new Date()) {
+      const parts = new Intl.DateTimeFormat('it-IT', { timeZone: 'Europe/Rome', hour: 'numeric', minute: 'numeric', hourCycle: 'h23' })
+        .formatToParts(date);
+      const hour = Number(parts.find(p => p.type === 'hour').value);
+      const minute = Number(parts.find(p => p.type === 'minute').value);
+      const n = hour * 100 + minute;
+      return n <= 500 ? n : null;
+    }
+
     function getTodayDateNumber(date = new Date()) {
       const parts = new Intl.DateTimeFormat('it-IT', { timeZone: 'Europe/Rome', day: 'numeric', month: 'numeric' })
         .formatToParts(date);
@@ -2277,6 +2465,16 @@
         }
       }
     ];
+
+    SUPER_BADGES.push({
+      id: 'super_spaccato',
+      rollsNeeded: 1,
+      name: 'spaccato al minuto',
+      description: "Hai rollato l'ora esatta (formato 24 ore: alle 03:51 esce 351)",
+      probDenominator: 2397,
+      points: Math.round((100 / (1 / 2397)) * 3),
+      check: (rolls) => rolls.length >= 1 && rolls[rolls.length - 1] === getNowTimeNumber()
+    });
 
     SUPER_BADGES.sort((a, b) => a.points - b.points);
 
@@ -2747,7 +2945,8 @@
       super_fanatico_harshad: [275700],
       super_in_pari: [300900, 307200],
       super_indeciso: [376500],
-      super_data_oggi: [182400]
+      super_data_oggi: [182400],
+      super_spaccato: [719100]
     };
 
     function decodeRoll(entry) {
@@ -3004,7 +3203,8 @@
       badges: { title: 'BADGE',             value: e => `${e.badgesCount}/${LEADERBOARD_MAX_BADGES()}` },
       score:  { title: 'AURA TOTALE',       value: e => `${(e.totalScore || 0).toLocaleString('it-IT')} pt` },
       rolls:  { title: 'TIRI FATTI',        value: e => (e.rollsCount || 0).toLocaleString('it-IT') },
-      super:  { title: 'SUPER BADGE OTTENUTI', value: e => (e.superCount || 0).toLocaleString('it-IT') }
+      super:  { title: 'SUPER BADGE OTTENUTI', value: e => (e.superCount || 0).toLocaleString('it-IT') },
+      combo:  { title: 'COMBO PIÙ ALTA',    value: e => `X${(e.bestCombo || 0).toLocaleString('it-IT')}` }
     };
 
     function renderBestRollCell(e) {
@@ -3535,6 +3735,193 @@
       });
     }
 
+    // ==========================================
+    // COMBO (roll entro 10 secondi dalla fine della precedente)
+    // ==========================================
+    const COMBO_WINDOW_MS = 10000;
+    const comboBubbleEl = document.getElementById('combo-bubble');
+    let comboCount = 0;
+    let lastRollEndAt = 0;
+    let comboExpireTimer = null;
+
+    function registerComboOnRollStart() {
+      clearTimeout(comboExpireTimer);
+      const now = Date.now();
+      comboCount = (lastRollEndAt && now - lastRollEndAt <= COMBO_WINDOW_MS) ? comboCount + 1 : 1;
+      renderComboBubble(true);
+    }
+
+    function renderComboBubble(animate) {
+      if (comboCount < 2) {
+        comboBubbleEl.className = 'combo-bubble hidden';
+        return;
+      }
+      comboBubbleEl.textContent = `X${comboCount}`;
+      let cls = 'combo-bubble';
+      if (animate && comboCount % 100 === 0) cls += ' milestone-100';
+      else if (animate && comboCount % 10 === 0) cls += ' milestone-10';
+      comboBubbleEl.className = 'combo-bubble hidden';
+      void comboBubbleEl.offsetWidth; // fa ripartire l'animazione
+      comboBubbleEl.className = cls;
+
+      if (animate && comboCount % 100 === 0) {
+        comboBigCelebration();
+      } else if (animate && comboCount % 10 === 0) {
+        playTone(784, 0.12, 'triangle', 0.1);
+        playTone(1046.5, 0.18, 'triangle', 0.1, 0.08);
+      }
+    }
+
+    function comboBigCelebration() {
+      const flash = document.createElement('div');
+      flash.className = 'combo-flash';
+      flash.textContent = `COMBO X${comboCount}!`;
+      document.body.appendChild(flash);
+      setTimeout(() => flash.remove(), 1900);
+      launchConfetti(90);
+      [523.25, 659.25, 783.99, 1046.5, 1318.5, 1568].forEach((n, i) => playTone(n, 0.3, 'triangle', 0.11, i * 0.07));
+    }
+
+    // Finita la roll parte la finestra di 10 secondi: il fumetto si spegne quando scade
+    function startComboWindow() {
+      lastRollEndAt = Date.now();
+      clearTimeout(comboExpireTimer);
+      if (comboCount >= 2) comboBubbleEl.classList.remove('fading');
+      comboExpireTimer = setTimeout(() => {
+        if (comboCount >= 2) comboBubbleEl.classList.add('fading');
+        comboCount = 0;
+      }, COMBO_WINDOW_MS);
+    }
+
+    // ==========================================
+    // EFFETTI SPECIALI DEI NUMERI
+    // ==========================================
+    function playNumberEffect(n) {
+      if (n === 404) effectFake404();
+      else if (n === 0) effectVanish();
+      else if (n === 500) launchConfetti(160);
+      else if (n === 67) effectSixSeven();
+      else if (n === 118) effectSiren();
+    }
+
+    function effectFake404() {
+      const el = document.createElement('div');
+      el.className = 'fx-fake-404';
+      el.innerHTML = '<h1>404 Not Found</h1><hr><div>nginx</div>';
+      document.body.appendChild(el);
+      setTimeout(() => el.remove(), 2000);
+    }
+
+    function effectVanish() {
+      containerEl.classList.add('fx-vanished');
+      setTimeout(() => containerEl.classList.remove('fx-vanished'), 1500);
+    }
+
+    function launchConfetti(count) {
+      const colors = ['#f87171', '#facc15', '#4ade80', '#60a5fa', '#c084fc', '#f472b6', '#fb923c'];
+      for (let i = 0; i < count; i++) {
+        const c = document.createElement('div');
+        c.className = 'fx-confetti';
+        c.style.left = `${Math.random() * 100}vw`;
+        c.style.background = colors[i % colors.length];
+        c.style.animationDuration = `${2.2 + Math.random() * 2}s`;
+        c.style.animationDelay = `${Math.random() * 0.6}s`;
+        document.body.appendChild(c);
+        setTimeout(() => c.remove(), 5000);
+      }
+    }
+
+    function effectSixSeven() {
+      const el = document.createElement('div');
+      el.className = 'fx-sixseven';
+      el.textContent = 'SIX SEVEN';
+      document.body.appendChild(el);
+      const colors = ['#f87171', '#facc15', '#4ade80', '#60a5fa', '#c084fc', '#f472b6'];
+      let x = Math.random() * Math.max(1, window.innerWidth - 260);
+      let y = Math.random() * Math.max(1, window.innerHeight - 80);
+      let vx = 5, vy = 4, colorIdx = 0;
+      el.style.color = colors[0];
+      const started = performance.now();
+      function step(t) {
+        const w = el.offsetWidth, h = el.offsetHeight;
+        x += vx; y += vy;
+        if (x <= 0 || x + w >= window.innerWidth) { vx = -vx; x = Math.max(0, Math.min(x, window.innerWidth - w)); colorIdx++; }
+        if (y <= 0 || y + h >= window.innerHeight) { vy = -vy; y = Math.max(0, Math.min(y, window.innerHeight - h)); colorIdx++; }
+        el.style.color = colors[colorIdx % colors.length];
+        el.style.transform = `translate(${x}px, ${y}px)`;
+        if (t - started < 4500) requestAnimationFrame(step);
+        else el.remove();
+      }
+      requestAnimationFrame(step);
+    }
+
+    function effectSiren() {
+      const el = document.createElement('div');
+      el.className = 'fx-siren';
+      document.body.appendChild(el);
+      setTimeout(() => el.remove(), 3000);
+      // suono della sirena: tre "uiii-uooo"
+      for (let i = 0; i < 3; i++) {
+        playTone(700, 0.45, 'sawtooth', 0.05, i * 0.9, 1100);
+        playTone(1100, 0.45, 'sawtooth', 0.05, i * 0.9 + 0.45, 700);
+      }
+    }
+
+    // ==========================================
+    // SEGRETI: "dai non stavi guardando" e "shaker"
+    // ==========================================
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden && isRolling) {
+        unlockSecretBadge('secret_nonguardavi');
+      }
+    });
+
+    let motionListening = false;
+    let motionPermissionAsked = false;
+    let shakeHits = [];
+
+    function onDeviceMotion(e) {
+      const a = e.acceleration && e.acceleration.x !== null ? e.acceleration : null;
+      let force;
+      if (a) {
+        force = Math.sqrt((a.x || 0) ** 2 + (a.y || 0) ** 2 + (a.z || 0) ** 2);
+      } else if (e.accelerationIncludingGravity) {
+        const g = e.accelerationIncludingGravity;
+        force = Math.abs(Math.sqrt((g.x || 0) ** 2 + (g.y || 0) ** 2 + (g.z || 0) ** 2) - 9.81);
+      } else {
+        return;
+      }
+      if (force < 15) return;
+      const now = Date.now();
+      shakeHits = shakeHits.filter(t => now - t < 1200);
+      shakeHits.push(now);
+      if (shakeHits.length >= 4) {
+        shakeHits = [];
+        unlockSecretBadge('secret_shaker');
+      }
+    }
+
+    function startMotionListening() {
+      if (motionListening || typeof window.DeviceMotionEvent === 'undefined') return;
+      motionListening = true;
+      window.addEventListener('devicemotion', onDeviceMotion);
+    }
+
+    // Android: si ascolta subito. iPhone: serve il permesso, chiesto al primo tocco su GENERA.
+    function askMotionPermissionIfNeeded() {
+      if (typeof window.DeviceMotionEvent === 'undefined') return;
+      if (typeof DeviceMotionEvent.requestPermission !== 'function') return;
+      if (motionPermissionAsked) return;
+      motionPermissionAsked = true;
+      DeviceMotionEvent.requestPermission()
+        .then(state => { if (state === 'granted') startMotionListening(); })
+        .catch(() => {});
+    }
+
+    if (typeof window.DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission !== 'function') {
+      startMotionListening();
+    }
+
     async function handleRoll() {
       if (!account) return;
 
@@ -3546,8 +3933,10 @@
         }
         return;
       }
+      askMotionPermissionIfNeeded();
       hideSecretAnnouncement();
       hideRollTotal();
+      registerComboOnRollStart();
 
       if (flex50kTimer) {
         clearTimeout(flex50kTimer);
@@ -3573,6 +3962,7 @@
             secretUnlockedIds: account.unlockedSecrets,
             hardMode: hardModeEnabled,
             speedrun: speedrunEnabled && isSpeedrunUnlocked(),
+            combo: comboCount,
             ...getBestRollInfo()
           })
         });
@@ -3644,6 +4034,7 @@
         ];
 
         animateSlotRoll(rolled, () => {
+          playNumberEffect(rolled);
           revealBadgesSequentially(revealQueue, rollScore, () => {
             rollTotalTimers.push(setTimeout(() => {
               showRollTotal(
@@ -3681,10 +4072,14 @@
             isRolling = false;
             clicksWhileRolling = 0;
             rollBtn.classList.remove('is-busy');
+            startComboWindow();
           });
         });
       } catch (err) {
         triggeredBadgesEl.innerHTML = `<span class="error-text">${escapeHtml(err.message)}</span>`;
+        comboCount = 0;
+        lastRollEndAt = 0;
+        renderComboBubble(false);
         isRolling = false;
         clicksWhileRolling = 0;
         rollBtn.classList.remove('is-busy');
