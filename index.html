@@ -1168,10 +1168,15 @@
 
     .lb-sub {
       display: block;
-      font-size: 0.72rem;
-      font-weight: 700;
+      font-size: 0.60rem;
+      font-weight: 500;
       color: var(--text-muted);
       margin-top: 0.15rem;
+    }
+
+    .lb-sub strong {
+      font-weight: 800;
+      color: var(--text-main);
     }
 
     .lb-value-col {
@@ -3278,7 +3283,7 @@
         .filter(sb => (e.bestRollSuperIds || []).includes(sb.id))
         .forEach(sb => details.push(`⚡ ${escapeHtml(sb.name)}`));
       const mult = Number(e.bestRollMultiplier) || 1;
-      if (mult !== 1) details.push(`×${String(Math.round(mult * 100) / 100).replace('.', ',')}`);
+      if (mult !== 1) details.push(`<strong>×${String(Math.round(mult * 100) / 100).replace('.', ',')}</strong>`);
       return details.length
         ? `${pts}<span class="lb-sub">${details.join(' • ')}</span>`
         : pts;
