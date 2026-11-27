@@ -767,7 +767,7 @@
 
     /* Totale punti della roll */
     .roll-total {
-      margin: 1.3rem auto 0;
+      margin: 0 auto 1.2rem;
       display: inline-flex;
       flex-direction: column;
       align-items: center;
@@ -1687,15 +1687,16 @@
           <div class="digit-box" id="digit-2">-</div>
         </div>
 
-        <div class="triggered-badges" id="triggered-badges">
-          <span class="placeholder-text">Premi GENERA per iniziare</span>
-        </div>
-
         <div class="roll-total hidden" id="roll-total">
           <span class="roll-total-label">TOTALE ROLL</span>
           <span class="roll-total-value" id="roll-total-value">+0</span>
           <span class="roll-total-mult" id="roll-total-mult"></span>
         </div>
+
+        <div class="triggered-badges" id="triggered-badges">
+          <span class="placeholder-text">Premi GENERA per iniziare</span>
+        </div>
+
       </div>
 
       <button id="roll-btn" class="roll-btn">
@@ -2666,7 +2667,8 @@
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             action: 'sync',
-            deviceId: account.deviceId
+            deviceId: account.deviceId,
+            bestRollScore: account.bestRollScore || 0
           })
         });
         if (!res.ok) return;
@@ -2729,7 +2731,7 @@
       badges: { title: 'BADGE',             value: e => `${e.badgesCount}/${LEADERBOARD_MAX_BADGES()}` },
       score:  { title: 'AURA TOTALE',       value: e => `${(e.totalScore || 0).toLocaleString('it-IT')} pt` },
       rolls:  { title: 'TIRI FATTI',        value: e => (e.rollsCount || 0).toLocaleString('it-IT') },
-      super:  { title: 'SUPER BADGE',       value: e => `${e.superCount || 0}/${SUPER_BADGES.length}` }
+      super:  { title: 'SUPER BADGE OTTENUTI', value: e => (e.superCount || 0).toLocaleString('it-IT') }
     };
 
     // Salva le classifiche arrivate dal server e ridisegna
@@ -3179,8 +3181,8 @@
             SFX.badgeReveal(item.points, item.isNew);
           }
 
-          // Il badge nuovo va in cima, quelli già usciti scendono
-          triggeredBadgesEl.prepend(pill);
+          // I badge escono dal più comune al più raro, ognuno sotto al precedente
+          triggeredBadgesEl.appendChild(pill);
 
           if (idx === badgeItems.length - 1) {
             setTimeout(() => {
@@ -3231,7 +3233,8 @@
             unlockedIds: account.unlockedBadges,
             secretUnlockedIds: account.unlockedSecrets,
             hardMode: hardModeEnabled,
-            speedrun: speedrunEnabled && isSpeedrunUnlocked()
+            speedrun: speedrunEnabled && isSpeedrunUnlocked(),
+            bestRollScore: account.bestRollScore || 0
           })
         });
 
