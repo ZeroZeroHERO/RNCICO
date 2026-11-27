@@ -52,6 +52,23 @@
       transform: rotate(180deg) scaleX(-1);
     }
 
+    /* Nomi al contrario: schermo girato di 180° (si combina con la difficoltà avanzata) */
+    html.reverse-name-mode .container {
+      transform: rotate(180deg);
+    }
+
+    html.reverse-name-mode.flip-180 .container {
+      transform: none;
+    }
+
+    html.reverse-name-mode.flip-x .container {
+      transform: rotate(180deg) scaleX(-1);
+    }
+
+    html.reverse-name-mode.flip-x.flip-180 .container {
+      transform: scaleX(-1);
+    }
+
     body {
       background-color: var(--bg-color);
       color: var(--text-main);
@@ -853,6 +870,45 @@
       60% { border-color: #60a5fa; }
       80% { border-color: #c084fc; }
       100% { border-color: #f87171; }
+    }
+
+    .roll-total-chip {
+      display: inline-block;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.95rem;
+      font-weight: 800;
+      padding: 0.15rem 0.6rem;
+      border-radius: 8px;
+      background: linear-gradient(135deg, #facc15, #f97316);
+      color: #0b0d12;
+      box-shadow: 0 0 14px rgba(249, 115, 22, 0.55);
+      animation: multPop 0.55s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+    }
+
+    .roll-total-chip.debuff {
+      background: linear-gradient(135deg, #64748b, #334155);
+      color: #f1f5f9;
+      box-shadow: 0 0 12px rgba(100, 116, 139, 0.5);
+    }
+
+    .roll-total-chip.hidden {
+      display: none;
+    }
+
+    .roll-total .roll-total-value.bump {
+      animation: valueBump 0.4s ease, rainbowFlow 2.5s linear infinite;
+    }
+
+    @keyframes multPop {
+      0% { transform: scale(0) rotate(-14deg); opacity: 0; }
+      60% { transform: scale(1.35) rotate(4deg); opacity: 1; }
+      100% { transform: scale(1) rotate(0deg); opacity: 1; }
+    }
+
+    @keyframes valueBump {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.25); }
+      100% { transform: scale(1); }
     }
 
     @keyframes totalPop {
@@ -1690,6 +1746,7 @@
         <div class="roll-total hidden" id="roll-total">
           <span class="roll-total-label">TOTALE ROLL</span>
           <span class="roll-total-value" id="roll-total-value">+0</span>
+          <span class="roll-total-chip hidden" id="roll-total-chip"></span>
           <span class="roll-total-mult" id="roll-total-mult"></span>
         </div>
 
@@ -1805,6 +1862,11 @@
     const SPEEDRUN_PREF_KEY = 'rncico_speedrun_enabled_v1';
     const HARDMODE_PREF_KEY = 'rncico_hardmode_enabled_v1';
     const API_ENDPOINT = '/api/leaderboard';
+
+    const REVERSE_NAMES = 'onafets ,kcin ,orteip ,adnan ,ordnassela ,ocirne ,ojajdik ,opocaj ,ocram ,oizirbaf ,ollel ,eleinad ,oinad ,olrac ,amme ,airali ,sirc ,ocic'
+      .split(',')
+      .map(n => n.trim().toLowerCase())
+      .filter(Boolean);
 
     const DALTONICO_NAMES = ['carlo', 'carletto', 'alibaba', 'alibandan', 'aliberti', 'zaus'];
 
@@ -2380,6 +2442,8 @@
     const rollTotalEl = document.getElementById('roll-total');
     const rollTotalValueEl = document.getElementById('roll-total-value');
     const rollTotalMultEl = document.getElementById('roll-total-mult');
+    const rollTotalChipEl = document.getElementById('roll-total-chip');
+    let rollTotalTimers = [];
 
     // Elementi DOM Messaggio del #1
     const kingBannerEl = document.getElementById('king-banner');
@@ -2649,7 +2713,19 @@
       return true;
     }
 
+    // Se il nickname è uno dei nomi al contrario, lo schermo resta girato di 180° (nessun badge)
+    function applyReverseNameMode(nickname) {
+      const clean = (nickname || '').trim().toLowerCase();
+      if (REVERSE_NAMES.includes(clean)) {
+        updateRotationOrigin();
+        document.documentElement.classList.add('reverse-name-mode');
+      } else {
+        document.documentElement.classList.remove('reverse-name-mode');
+      }
+    }
+
     function checkDaltonicoUnlock(nickname) {
+      applyReverseNameMode(nickname);
       const isDaltonico = applyDaltonicoMode(nickname);
       if (isDaltonico && account) {
         unlockSecretBadge('secret_daltonico');
@@ -3127,25 +3203,63 @@
       return 'total-rainbow';
     }
 
-    function showRollTotal(points, basePoints, multiplier, superCount) {
-      rollTotalEl.className = `roll-total ${getRollTotalTierClass(points)}`;
-      rollTotalValueEl.textContent = `+${points.toLocaleString('it-IT')}`;
+    function clearRollTotalTimers() {
+      rollTotalTimers.forEach(t => clearTimeout(t));
+      rollTotalTimers = [];
+    }
 
-      if (multiplier === 1 || basePoints <= 0) {
-        rollTotalMultEl.textContent = '';
-        return;
-      }
+    function setRollTotalValue(value) {
+      rollTotalEl.className = `roll-total ${getRollTotalTierClass(value)}`;
+      rollTotalValueEl.textContent = `+${Math.round(value).toLocaleString('it-IT')}`;
+    }
+
+    function showRollTotal(points, basePoints, multiplier, superCount) {
+      clearRollTotalTimers();
+      const hasMult = multiplier !== 1 && basePoints > 0;
+
+      rollTotalChipEl.className = 'roll-total-chip hidden';
+      rollTotalMultEl.textContent = '';
+      rollTotalValueEl.classList.remove('bump');
+      setRollTotalValue(hasMult ? basePoints : points);
+      if (!hasMult) return;
+
       const parts = [];
       if (superCount > 0) parts.push(superCount > 1 ? `${superCount} super badge 2x` : 'super badge 2x');
       if (hardModeEnabled) parts.push('avanzata 1.2x');
       if (speedrunEnabled && isSpeedrunUnlocked()) parts.push('speedrun 0.5x');
       const multText = String(multiplier).replace('.', ',');
-      rollTotalMultEl.textContent =
-        `${basePoints.toLocaleString('it-IT')} × ${multText}${parts.length ? ' (' + parts.join(' • ') + ')' : ''}`;
+
+      // Dopo un attimo compare il moltiplicatore e il numero sale (o scende) fino al totale
+      rollTotalTimers.push(setTimeout(() => {
+        rollTotalChipEl.textContent = `×${multText}`;
+        rollTotalChipEl.className = `roll-total-chip${multiplier < 1 ? ' debuff' : ''}`;
+        if (multiplier > 1) {
+          playTone(880, 0.14, 'triangle', 0.1);
+          playTone(1318.5, 0.22, 'sine', 0.09, 0.08);
+        } else {
+          playTone(440, 0.2, 'triangle', 0.08, 0, 260);
+        }
+
+        const steps = 14;
+        for (let i = 1; i <= steps; i++) {
+          rollTotalTimers.push(setTimeout(() => {
+            const value = i === steps ? points : basePoints + (points - basePoints) * (i / steps);
+            setRollTotalValue(value);
+            if (i === steps) {
+              void rollTotalValueEl.offsetWidth;
+              rollTotalValueEl.classList.add('bump');
+              rollTotalMultEl.textContent =
+                `${basePoints.toLocaleString('it-IT')} × ${multText}${parts.length ? ' (' + parts.join(' • ') + ')' : ''}`;
+            }
+          }, i * 40));
+        }
+      }, 600));
     }
 
     function hideRollTotal() {
+      clearRollTotalTimers();
       rollTotalEl.className = 'roll-total hidden';
+      rollTotalChipEl.className = 'roll-total-chip hidden';
     }
 
     function revealBadgesSequentially(badgeItems, rollScore, onAllRevealed) {
@@ -3181,8 +3295,9 @@
             SFX.badgeReveal(item.points, item.isNew);
           }
 
-          // I badge escono dal più comune al più raro, ognuno sotto al precedente
-          triggeredBadgesEl.appendChild(pill);
+          // Escono dal più comune al più raro: ogni nuovo badge va in cima,
+          // così quello che vale di più resta sempre in alto
+          triggeredBadgesEl.prepend(pill);
 
           if (idx === badgeItems.length - 1) {
             setTimeout(() => {
@@ -3295,12 +3410,14 @@
 
         animateSlotRoll(rolled, () => {
           revealBadgesSequentially(revealQueue, rollScore, () => {
-            showRollTotal(
-              rollScore,
-              typeof data.basePoints === 'number' ? data.basePoints : rollScore,
-              typeof data.multiplier === 'number' ? Math.round(data.multiplier * 100) / 100 : 1,
-              matchedSuperIds.length
-            );
+            rollTotalTimers.push(setTimeout(() => {
+              showRollTotal(
+                rollScore,
+                typeof data.basePoints === 'number' ? data.basePoints : rollScore,
+                typeof data.multiplier === 'number' ? Math.round(data.multiplier * 100) / 100 : 1,
+                matchedSuperIds.length
+              );
+            }, 500));
             if (data.superUnlockers) {
               globalSuperUnlockers = data.superUnlockers;
             }
