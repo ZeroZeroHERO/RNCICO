@@ -178,6 +178,25 @@ const RAW_BADGES = [
   { id: 'div97', check: (n) => n === 1 || n === 97 },
   { id: 'div496', check: (n) => isDivisorOf496(n) },
   { id: 'self_pow', check: (n) => [1, 4, 27, 256].includes(n) },
+  // Nuovi badge
+  { id: 'gradi', check: (n) => n === 200 || n === 360 },
+  { id: 'n67_sixseven', check: (n) => n === 67 },
+  { id: 'n321', check: (n) => n === 321 },
+  { id: 'n123_stella', check: (n) => n === 123 },
+  { id: 'n7', check: (n) => n === 7 },
+  { id: 'n191', check: (n) => n === 191 },
+  { id: 'n8', check: (n) => n === 8 },
+  { id: 'mending', check: (n) => n >= 1 && n <= 38 },
+  { id: 'n110_unodieci', check: (n) => n === 110 },
+  { id: 'n366', check: (n) => n === 366 },
+  { id: 'n271_memoria', check: (n) => n === 271 },
+  { id: 'n34', check: (n) => n === 34 },
+  { id: 'n76', check: (n) => n === 76 },
+  { id: 'n151', check: (n) => n === 151 },
+  { id: 'n20', check: (n) => n === 20 },
+  { id: 'n100_laurea', check: (n) => n === 100 },
+  { id: 'cannora_frazione', check: (n) => n === 210 || n === 140 || n === 105 },
+  { id: 'n25', check: (n) => n === 25 },
   { id: 'elem_se', check: (n) => n === 34 },
   { id: 'elem_sr', check: (n) => n === 38 },
   { id: 'elem_w', check: (n) => n === 74 },
@@ -196,6 +215,18 @@ RAW_BADGES.forEach(badge => {
   const points = matchingCount > 0 ? Math.round(100 / probability) : 0;
   BADGE_CATALOG.set(badge.id, { ...badge, points });
 });
+
+// Numero della data di oggi (ora italiana): gg/mm fino a settembre, mm/gg per ottobre-dicembre
+// (solo se il giorno ha una cifra). null nei giorni in cui non può uscire.
+function getTodayDateNumber(date = new Date()) {
+  const parts = new Intl.DateTimeFormat('it-IT', { timeZone: 'Europe/Rome', day: 'numeric', month: 'numeric' })
+    .formatToParts(date);
+  const day = Number(parts.find(p => p.type === 'day').value);
+  const month = Number(parts.find(p => p.type === 'month').value);
+  if (month <= 9) return Number(`${day}${month}`);
+  if (day <= 9) return Number(`${month}${day}`);
+  return null;
+}
 
 // Super Badge (punti tripli = probDenominator * 3)
 const SUPER_BADGES_CATALOG = [
@@ -242,6 +273,13 @@ const SUPER_BADGES_CATALOG = [
       const b = rolls[rolls.length - 1];
       return (a < 10 && b > 490) || (a > 490 && b < 10);
     }
+  },
+  {
+    id: 'super_data_oggi',
+    name: 'DATA DI OGGI',
+    probDenominator: 608,
+    points: Math.round((100 / (1 / 608)) * 3),
+    check: (rolls) => rolls.length >= 1 && rolls[rolls.length - 1] === getTodayDateNumber()
   }
 ];
 
@@ -256,6 +294,34 @@ const MAX_POSSIBLE_ROLL = (() => {
   const allSuper = SUPER_BADGES_CATALOG.reduce((acc, sb) => acc + sb.points, 0);
   return Math.ceil((bestNormal + allSuper) * Math.pow(2, SUPER_BADGES_CATALOG.length) * 1.2);
 })();
+
+function cleanClaimedNumber(value) {
+  const n = Number(value);
+  return Number.isInteger(n) && n >= MIN_NUM && n <= MAX_NUM ? n : null;
+}
+
+// Tiene la roll con più punti tra quella salvata e i candidati (in caso di pareggio resta quella salvata)
+function pickBestRoll(existing, candidates) {
+  let best = {
+    points: Number(existing.bestRollPoints) || 0,
+    number: typeof existing.bestRollNumber === 'number' ? existing.bestRollNumber : null,
+    superIds: Array.isArray(existing.bestRollSuperIds) ? existing.bestRollSuperIds : []
+  };
+  for (const c of candidates) {
+    if (c && c.points > best.points) best = c;
+  }
+  return { bestRollPoints: best.points, bestRollNumber: best.number, bestRollSuperIds: best.superIds };
+}
+
+function claimFromBody(body) {
+  const points = cleanClaimedBest(body.bestRollScore);
+  if (!points) return null;
+  return {
+    points,
+    number: cleanClaimedNumber(body.bestRollNumber),
+    superIds: sanitizeIdList(body.bestRollSuperIds, SUPER_BADGE_MAP)
+  };
+}
 
 function cleanClaimedBest(value) {
   const n = Math.round(Number(value));
@@ -443,6 +509,8 @@ function buildTop10(playersMap, sortKey = 'badges') {
       totalScore: p.totalScore,
       rollsCount: Number(p.rollsCount) || 0,
       bestRollPoints: Number(p.bestRollPoints) || 0,
+      bestRollNumber: typeof p.bestRollNumber === 'number' ? p.bestRollNumber : null,
+      bestRollSuperIds: Array.isArray(p.bestRollSuperIds) ? p.bestRollSuperIds : [],
       superCount: getSuperTimes(p)
     }));
 }
@@ -641,7 +709,10 @@ export default async function handler(req, res) {
           badgesCount: newBadgesCount,
           totalScore: newTotalScore,
           rollsCount: newRollsCount,
-          bestRollPoints: Math.max(Number(existing.bestRollPoints) || 0, rollPoints, cleanClaimedBest(bestRollScore)),
+          ...pickBestRoll(existing, [
+            { points: rollPoints, number: result, superIds: matchedSuper.map(sb => sb.id) },
+            claimFromBody(body)
+          ]),
           superTimesCount: getSuperTimes(existing) + matchedSuper.length,
           serverVerified: true,
           needsLegacyRecovery: existing.needsLegacyRecovery || false,
@@ -871,9 +942,9 @@ export default async function handler(req, res) {
         }
 
         // Allinea la "roll con più aura" a quella che il giocatore vede nelle sue statistiche
-        const claimedBest = cleanClaimedBest(bestRollScore);
-        if (claimedBest > (Number(existing.bestRollPoints) || 0)) {
-          players[deviceId] = { ...existing, bestRollPoints: claimedBest };
+        const claim = claimFromBody(body);
+        if (claim && claim.points > (Number(existing.bestRollPoints) || 0)) {
+          players[deviceId] = { ...existing, ...pickBestRoll(existing, [claim]) };
           await kvSet(PLAYERS_KEY, players);
         }
 
