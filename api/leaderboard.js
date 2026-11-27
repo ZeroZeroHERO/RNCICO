@@ -245,6 +245,24 @@ const SUPER_BADGES_CATALOG = [
   }
 ];
 
+// Massimo teorico di una singola roll: serve a scartare valori di "miglior roll" impossibili
+const MAX_POSSIBLE_ROLL = (() => {
+  let bestNormal = 0;
+  for (let n = MIN_NUM; n <= MAX_NUM; n++) {
+    let sum = 0;
+    for (const b of BADGE_CATALOG.values()) if (b.check(n)) sum += b.points;
+    bestNormal = Math.max(bestNormal, sum);
+  }
+  const allSuper = SUPER_BADGES_CATALOG.reduce((acc, sb) => acc + sb.points, 0);
+  return Math.ceil((bestNormal + allSuper) * Math.pow(2, SUPER_BADGES_CATALOG.length) * 1.2);
+})();
+
+function cleanClaimedBest(value) {
+  const n = Math.round(Number(value));
+  if (!Number.isFinite(n) || n <= 0 || n > MAX_POSSIBLE_ROLL) return 0;
+  return n;
+}
+
 const SUPER_BADGE_MAP = new Map(SUPER_BADGES_CATALOG.map(sb => [sb.id, sb]));
 
 // Moltiplicatori di punti per roll
@@ -401,11 +419,16 @@ const LEADERBOARD_SORTS = {
   rolls: (a, b) =>
     ((Number(b.rollsCount) || 0) - (Number(a.rollsCount) || 0)) ||
     (b.totalScore - a.totalScore),
-  // Super badge ottenuti
+  // Super badge ottenuti (tutte le volte, anche ripetuti)
   super: (a, b) =>
-    ((b.superUnlockedIds || []).length - (a.superUnlockedIds || []).length) ||
+    (getSuperTimes(b) - getSuperTimes(a)) ||
     (b.totalScore - a.totalScore)
 };
+
+function getSuperTimes(p) {
+  if (typeof p.superTimesCount === 'number') return p.superTimesCount;
+  return (p.superUnlockedIds || []).length;
+}
 
 function buildTop10(playersMap, sortKey = 'badges') {
   const compare = LEADERBOARD_SORTS[sortKey] || LEADERBOARD_SORTS.badges;
@@ -420,7 +443,7 @@ function buildTop10(playersMap, sortKey = 'badges') {
       totalScore: p.totalScore,
       rollsCount: Number(p.rollsCount) || 0,
       bestRollPoints: Number(p.bestRollPoints) || 0,
-      superCount: (p.superUnlockedIds || []).length
+      superCount: getSuperTimes(p)
     }));
 }
 
@@ -510,7 +533,7 @@ export default async function handler(req, res) {
           return res.status(400).json({ error: 'Payload JSON non valido.' });
         }
       }
-      const { action, deviceId, nickname, message, secretId, unlockedIds, secretUnlockedIds, hardMode, speedrun } = body || {};
+      const { action, deviceId, nickname, message, secretId, unlockedIds, secretUnlockedIds, hardMode, speedrun, bestRollScore } = body || {};
 
       if (!deviceId || typeof deviceId !== 'string') {
         return res.status(400).json({ error: 'Device ID non valido.' });
@@ -618,7 +641,8 @@ export default async function handler(req, res) {
           badgesCount: newBadgesCount,
           totalScore: newTotalScore,
           rollsCount: newRollsCount,
-          bestRollPoints: Math.max(Number(existing.bestRollPoints) || 0, rollPoints),
+          bestRollPoints: Math.max(Number(existing.bestRollPoints) || 0, rollPoints, cleanClaimedBest(bestRollScore)),
+          superTimesCount: getSuperTimes(existing) + matchedSuper.length,
           serverVerified: true,
           needsLegacyRecovery: existing.needsLegacyRecovery || false,
           updatedAt: Date.now()
@@ -846,8 +870,15 @@ export default async function handler(req, res) {
           return res.status(404).json({ error: 'Dispositivo non registrato.' });
         }
 
+        // Allinea la "roll con più aura" a quella che il giocatore vede nelle sue statistiche
+        const claimedBest = cleanClaimedBest(bestRollScore);
+        if (claimedBest > (Number(existing.bestRollPoints) || 0)) {
+          players[deviceId] = { ...existing, bestRollPoints: claimedBest };
+          await kvSet(PLAYERS_KEY, players);
+        }
+
         return res.status(200).json({
-          player: existing,
+          player: players[deviceId] || existing,
           leaderboard: buildTop10(players),
           leaderboards: buildAllLeaderboards(players),
           kingMessage,
