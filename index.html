@@ -2532,9 +2532,9 @@
       id: 'super_spaccato',
       rollsNeeded: 1,
       name: 'spaccato al minuto',
-      description: "Hai rollato l'ora esatta (formato 24 ore: alle 03:51 esce 351)",
-      probDenominator: 2397,
-      points: Math.round((100 / (1 / 2397)) * 3),
+      description: "Hai rollato l'ora esatta (formato 24 ore)",
+      probDenominator: 501,
+      points: Math.round((100 / (1 / 501)) * 3),
       check: (rolls) => rolls.length >= 1 && rolls[rolls.length - 1] === getNowTimeNumber()
     });
 
