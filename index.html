@@ -1384,8 +1384,14 @@
     .rank-cell {
       font-family: 'JetBrains Mono', monospace;
       font-weight: 800;
-      width: 60px;
+      width: 1%;
+      white-space: nowrap;
       color: var(--text-muted);
+    }
+
+    .leaderboard-table th:first-child,
+    .leaderboard-table td:first-child {
+      padding-right: 0.35rem;
     }
 
     .rank-1 { color: var(--gold); }
@@ -2460,7 +2466,7 @@
       {
         id: 'super_deja_vu',
         rollsNeeded: 2,
-        name: 'Déjà Vu',
+        name: 'déjà vu',
         description: 'Hai ottenuto lo stesso numero 2 volte di fila',
         probDenominator: 501,
         points: Math.round((100 / (1 / 501)) * 3),
@@ -2485,7 +2491,7 @@
       {
         id: 'super_fanatico_harshad',
         rollsNeeded: 5,
-        name: 'fanatico di harshad',
+        name: 'Harshad Fan',
         description: 'Hai estratto 5 volte di fila un numero di Harshad',
         probDenominator: 919,
         points: Math.round((100 / (1 / 919)) * 3),
@@ -2523,7 +2529,7 @@
       {
         id: 'super_data_oggi',
         rollsNeeded: 1,
-        name: 'data di oggi',
+        name: 'oggi più di ieri',
         description: 'Hai rollato la data di oggi (gg/mm, oppure mm/gg da ottobre a dicembre)',
         probDenominator: 608,
         points: Math.round((100 / (1 / 608)) * 3),
@@ -2537,7 +2543,7 @@
     SUPER_BADGES.push({
       id: 'super_spaccato',
       rollsNeeded: 1,
-      name: 'spaccato al minuto',
+      name: 'minuto spaccato',
       description: "Hai rollato l'ora esatta (formato 24 ore)",
       probDenominator: 501,
       points: Math.round((100 / (1 / 501)) * 3),
@@ -3281,7 +3287,7 @@
       if (typeof e.bestRollNumber === 'number') details.push(`n° ${e.bestRollNumber}`);
       SUPER_BADGES
         .filter(sb => (e.bestRollSuperIds || []).includes(sb.id))
-        .forEach(sb => details.push(`⚡ ${escapeHtml(sb.name)}`));
+        .forEach(sb => details.push(escapeHtml(sb.name)));
       const mult = Number(e.bestRollMultiplier) || 1;
       if (mult !== 1) details.push(`<strong>×${String(Math.round(mult * 100) / 100).replace('.', ',')}</strong>`);
       return details.length
