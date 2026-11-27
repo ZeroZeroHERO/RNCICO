@@ -229,6 +229,16 @@ function getTodayDateNumber(date = new Date()) {
   return null;
 }
 
+// Ora attuale (ora italiana, 24h) come numero: 03:51 → 351, 00:07 → 7. null dopo le 05:00.
+function getNowTimeNumber(date = new Date()) {
+  const parts = new Intl.DateTimeFormat('it-IT', { timeZone: 'Europe/Rome', hour: 'numeric', minute: 'numeric', hourCycle: 'h23' })
+    .formatToParts(date);
+  const hour = Number(parts.find(p => p.type === 'hour').value);
+  const minute = Number(parts.find(p => p.type === 'minute').value);
+  const n = hour * 100 + minute;
+  return n <= MAX_NUM ? n : null;
+}
+
 // Super Badge (punti tripli = probDenominator * 3)
 const SUPER_BADGES_CATALOG = [
   {
@@ -281,6 +291,13 @@ const SUPER_BADGES_CATALOG = [
     probDenominator: 608,
     points: Math.round((100 / (1 / 608)) * 3),
     check: (rolls) => rolls.length >= 1 && rolls[rolls.length - 1] === getTodayDateNumber()
+  },
+  {
+    id: 'super_spaccato',
+    name: 'SPACCATO AL MINUTO',
+    probDenominator: 2397,
+    points: Math.round((100 / (1 / 2397)) * 3),
+    check: (rolls) => rolls.length >= 1 && rolls[rolls.length - 1] === getNowTimeNumber()
   }
 ];
 
@@ -373,7 +390,9 @@ const VALID_SECRET_IDS = new Set([
   'secret_nontivantare',
   'secret_nottambulo',
   'secret_tryharder',
-  'secret_impasible'
+  'secret_impasible',
+  'secret_nonguardavi',
+  'secret_shaker'
 ]);
 
 async function kvGet(key) {
@@ -496,29 +515,33 @@ function normalizePlayerRecord(player) {
   };
 }
 
-const LEADERBOARD_SORTS = {
-  // Badge: badge sbloccati, poi aura totale
-  badges: (a, b) =>
-    (b.badgesCount - a.badgesCount) ||
-    (b.totalScore - a.totalScore) ||
-    ((a.updatedAt || 0) - (b.updatedAt || 0)),
-  // Roll con più aura
-  best: (a, b) =>
-    ((Number(b.bestRollPoints) || 0) - (Number(a.bestRollPoints) || 0)) ||
-    (b.totalScore - a.totalScore),
-  // Aura totale
-  score: (a, b) =>
-    (b.totalScore - a.totalScore) ||
-    (b.badgesCount - a.badgesCount),
-  // Tiri fatti
-  rolls: (a, b) =>
-    ((Number(b.rollsCount) || 0) - (Number(a.rollsCount) || 0)) ||
-    (b.totalScore - a.totalScore),
-  // Super badge ottenuti (tutte le volte, anche ripetuti)
-  super: (a, b) =>
-    (getSuperTimes(b) - getSuperTimes(a)) ||
-    (b.totalScore - a.totalScore)
+// Valore di ogni classifica per un giocatore
+const LEADERBOARD_METRICS = {
+  badges: p => Number(p.badgesCount) || 0,
+  best: p => Number(p.bestRollPoints) || 0,
+  score: p => Number(p.totalScore) || 0,
+  rolls: p => Number(p.rollsCount) || 0,
+  super: p => getSuperTimes(p),
+  combo: p => Number(p.bestCombo) || 0
 };
+
+// Ordina per valore; a parità, è più in alto chi ha raggiunto quel valore per ultimo
+const LEADERBOARD_SORTS = {};
+for (const [key, metric] of Object.entries(LEADERBOARD_METRICS)) {
+  LEADERBOARD_SORTS[key] = (a, b) =>
+    (metric(b) - metric(a)) ||
+    (((b.reachedAt || {})[key] || 0) - ((a.reachedAt || {})[key] || 0));
+}
+
+// Segna il momento in cui ogni valore di classifica è cambiato
+function withReachedAt(before, after) {
+  const now = Date.now();
+  const reachedAt = { ...(before && before.reachedAt ? before.reachedAt : {}) };
+  for (const [key, metric] of Object.entries(LEADERBOARD_METRICS)) {
+    if (!before || metric(after) !== metric(before)) reachedAt[key] = now;
+  }
+  return { ...after, reachedAt };
+}
 
 function getSuperTimes(p) {
   if (typeof p.superTimesCount === 'number') return p.superTimesCount;
@@ -541,7 +564,8 @@ function buildTop10(playersMap, sortKey = 'badges') {
       bestRollNumber: typeof p.bestRollNumber === 'number' ? p.bestRollNumber : null,
       bestRollSuperIds: Array.isArray(p.bestRollSuperIds) ? p.bestRollSuperIds : [],
       bestRollMultiplier: typeof p.bestRollMultiplier === 'number' ? p.bestRollMultiplier : 1,
-      superCount: getSuperTimes(p)
+      superCount: getSuperTimes(p),
+      bestCombo: Number(p.bestCombo) || 0
     }));
 }
 
@@ -631,7 +655,7 @@ export default async function handler(req, res) {
           return res.status(400).json({ error: 'Payload JSON non valido.' });
         }
       }
-      const { action, deviceId, nickname, message, secretId, unlockedIds, secretUnlockedIds, hardMode, speedrun, bestRollScore } = body || {};
+      const { action, deviceId, nickname, message, secretId, unlockedIds, secretUnlockedIds, hardMode, speedrun, bestRollScore, combo } = body || {};
 
       if (!deviceId || typeof deviceId !== 'string') {
         return res.status(400).json({ error: 'Device ID non valido.' });
@@ -730,8 +754,20 @@ export default async function handler(req, res) {
         const newTotalScore = (Number(existing.totalScore) || 0) + rollPoints;
         const newRollsCount = (Number(existing.rollsCount) || 0) + 1;
 
+        // Combo: il gioco dice a che combo sei, il server la accetta solo se le roll
+        // sono davvero arrivate una dopo l'altra (al massimo 30 secondi tra una e l'altra)
+        const nowMs = Date.now();
+        const rollChain = (existing.lastRollAt && nowMs - Number(existing.lastRollAt) <= 30000)
+          ? (Number(existing.rollChain) || 1) + 1
+          : 1;
+        const claimedCombo = Math.max(1, Math.floor(Number(combo)) || 1);
+        const acceptedCombo = Math.min(claimedCombo, rollChain);
+
         players[deviceId] = {
           ...existing,
+          lastRollAt: nowMs,
+          rollChain,
+          bestCombo: Math.max(Number(existing.bestCombo) || 0, acceptedCombo),
           unlockedIds: updatedUnlockedIds,
           secretUnlockedIds: updatedSecretIds,
           superUnlockedIds: updatedSuperIds,
@@ -748,6 +784,7 @@ export default async function handler(req, res) {
           needsLegacyRecovery: existing.needsLegacyRecovery || false,
           updatedAt: Date.now()
         };
+        players[deviceId] = withReachedAt(existing, players[deviceId]);
 
         await kvSet(PLAYERS_KEY, players);
         if (superUnlockersDirty) {
@@ -804,6 +841,7 @@ export default async function handler(req, res) {
           totalScore: (Number(existing.totalScore) || 0) + (unlockedNow ? 67 : 0),
           updatedAt: Date.now()
         };
+        players[deviceId] = withReachedAt(existing, players[deviceId]);
 
         await kvSet(PLAYERS_KEY, players);
 
@@ -982,7 +1020,7 @@ export default async function handler(req, res) {
           best.bestRollMultiplier !== (typeof existing.bestRollMultiplier === 'number' ? existing.bestRollMultiplier : 1) ||
           superTimes !== getSuperTimes(existing);
         if (changed) {
-          players[deviceId] = { ...existing, ...best, superTimesCount: superTimes };
+          players[deviceId] = withReachedAt(existing, { ...existing, ...best, superTimesCount: superTimes });
           await kvSet(PLAYERS_KEY, players);
         }
 
