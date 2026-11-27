@@ -1266,6 +1266,17 @@
       font-weight: 400;
     }
 
+    .king-banner-time {
+      margin-top: 0.3rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.68rem;
+      color: rgba(250, 204, 21, 0.6);
+    }
+
+    .king-banner-time:empty {
+      display: none;
+    }
+
     .king-editor {
       display: flex;
       gap: 0.5rem;
@@ -2053,10 +2064,12 @@
       <!-- Riquadro Messaggio del Primo in Classifica -->
       <div class="king-banner hidden" id="king-banner">
         <div class="king-banner-header">
-          <span>👑 MESSAGGIO DEL MOMO (#1)</span>
+          <span>👑 MESSAGGIO DER GOAT (#1 Badge)</span>
           <span id="king-banner-author"></span>
         </div>
         <div class="king-banner-text" id="king-banner-text"></div>
+        <div class="king-banner-time" id="king-banner-time"></div>
+        
         <form class="king-editor hidden" id="king-editor-form">
           <input
             type="text"
@@ -2809,6 +2822,20 @@
     const kingBannerEl = document.getElementById('king-banner');
     const kingBannerAuthorEl = document.getElementById('king-banner-author');
     const kingBannerTextEl = document.getElementById('king-banner-text');
+    const kingBannerTimeEl = document.getElementById('king-banner-time');
+
+    // "oggi alle 05:12", "ieri alle 23:40" oppure "26/11 alle 18:03"
+    function formatMessageTime(ts) {
+      const d = new Date(Number(ts));
+      if (!ts || isNaN(d.getTime())) return '';
+      const time = d.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' });
+      const dayKey = x => x.toLocaleDateString('it-IT');
+      const today = new Date();
+      const yesterday = new Date(today.getTime() - 24 * 60 * 60 * 1000);
+      if (dayKey(d) === dayKey(today)) return `oggi alle ${time}`;
+      if (dayKey(d) === dayKey(yesterday)) return `ieri alle ${time}`;
+      return `${d.toLocaleDateString('it-IT', { day: '2-digit', month: '2-digit' })} alle ${time}`;
+    }
     const kingEditorForm = document.getElementById('king-editor-form');
     const kingMessageInput = document.getElementById('king-message-input');
     const kingSaveBtn = document.getElementById('king-save-btn');
@@ -3324,9 +3351,12 @@
         if (msgText) {
           kingBannerTextEl.textContent = `«${msgText}»`;
           kingBannerTextEl.classList.remove('empty-msg');
+          const when = formatMessageTime(lastKingMessage && lastKingMessage.updatedAt);
+          kingBannerTimeEl.textContent = when ? `scritto ${when}` : '';
         } else {
           kingBannerTextEl.textContent = 'Il #1 non ha ancora lasciato nessun messaggio.';
           kingBannerTextEl.classList.add('empty-msg');
+          kingBannerTimeEl.textContent = '';
         }
 
         const isCurrentUserKing = account && topPlayer.deviceId === account.deviceId;
