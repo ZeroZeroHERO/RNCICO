@@ -695,6 +695,25 @@
       margin-top: 0.18rem;
     }
 
+    .pill-badge-rolls {
+      display: block;
+      margin-top: 0.35rem;
+      padding: 0.2rem 0.55rem;
+      border-radius: 7px;
+      background: rgba(0, 0, 0, 0.3);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      color: #f8fafc;
+    }
+
+    .pill-badge-rolls .rolls-label {
+      font-weight: 500;
+      opacity: 0.75;
+      margin-right: 0.3rem;
+    }
+
     .pill-badge.is-new {
       animation: newUnlockBurst 0.55s cubic-bezier(0.18, 0.89, 0.32, 1.28), newGlowPulse 1.8s ease-in-out infinite;
     }
@@ -931,6 +950,14 @@
       flex-wrap: wrap;
       gap: 0.4rem;
       margin-bottom: 0.85rem;
+    }
+
+    .lb-sub {
+      display: block;
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      margin-top: 0.15rem;
     }
 
     .lb-value-col {
@@ -2161,9 +2188,22 @@
     // ==========================================
     // SUPER BADGE (Probabilità < 1/500, Punti 3x)
     // ==========================================
+    // Numero della data di oggi (ora italiana): gg/mm fino a settembre, mm/gg per ottobre-dicembre
+    // (solo se il giorno ha una cifra). Restituisce null nei giorni in cui non può uscire.
+    function getTodayDateNumber(date = new Date()) {
+      const parts = new Intl.DateTimeFormat('it-IT', { timeZone: 'Europe/Rome', day: 'numeric', month: 'numeric' })
+        .formatToParts(date);
+      const day = Number(parts.find(p => p.type === 'day').value);
+      const month = Number(parts.find(p => p.type === 'month').value);
+      if (month <= 9) return Number(`${day}${month}`);
+      if (day <= 9) return Number(`${month}${day}`);
+      return null;
+    }
+
     const SUPER_BADGES = [
       {
         id: 'super_deja_vu',
+        rollsNeeded: 2,
         name: 'Déjà Vu',
         description: 'Hai ottenuto lo stesso numero 2 volte di fila',
         probDenominator: 501,
@@ -2175,6 +2215,7 @@
       },
       {
         id: 'super_collo_terrorista',
+        rollsNeeded: 3,
         name: 'collo terrorista',
         description: 'La somma delle ultime 3 roll è esattamente 911',
         probDenominator: 775,
@@ -2187,6 +2228,7 @@
       },
       {
         id: 'super_fanatico_harshad',
+        rollsNeeded: 5,
         name: 'fanatico di harshad',
         description: 'Hai estratto 5 volte di fila un numero di Harshad',
         probDenominator: 919,
@@ -2198,6 +2240,7 @@
       },
       {
         id: 'super_in_pari',
+        rollsNeeded: 10,
         name: 'in pari',
         description: 'Hai rollato 10 volte di fila un numero pari',
         probDenominator: 1003,
@@ -2209,6 +2252,7 @@
       },
       {
         id: 'super_indeciso',
+        rollsNeeded: 2,
         name: 'INdeciso',
         description: 'In 2 roll di seguito hai ottenuto un numero minore di 10 e un numero maggiore di 490',
         probDenominator: 1255,
@@ -2218,6 +2262,18 @@
           const a = rolls[rolls.length - 2];
           const b = rolls[rolls.length - 1];
           return (a < 10 && b > 490) || (a > 490 && b < 10);
+        }
+      },
+      {
+        id: 'super_data_oggi',
+        rollsNeeded: 1,
+        name: 'data di oggi',
+        description: 'Hai rollato la data di oggi (gg/mm, oppure mm/gg da ottobre a dicembre)',
+        probDenominator: 608,
+        points: Math.round((100 / (1 / 608)) * 3),
+        check: (rolls) => {
+          if (rolls.length < 1) return false;
+          return rolls[rolls.length - 1] === getTodayDateNumber();
         }
       }
     ];
@@ -2350,6 +2406,26 @@
       { id: 'div97', name: 'divisori di 97', description: 'Tutti i divisori di 97 (1 e 97)', check: (n) => n === 1 || n === 97 },
       { id: 'div496', name: 'divisori di 496', description: 'Tutti i divisori di 496', check: (n) => isDivisorOf496(n) },
       { id: 'self_pow', name: 'numeri elevati a se stessi', description: '1^1, 2^2, 3^3, 4^4 (1, 4, 27, 256)', check: (n) => [1, 4, 27, 256].includes(n) },
+
+      // 6. Nuovi badge
+      { id: 'gradi', name: 'gradi', description: 'gradi', check: (n) => n === 200 || n === 360 },
+      { id: 'n67_sixseven', name: 'six seven', description: 'esattamente six seven', check: (n) => n === 67 },
+      { id: 'n321', name: 'io no', description: '3, 2, 1... IO NO!', check: (n) => n === 321 },
+      { id: 'n123_stella', name: 'STELLA!', description: 'Esattamente 123', check: (n) => n === 123 },
+      { id: 'n7', name: 'metà six seven', description: 'six s', check: (n) => n === 7 },
+      { id: 'n191', name: 'undici settembre missclickato', description: 'Esattamente 191', check: (n) => n === 191 },
+      { id: 'n8', name: 'infinito ruotato di 90 gradi', description: 'Esattamente 8', check: (n) => n === 8 },
+      { id: 'mending', name: 'numero di smeraldi che puoi dare ad un villager per mending', description: 'Da 1 a 38', check: (n) => n >= 1 && n <= 38 },
+      { id: 'n110_unodieci', name: 'UNO DIECI', description: 'Esattamente 110', check: (n) => n === 110 },
+      { id: 'n366', name: 'anno bisestile', description: 'Esattamente 366', check: (n) => n === 366 },
+      { id: 'n271_memoria', name: 'giornata della memoria', description: '27/1', check: (n) => n === 271 },
+      { id: 'n34', name: 'la rule', description: 'Esattamente 34', check: (n) => n === 34 },
+      { id: 'n76', name: 'neves xis', description: 'Esattamente 76', check: (n) => n === 76 },
+      { id: 'n151', name: 'I Pokémon del primo Pokédex', description: 'Esattamente 151', check: (n) => n === 151 },
+      { id: 'n20', name: 'gli euri che ti fai scaricando (scaricazzi) un app', description: 'esattamente 20', check: (n) => n === 20 },
+      { id: 'n100_laurea', name: 'voto di laurea di crisafuzzi', description: 'Esattamente 100', check: (n) => n === 100 },
+      { id: 'cannora_frazione', name: 'frazione di cannora', description: '1/2, 1/3 e 1/4 di cannora (210, 140, 105)', check: (n) => n === 210 || n === 140 || n === 105 },
+      { id: 'n25', name: 'prezzo di 6 ore nella casa in affitto di cico', description: 'Esattamente 25', check: (n) => n === 25 },
 
       // Elementi chimici & Minecraft
       { id: 'elem_se', name: 'Selenio (Se)', description: 'Numero atomico 34', check: (n) => n === 34 },
@@ -2652,6 +2728,19 @@
       });
     }
 
+    // La miglior roll che il giocatore vede nelle statistiche, con numero e super badge se li conosciamo
+    function getBestRollInfo() {
+      const score = (account && account.bestRollScore) || 0;
+      const top = account && Array.isArray(account.topRolls) ? account.topRolls[0] : null;
+      const topScore = top ? Number(top.score ?? top.points ?? 0) : -1;
+      const sameRoll = top && topScore === score;
+      return {
+        bestRollScore: score,
+        bestRollNumber: sameRoll && typeof top.number === 'number' ? top.number : null,
+        bestRollSuperIds: sameRoll && Array.isArray(top.superIds) ? top.superIds : []
+      };
+    }
+
     function getTotalUnlockedCount() {
       if (!account) return 0;
       return account.unlockedBadges.length +
@@ -2756,7 +2845,7 @@
           body: JSON.stringify({
             action: 'sync',
             deviceId: account.deviceId,
-            bestRollScore: account.bestRollScore || 0
+            ...getBestRollInfo()
           })
         });
         if (!res.ok) return;
@@ -2815,12 +2904,25 @@
     }
 
     const LB_COLUMNS = {
-      best:   { title: 'ROLL CON PIÙ AURA', value: e => `${(e.bestRollPoints || 0).toLocaleString('it-IT')} pt` },
+      best:   { title: 'ROLL CON PIÙ AURA', value: e => renderBestRollCell(e) },
       badges: { title: 'BADGE',             value: e => `${e.badgesCount}/${LEADERBOARD_MAX_BADGES()}` },
       score:  { title: 'AURA TOTALE',       value: e => `${(e.totalScore || 0).toLocaleString('it-IT')} pt` },
       rolls:  { title: 'TIRI FATTI',        value: e => (e.rollsCount || 0).toLocaleString('it-IT') },
       super:  { title: 'SUPER BADGE OTTENUTI', value: e => (e.superCount || 0).toLocaleString('it-IT') }
     };
+
+    function renderBestRollCell(e) {
+      const pts = `${(e.bestRollPoints || 0).toLocaleString('it-IT')} pt`;
+      const details = [];
+      if (typeof e.bestRollNumber === 'number') details.push(`n° ${e.bestRollNumber}`);
+      (e.bestRollSuperIds || []).forEach(id => {
+        const sb = SUPER_BADGES.find(x => x.id === id);
+        if (sb) details.push(`⚡ ${escapeHtml(sb.name)}`);
+      });
+      return details.length
+        ? `${pts}<span class="lb-sub">${details.join(' • ')}</span>`
+        : pts;
+    }
 
     // Salva le classifiche arrivate dal server e ridisegna
     function applyLeaderboardData(data) {
@@ -3110,9 +3212,9 @@
       }).join('');
     }
 
-    function updateTopRolls(number, score) {
+    function updateTopRolls(number, score, superIds = []) {
       if (!account) return;
-      account.topRolls.push({ number, score: Number(score) || 0, ts: Date.now() });
+      account.topRolls.push({ number, score: Number(score) || 0, superIds, ts: Date.now() });
       account.topRolls.sort((a, b) => {
         const ptsA = Number(a.score ?? a.points ?? 0);
         const ptsB = Number(b.score ?? b.points ?? 0);
@@ -3274,6 +3376,18 @@
       rollTotalChipEl.className = 'roll-total-chip hidden';
     }
 
+    // Mostra le roll che hanno fatto scattare il super badge (es. 120 • 391 • 400 = 911)
+    function renderSuperRolls(item) {
+      const rolls = Array.isArray(item.lastRolls) ? item.lastRolls : [];
+      if (rolls.length === 0) return '';
+      let text = rolls.join(' • ');
+      if (item.id === 'super_collo_terrorista') {
+        text += ` = ${rolls.reduce((a, b) => a + b, 0)}`;
+      }
+      const label = rolls.length === 1 ? 'roll:' : `ultime ${rolls.length} roll:`;
+      return `<span class="pill-badge-rolls"><span class="rolls-label">${label}</span>${escapeHtml(text)}</span>`;
+    }
+
     function revealBadgesSequentially(badgeItems, rollScore, onAllRevealed) {
       if (badgeItems.length === 0) {
         triggeredBadgesEl.innerHTML = `<span class="placeholder-text">Nessun badge attivato (+0 pt)</span>`;
@@ -3294,6 +3408,7 @@
               ${item.isNew ? '<span class="new-tag">NEW!</span>' : ''}
               <span>⚡ ${escapeHtml(item.name)} (+${item.points.toLocaleString('it-IT')})</span>
               <span class="pill-badge-desc">${escapeHtml(item.description)} • 1/${item.probDenominator}</span>
+              ${renderSuperRolls(item)}
             `;
             SFX.superUnlock();
           } else {
@@ -3361,7 +3476,7 @@
             secretUnlockedIds: account.unlockedSecrets,
             hardMode: hardModeEnabled,
             speedrun: speedrunEnabled && isSpeedrunUnlocked(),
-            bestRollScore: account.bestRollScore || 0
+            ...getBestRollInfo()
           })
         });
 
@@ -3386,7 +3501,7 @@
         if (rollScore > account.bestRollScore) {
           account.bestRollScore = rollScore;
         }
-        updateTopRolls(rolled, rollScore);
+        updateTopRolls(rolled, rollScore, matchedSuperIds);
         saveAccount();
                      
         
@@ -3413,11 +3528,17 @@
             isSuper: false,
             isNew: newlyUnlockedIds.includes(b.id)
           })),
-          ...matchedSuper.map(sb => ({
-            ...sb,
-            isSuper: true,
-            isNew: newlyUnlockedSuperIds.includes(sb.id)
-          }))
+          ...matchedSuper.map(sb => {
+            const recent = (data.player && Array.isArray(data.player.recentRolls))
+              ? data.player.recentRolls
+              : (account.recentRolls || []);
+            return {
+              ...sb,
+              isSuper: true,
+              isNew: newlyUnlockedSuperIds.includes(sb.id),
+              lastRolls: recent.slice(-(sb.rollsNeeded || 1))
+            };
+          })
         ];
 
         animateSlotRoll(rolled, () => {
