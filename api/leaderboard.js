@@ -2,6 +2,7 @@ const PLAYERS_KEY = 'rncico:players';
 const KING_MSG_KEY = 'rncico:king_message';
 const SUPER_UNLOCKERS_KEY = 'rncico:super_unlockers';
 const LATEST_SUPER_ANN_KEY = 'rncico:latest_super_announcement';
+const BEST24H_KEY = 'rncico:best_24h';
 
 const MIN_NUM = 0;
 const MAX_NUM = 500;
@@ -430,6 +431,29 @@ async function kvSet(key, value) {
   return res.json();
 }
 
+// Roll migliore delle ultime 24 ore.
+// Si tiene una coda ordinata per orario in cui i punti sono sempre decrescenti:
+// la prima è la migliore ancora valida, quelle più vecchie di 24 ore vengono tolte.
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+function pruneBest24h(queue, now = Date.now()) {
+  return (Array.isArray(queue) ? queue : []).filter(e => e && now - Number(e.ts) <= DAY_MS);
+}
+
+function pushBest24h(queue, entry) {
+  const q = pruneBest24h(queue, entry.ts);
+  while (q.length && Number(q[q.length - 1].points) <= entry.points) q.pop();
+  q.push(entry);
+  return q;
+}
+
+function currentBest24h(queue, playersMap) {
+  const top = pruneBest24h(queue)[0];
+  if (!top) return null;
+  const p = playersMap[top.deviceId];
+  return { ...top, nickname: p ? p.nickname : top.nickname };
+}
+
 function sanitizeIdList(list, allowedSetOrMap) {
   if (!Array.isArray(list)) return [];
   const out = [];
@@ -593,6 +617,7 @@ export default async function handler(req, res) {
     let kingMessage = (await kvGet(KING_MSG_KEY)) || null;
     const superUnlockers = (await kvGet(SUPER_UNLOCKERS_KEY)) || {};
     let latestSuperAnnouncement = (await kvGet(LATEST_SUPER_ANN_KEY)) || null;
+    let best24hQueue = (await kvGet(BEST24H_KEY)) || [];
 
     const TWENTY_FOUR_HOURS_MS = 24 * 60 * 60 * 1000;
     if (
@@ -642,6 +667,7 @@ export default async function handler(req, res) {
       return res.status(200).json({
         leaderboard: buildTop10(players),
           leaderboards: buildAllLeaderboards(players),
+          best24h: currentBest24h(best24hQueue, players),
         kingMessage,
         superUnlockers,
         latestSuperAnnouncement
@@ -793,6 +819,18 @@ export default async function handler(req, res) {
         players[deviceId] = withReachedAt(existing, players[deviceId]);
 
         await kvSet(PLAYERS_KEY, players);
+
+        best24hQueue = pushBest24h(best24hQueue, {
+          deviceId,
+          nickname: existing.nickname,
+          points: rollPoints,
+          number: result,
+          superIds: matchedSuper.map(sb => sb.id),
+          multiplier: Math.round(multiplier * 100) / 100,
+          ts: Date.now()
+        });
+        await kvSet(BEST24H_KEY, best24hQueue);
+
         if (superUnlockersDirty) {
           await kvSet(SUPER_UNLOCKERS_KEY, superUnlockers);
           await kvSet(LATEST_SUPER_ANN_KEY, latestSuperAnnouncement);
@@ -809,6 +847,7 @@ export default async function handler(req, res) {
           player: players[deviceId],
           leaderboard: buildTop10(players),
           leaderboards: buildAllLeaderboards(players),
+          best24h: currentBest24h(best24hQueue, players),
           kingMessage,
           superUnlockers,
           latestSuperAnnouncement
@@ -856,6 +895,7 @@ export default async function handler(req, res) {
           player: players[deviceId],
           leaderboard: buildTop10(players),
           leaderboards: buildAllLeaderboards(players),
+          best24h: currentBest24h(best24hQueue, players),
           kingMessage,
           superUnlockers,
           latestSuperAnnouncement
@@ -885,6 +925,7 @@ export default async function handler(req, res) {
         return res.status(200).json({
           leaderboard: top10,
           leaderboards: buildAllLeaderboards(players),
+          best24h: currentBest24h(best24hQueue, players),
           kingMessage,
           superUnlockers,
           latestSuperAnnouncement
@@ -903,6 +944,7 @@ export default async function handler(req, res) {
             player: existing,
             leaderboard: buildTop10(players),
           leaderboards: buildAllLeaderboards(players),
+          best24h: currentBest24h(best24hQueue, players),
             kingMessage,
             superUnlockers,
             latestSuperAnnouncement
@@ -935,6 +977,7 @@ export default async function handler(req, res) {
           player: players[deviceId],
           leaderboard: buildTop10(players),
           leaderboards: buildAllLeaderboards(players),
+          best24h: currentBest24h(best24hQueue, players),
           kingMessage,
           superUnlockers,
           latestSuperAnnouncement
@@ -1003,6 +1046,7 @@ export default async function handler(req, res) {
           player: players[deviceId],
           leaderboard: newTop10,
           leaderboards: buildAllLeaderboards(players),
+          best24h: currentBest24h(best24hQueue, players),
           kingMessage,
           superUnlockers,
           latestSuperAnnouncement
@@ -1034,6 +1078,7 @@ export default async function handler(req, res) {
           player: players[deviceId] || existing,
           leaderboard: buildTop10(players),
           leaderboards: buildAllLeaderboards(players),
+          best24h: currentBest24h(best24hQueue, players),
           kingMessage,
           superUnlockers,
           latestSuperAnnouncement
