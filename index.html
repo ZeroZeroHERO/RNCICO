@@ -444,6 +444,12 @@
       color: #fde68a;
     }
 
+    .best24h-details {
+      font-size: 0.78rem;
+      font-weight: 500;
+      opacity: 0.85;
+    }
+
     /* Stats Bar (5 box) */
     .stats-bar {
       display: grid;
@@ -561,7 +567,7 @@
       right: -24px;
       width: 83px;
       height: 83px;
-      transform: rotate(-12deg) scale(0.7);
+      transform: rotate(-9deg) scale(0.8);
       transform-origin: 100% 0;
       z-index: 2;
       pointer-events: none;
@@ -1168,7 +1174,7 @@
 
     .lb-sub {
       display: block;
-      font-size: 0.60rem;
+      font-size: 0.62rem;
       font-weight: 500;
       color: var(--text-muted);
       margin-top: 0.15rem;
@@ -1971,7 +1977,7 @@
     <!-- Banner Globale Sblocco Super Badge -->
     <div class="super-announcement-banner hidden" id="super-announcement-banner">
       <div class="super-announcement-content">
-        <span class="super-announcement-tag">⚡ SUPER BADGE</span>
+        <span class="super-announcement-tag">ROLL MIGLIORE 24H</span>
         <span id="super-announcement-text"></span>
       </div>
     </div>
@@ -2053,8 +2059,8 @@
       </div>
 
       <div class="lb-sort-group" id="lb-sort-group">
-        <button type="button" class="filter-btn active" data-sort="best">Roll con più aura</button>
-        <button type="button" class="filter-btn" data-sort="badges">Badge</button>
+        <button type="button" class="filter-btn active" data-sort="badges">Badge</button>
+        <button type="button" class="filter-btn" data-sort="best">Roll con più aura</button>
         <button type="button" class="filter-btn" data-sort="score">Aura totale</button>
         <button type="button" class="filter-btn" data-sort="rolls">Tiri fatti</button>
         <button type="button" class="filter-btn" data-sort="super">Super badge</button>
@@ -2064,12 +2070,11 @@
       <!-- Riquadro Messaggio del Primo in Classifica -->
       <div class="king-banner hidden" id="king-banner">
         <div class="king-banner-header">
-          <span>👑 MESSAGGIO DER GOAT (#1 Badge)</span>
+          <span>👑 MESSAGGIO DEL MOMO (#1)</span>
           <span id="king-banner-author"></span>
         </div>
         <div class="king-banner-text" id="king-banner-text"></div>
         <div class="king-banner-time" id="king-banner-time"></div>
-        
         <form class="king-editor hidden" id="king-editor-form">
           <input
             type="text"
@@ -2479,7 +2484,7 @@
       {
         id: 'super_deja_vu',
         rollsNeeded: 2,
-        name: 'déjà vu',
+        name: 'Déjà Vu',
         description: 'Hai ottenuto lo stesso numero 2 volte di fila',
         probDenominator: 501,
         points: Math.round((100 / (1 / 501)) * 3),
@@ -2504,7 +2509,7 @@
       {
         id: 'super_fanatico_harshad',
         rollsNeeded: 5,
-        name: 'Harshad Fan',
+        name: 'fanatico di harshad',
         description: 'Hai estratto 5 volte di fila un numero di Harshad',
         probDenominator: 919,
         points: Math.round((100 / (1 / 919)) * 3),
@@ -2542,7 +2547,7 @@
       {
         id: 'super_data_oggi',
         rollsNeeded: 1,
-        name: 'oggi più di ieri',
+        name: 'data di oggi',
         description: 'Hai rollato la data di oggi (gg/mm, oppure mm/gg da ottobre a dicembre)',
         probDenominator: 608,
         points: Math.round((100 / (1 / 608)) * 3),
@@ -2556,7 +2561,7 @@
     SUPER_BADGES.push({
       id: 'super_spaccato',
       rollsNeeded: 1,
-      name: 'minuto spaccato',
+      name: 'spaccato al minuto',
       description: "Hai rollato l'ora esatta (formato 24 ore)",
       probDenominator: 501,
       points: Math.round((100 / (1 / 501)) * 3),
@@ -2759,7 +2764,7 @@
     let lastNewlyUnlockedIds = [];
 
     // Stato classifica
-    let currentLbSort = 'best';
+    let currentLbSort = 'badges';
     let lastLeaderboards = null;
     let lastKingMessage = null;
 
@@ -3161,16 +3166,25 @@
 
     const TWENTY_FOUR_HOURS_MS = 24 * 60 * 60 * 1000;
 
-    function showSuperAnnouncement(nickname, badgeName, timestamp = Date.now()) {
-      if (!superAnnouncementBannerEl || !superAnnouncementTextEl) return;
-      if (timestamp && Date.now() - Number(timestamp) > TWENTY_FOUR_HOURS_MS) {
+    // L'annuncio dei super badge è stato sostituito dalla roll migliore delle ultime 24 ore
+    function showSuperAnnouncement() {}
+
+    function showBest24h(best) {
+      if (!best || !best.points) {
         superAnnouncementBannerEl.classList.add('hidden');
         return;
       }
-      const time = new Date(Number(timestamp) || Date.now())
-        .toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' });
+      const time = new Date(Number(best.ts)).toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' });
+      const details = [];
+      if (typeof best.number === 'number') details.push(`n° ${best.number}`);
+      SUPER_BADGES
+        .filter(sb => (best.superIds || []).includes(sb.id))
+        .forEach(sb => details.push(escapeHtml(sb.name)));
+      const mult = Number(best.multiplier) || 1;
+      if (mult !== 1) details.push(`×${String(Math.round(mult * 100) / 100).replace('.', ',')}`);
       superAnnouncementTextEl.innerHTML =
-        `${escapeHtml(nickname)} alle ${time} ha sbloccato il super badge <strong>${escapeHtml(badgeName)}</strong>`;
+        `${escapeHtml(best.nickname)} alle ${time} ha fatto <strong>+${Number(best.points).toLocaleString('it-IT')}</strong>` +
+        (details.length ? ` <span class="best24h-details">(${details.join(' • ')})</span>` : '');
       superAnnouncementBannerEl.classList.remove('hidden');
     }
 
@@ -3305,7 +3319,7 @@
       score:  { title: 'AURA TOTALE',       value: e => `${(e.totalScore || 0).toLocaleString('it-IT')} pt` },
       rolls:  { title: 'TIRI FATTI',        value: e => (e.rollsCount || 0).toLocaleString('it-IT') },
       super:  { title: 'SUPER BADGE OTTENUTI', value: e => (e.superCount || 0).toLocaleString('it-IT') },
-      combo:  { title: 'STREAK PIÙ ALTA',    value: e => `X${(e.bestCombo || 0).toLocaleString('it-IT')}` }
+      combo:  { title: 'STREAK PIÙ ALTA',   value: e => `X${(e.bestCombo || 0).toLocaleString('it-IT')}` }
     };
 
     function renderBestRollCell(e) {
@@ -3325,6 +3339,7 @@
     // Salva le classifiche arrivate dal server e ridisegna
     function applyLeaderboardData(data) {
       if (!data) return;
+      if ('best24h' in data) showBest24h(data.best24h);
       if (data.leaderboards) {
         lastLeaderboards = data.leaderboards;
       } else if (Array.isArray(data.leaderboard)) {
@@ -4060,6 +4075,8 @@
 
     // Android: si ascolta subito. iPhone: serve il permesso, chiesto al primo tocco su GENERA.
     function askMotionPermissionIfNeeded() {
+      // Se "shaker" è già sbloccato non serve più chiedere i sensori di movimento
+      if (account && Array.isArray(account.unlockedSecrets) && account.unlockedSecrets.includes('secret_shaker')) return;
       if (typeof window.DeviceMotionEvent === 'undefined') return;
       if (typeof DeviceMotionEvent.requestPermission !== 'function') return;
       if (motionPermissionAsked) return;
@@ -4067,8 +4084,6 @@
       DeviceMotionEvent.requestPermission()
         .then(state => { if (state === 'granted') startMotionListening(); })
         .catch(() => {});
-            // Se "shaker" è già sbloccato non serve più chiedere i sensori di movimento
-      if (account && Array.isArray(account.unlockedSecrets) && account.unlockedSecrets.includes('secret_shaker')) return;
     }
 
     if (typeof window.DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission !== 'function') {
